@@ -83,12 +83,14 @@ class BuoyTask(Node):
             10,
         )
 
+        '''
         # publisher for twists to control the sub
         self.pub_manual_control = self.create_publisher(
             Twist,
-            'control_twist',
+            '/control_twist',
             10,
         )
+        '''
 
         # subscriper for depth goal status
         self.sub_depth_goal_status = self.create_subscription(
@@ -157,15 +159,20 @@ class BuoyTask(Node):
         self.DRIVE_POWER = .2   # power for driving 
         self.BUMP_POWER = .4     # power for bumping the buoy
         
+        '''
         #-- DO A COUPLE SPINS TO START OUT WITH
+        time.sleep(2)
+        self.get_logger().info('Spinning for 10 seconds')
         self.pub_heading_controller_deactivation.publish(Empty())
         rot_twist = Twist()
-        rot_twist.angular.y = .5
+        rot_twist.angular.y = 0.5
         self.pub_manual_control.publish(rot_twist)
         time.sleep(10)
         rot_twist.angular.y = 0.0
+        self.get_logger().info('Spinning complete')
         self.pub_manual_control.publish(rot_twist)
         self.pub_heading_controller_activation.publish(Empty())
+        '''
         
         #-- SKIP THE FIRST STAGE AND JUST CONTINUE AT THE SAME DEPTH AS BEFORE
         # reorient to (1,0,0,0)
