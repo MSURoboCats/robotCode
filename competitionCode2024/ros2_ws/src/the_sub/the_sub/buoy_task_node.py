@@ -258,7 +258,7 @@ class BuoyTask(Node):
             self.get_logger().info('Stage 5 started: surface')
 
         # stop creeping if we are close to the buoy
-        if self.creep and data.name == self.DETECTION_NAME and data.dimensions.x >= 180:
+        if self.creep and data.name == self.DETECTION_NAME and data.dimensions.x >= 150:
                 
             # cancel creep and tracking
             self.creep = False
@@ -269,7 +269,7 @@ class BuoyTask(Node):
             drive_twist.linear.z = self.BUMP_POWER
             self.pub_drive_twist.publish(drive_twist)
             self.get_logger().info('Stage 4 loop broken: buoy close, last push')
-            time.sleep(3)
+            time.sleep(5)
             self.get_logger().info('Stage 4 complete: buoy bumped; scoot out of the way and hold')
 
 

@@ -258,7 +258,7 @@ class GateTask(Node):
             self.get_logger().info('Stage 5 started: surface')
 
         # stop creeping if we are close to the gate
-        if self.creep and data.name == self.DETECTION_NAME and data.dimensions.x >= 180:
+        if self.creep and data.name == self.DETECTION_NAME and data.dimensions.x >= 110:
                 
             # cancel creep and tracking
             self.creep = False
