@@ -149,7 +149,7 @@ class GateTask(Node):
         self.DETECTION_NAME = 'red_ccw'
         self.ROT_POWER = .2         # max power for rotation
         self.SCAN_POWER = .1        # max power for scanning
-        self.DRIVE_POWER = .2       # power for driving 
+        self.DRIVE_POWER = .25       # power for driving 
         self.BUMP_POWER = .3        # power for going through the gate
 
     def depth_goal_status_callback(self, data: String) -> None:
@@ -237,8 +237,8 @@ class GateTask(Node):
 
     def oriented_detection_callback(self, data: OrientedDetection) -> None:
         # run second (ish):
-        # only if the goal depth has been reached, a gate has not been detected, and the detected object is a gate (with 80% certainty)
-        if self.seek_stage in [2,3] and data.detection.name == self.DETECTION_NAME and data.detection.confidence > .65:
+        # only if the goal depth has been reached, a gate has not been detected, and the detected object is a gate (with 70% certainty)
+        if self.seek_stage in [2,3] and data.detection.name == self.DETECTION_NAME and data.detection.confidence > .7:
             self.get_logger().info('Stage 3 terminated: gate detected at y=%.2f' % data.orientation.y)
 
             # rotate to gate
@@ -441,7 +441,7 @@ class BuoyTask(Node):
         self.DETECTION_NAME = 'buoy_red'
         self.ROT_POWER = .2         # max power rotation
         self.SCAN_POWER = .1        # max power for scanning
-        self.DRIVE_POWER = .2       # power for driving 
+        self.DRIVE_POWER = .25       # power for driving 
         self.BUMP_POWER = .3        # power for bumping the buoy
         
         #-- SKIP THE FIRST STAGE AND JUST CONTINUE AT THE SAME DEPTH AS BEFORE
@@ -541,7 +541,7 @@ class BuoyTask(Node):
     def oriented_detection_callback(self, data: OrientedDetection) -> None:
         # run second (ish):
         # only if the goal depth has been reached, a buoy has not been detected, and the detected object is a buoy (with 65% certainty)
-        if self.seek_stage in [2,3] and data.detection.name == self.DETECTION_NAME and data.detection.confidence > .65:
+        if self.seek_stage in [2,3] and data.detection.name == self.DETECTION_NAME and data.detection.confidence > .7:
             self.buoy_detected = True
             self.get_logger().info('Stage 3 terminated: buoy detected at y=%.2f' % data.orientation.y)
 
@@ -745,7 +745,7 @@ class OctagonTask(Node):
         self.DETECTION_NAME = 'table'
         self.ROT_POWER = .2         # max power rotation
         self.SCAN_POWER = .1        # max power for scanniing
-        self.DRIVE_POWER = .2       # power for driving 
+        self.DRIVE_POWER = .25       # power for driving 
         self.BUMP_POWER = .3        # power for last approach to table
 
         
@@ -846,7 +846,7 @@ class OctagonTask(Node):
     def oriented_detection_callback(self, data: OrientedDetection) -> None:
         # run second (ish):
         # only if the goal depth has been reached, a table has not been detected, and the detected object is a table (with 60% certainty)
-        if self.seek_stage in [2,3] and data.detection.name == self.DETECTION_NAME and data.detection.confidence > .15:
+        if self.seek_stage in [2,3] and data.detection.name == self.DETECTION_NAME and data.detection.confidence > .5:
             self.get_logger().info('Stage 3 terminated: table detected at y=%.2f' % data.orientation.y)
 
             # rotate to table
