@@ -147,8 +147,8 @@ class GateTask(Node):
 
         self.DETECTION_NAME = 'red_ccw'
         self.ROT_POWER = .1     # max power for scannning rotation
-        self.DRIVE_POWER = .2   # power for driving 
-        self.BUMP_POWER = .3     # power for going through the gate
+        self.DRIVE_POWER = .3   # power for driving 
+        self.BUMP_POWER = .4     # power for going through the gate
 
     def depth_goal_status_callback(self, data: String) -> None:
         # stage 0 complete:
@@ -269,7 +269,7 @@ class GateTask(Node):
             drive_twist.linear.z = self.BUMP_POWER
             self.pub_drive_twist.publish(drive_twist)
             self.get_logger().info('Stage 4 loop broken: gate close, last push')
-            time.sleep(10)
+            time.sleep(6)
             drive_twist.linear.z = 0.0
             self.pub_drive_twist.publish(drive_twist)
 
