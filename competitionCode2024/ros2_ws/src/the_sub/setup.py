@@ -47,6 +47,7 @@ setup(
             'buoy_task_node = the_sub.buoy_task_node:main',
             'gate_task_node = the_sub.gate_task_node:main',
             'octagon_task_node = the_sub.octagon_task_node:main',
+            'mega_task_node = the_sub.mega_task_node:main',
             # setup
             'map_motors_node = the_sub.map_motors_node:main',
         ],
