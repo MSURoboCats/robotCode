@@ -2,7 +2,7 @@
 
 # each of these commands starts up a new terminal tab and runs the commands. Optionally add 'bash' as the last command so the tab will stay open after then final command is completed.
 
-sleep 90
+sleep 60
 
 gnome-terminal \
 	--tab --title="hardware" \
