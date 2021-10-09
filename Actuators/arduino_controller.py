@@ -3,7 +3,6 @@ from enum import Enum
 import serial
 import time
 
-
 class ArduinoActions(Enum):
     """
     Enumerated representation of all of the possible actions for the Arduino.
@@ -11,16 +10,16 @@ class ArduinoActions(Enum):
     For example: the value of ArduinoActions.DIVE is the str "dive".
     Sending this to the Arduino over serial with the method ArduinoController.send_arduino_command()
     """
-    START: str = "start"
-    FORWARD: str = "forward"
-    REVERSE: str = "reverse"
-    NEUTRAL: str = "neutral"
-    DIVE: str = "dive"
-    HOVER_FORWARD: str = "hoverForward"
-    HOVER_REVERSE: str = "hoverSpin"
-    KILL: str = "kill"
-    TEST_ALL_THRUSTERS: str = "all"
-    SEQUENTIALLY_TEST_ALL_THRUSTERS: str = "seqTest"
+    START = "start"
+    FORWARD = "forward\n"
+    REVERSE = "reverse"
+    NEUTRAL = "neutral"
+    DIVE = "dive"
+    HOVER_FORWARD = "hoverForward"
+    HOVER_REVERSE = "hoverSpin"
+    KILL = "kill"
+    TEST_ALL_THRUSTERS = "all"
+    SEQUENTIALLY_TEST_ALL_THRUSTERS = "seqTest"
 
 
 class ArduinoController:
@@ -72,6 +71,7 @@ class ArduinoController:
         :param command: str representation of a command to send to the Arduino.
         :return: None.
         """
+        command: str = command.value
         command += "\n"
         self.arduino.write(command.encode('UTF-8'))
         return
@@ -122,7 +122,7 @@ class ArduinoController:
             print("command not recognized")
         self.receive()
 
-    def send_arduino_command(self, arduino_action: str) -> bool:
+    def send_arduino_command(self, arduino_action: str, arduino_receipt: str = "status: done") -> bool:
         """
         Poor man's implementation of TCP networking protocol over serial.
         Essentially, send a str to the Arduino via serial and wait for a response.
@@ -130,4 +130,9 @@ class ArduinoController:
         :return bool representation of the success of sending the command to the Arduino. If the Arduino was killed at any point return False. Otherwise True.
         """
         self.send(arduino_action)
-        return False if self.receive() == "killed" else True
+        return False if self.receive(receipt=arduino_receipt) == "killed" else True
+    
+if __name__ == '__main__':
+    arduino: ArduinoController = ArduinoController()
+    time.sleep(arduino.time_out)
+    arduino.send_arduino_command(ArduinoActions.KILL)
