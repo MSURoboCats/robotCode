@@ -1,0 +1,184 @@
+Doc updated: 1/20/2021 JG
+
+Here is a list of commands and responses for the IMU currently mounted on Typhoon2. Here is the manual for more information on how to use the commands: 
+https://usermanual.wiki/Document/SoftwareInterfaceUsersManual.486113390.pdf. The current IMU is Sparton GEDC-8, however we also have the Sparton GEDC-6E in storage.
+
+Full list of commands:
+Raw Magnetics
+Heading - Magnetic
+Heading - TRUE
+Automatic Magnetic Variation 
+Magnetic Vector
+3-D Field Calibration 
+2-D Field Calibration 
+Gyro Calibration
+Raw Acceleration
+Acceleration Vector
+Raw Gyro 
+Gyro Vector
+Pitch and Roll Output
+Quaternion Vector
+Temperature
+BAUD RATE
+Mounting Configuration
+Read Transducers
+NMEA RFS Access
+NMEA/RFS RPT and GLOM
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Used commands:
+1: Acceleration Vector ($PSPA,A<cr><lf>)
+Command used? True, filter.py
+Description: Measures the acceleration along each axis (X, Y, and Z) and total magnitude (At = Atotal) in milli-g.
+
+2: Gyro Vector ($PSPA,G<cr><lf>)
+Command used? True, filter.py
+Description: Provides the calibrated gyro values along each axis (X, Y, and Z) in milliDegrees
+per second.
+
+3: Pitch and Roll Output ($PSPA,PR<cr><lf>)
+Command used? True, imu.py
+Description: Reads the current platform orientation (Pitch and Roll).
+
+4: Quaternion Vector ($PSPA,QUAT<cr><lf>)
+Command used? True, filter.py, imu.py
+Description: Provides the attitude in the form of a quaternion. The x, y, z define the axis of
+rotation and the w provides the angle (theta) of rotation about that axis where
+theta = arccos(w) * 2
+
+5: Temperature ($PSPA,TEMP<cr><lf>)
+Command used? True filter.py
+Description: Reads the internal temperature channel of the on-board microcontroller and converts to degrees C. This measurement is calibrated at the factory for general use 
+even though it is not required by the compass in determining an accurate heading
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Unutilized commands:
+
+1: Raw Magnetics ($PSPA,MR<cr><lf>)
+Command used? False
+Description: Reads current magnetics directly from magnetometers (Mx, My, and Mz). 
+These are raw sensor readings and do not yet have any calibration parameters
+applied.
+
+2: Heading - Magnetic ($xxHDM<cr><lf>)
+Command used? False
+Description: Reads the current magnetic heading. The heading is compensated for platform
+tilt. The xx in xxHDM represent “don’t care” characters and so are not used.
+
+3: Heading - TRUE ($xxHDT<cr><lf>)
+Command used? False
+Description: Reads the current true heading.    The heading is compensated for platform tilt. 
+True heading is the magnetic heading corrected for magnetic variation.
+
+4: Magnetic Variation ($xxVAR,<###.#>,<E or W><cr><lf>)
+Command used? False
+Description: Set the magnetic variation angle.    The variation angle is used in adjusting
+magnetic heading to true heading.    This will override any previous internally
+computed World Magnetic value.
+
+5: Automatic Magnetic Variation 
+($PSPA,AUTOVAR,<#Latitude>,<#Longitude>,<#Altitude>,<#Day><cr><lf>)
+Command used? False
+Description: Computes the local magnetic variation based on the device’s current
+geographical location using the World Magnetic Model. Latitude and longitude
+are entered in degrees with + being north and east respectively. Altitude is
+entered in meters above sea level. The day is entered as a fractional year based
+on the current day of the year (i.e. February 15 is the 46th day of the 2010.    In
+fractional terms, this would be 46/365 = 0.126. The Day value for February 15,
+2010 would then be entered as 2010.1 (resolution beyond a tenth causes
+negligible change in variation)  Once the computation is complete, the magnetic
+variation will be updated in the compass. Since the World Magnetic Model is
+not valid at the North and South poles, the Latitude is limited to -89.9 to 89.9. 
+See the World Magnetic Model section for more information. 
+
+
+6: Magnetic Vector ($PSPA,M<cr><lf>)
+Command used? False
+Description: Measures the magnetic field strength along each axis (X, Y, and Z) and total
+absolute field strength (Mt) in milligauss.
+ 
+
+7: Magnetic In-Field Calibration (See manual for step commands)
+Description: Controls the compass in the field calibration process. Field calibration involves
+multiple steps:
+1) Select the mode, 3D or 2D.
+2) Ensure the orientation is set to the default horizontal state
+3) Start the calibration
+4) Capture Points
+5) End point capture
+6) Allow the calibration algorithm to converge.
+7) Terminate calibration, causing values to be stored.
+ 
+The compass is already factory calibrated in an environment free from magnetic
+distortions. When the compass is first used in the application, it must learn the
+local magnetic distortions.
+ 
+7a: 3-D Field Calibration 
+Command used? False
+The 3-D calibration procedure is used for applications that move outside of a
+plane. It does not require full 360 deg pitch and roll capability for this
+calibration but will perform better given more range of movement.
+ 
+The results are stored in magFieldCalX, magFieldCalY and magFieldCalZ with the
+first value being offset and the second being a divisor.
+ 
+7b: 2-D Field Calibration 
+Command used? False
+The 2-D calibration procedure is used for applications that stay within a plane
+containing two of the navigation module’s axes and rotating about the third
+axis. The point capture positions should be chosen to be distributed well about
+the circle of rotation. The 2-D calibration differs from the 3-D in that it requires
+that the World Magnetic Model to have been run previously (see the
+$PSPA,AUTOVAR command).
+ 
+The results are stored in magFieldCalX, magFieldCalY and magFieldCalZ with the
+first value being offset and the second being a divisor.
+
+8: Gyro Calibration ($PSPA,GYROCAL<cr><lf>)
+Command used? False
+For this procedure, the navigation unit must be in a static position.    The gyro calibration procedure will complete automatically. The results are stored in 
+gyroFieldCalX, gyroFieldCalY and gyroFieldCalZ with the first value being offset and the next value being a divisor.
+
+9: Magnetic Adaption Error ($PSPA,MAGERR<cr><lf>)
+Command used? False
+Description: Indicates quality of the adaptive magnetic calibration process. Smaller values represent lower error corresponding to better magnetic calibration.
+ 
+10: Raw Acceleration ($PSPA,AR<cr><lf>)
+Command used? False
+Description: Reads current acceleration directly from accelerometers (AccelX, AccelY,
+AccelZ). These are raw sensor readings and do not yet have any calibration parameters applied.
+
+11: Raw Gyro ($PSPA,GR<cr><lf>)
+Command used? False
+Description: Reads current gyro directly from gyrometers (GyroX, GyroY, GyroZ).    These are
+raw sensor readings and do not yet have any calibration parameters applied.
+
+12: BAUD RATE ($PSPA,BAUD=<# Baud value><cr><lf>)
+Command used? False
+Description: The factory default BAUD setting is 115200 Baud (Baud value = 8). When the baud rate command is issued, the compass will echo back the command once at the current 
+baud rate and then again at the new baud rate. The baud rate will be stored in EPROM and will become the new operating communication rate for the UART. The baud rate will 
+apply to both Legacy, RFS, NorthTek and NMEA commands issued on the UART.
+
+13: Mounting Configuration
+    ($PSPA,MOUNT=<’H’ for horizontal or ‘V’ for vertical><cr><lf>)
+Command used? False
+Description: Sets the mounting orientation of the compass platform. The default orientation is horizontal (see Figure 4 in the Navigation Sensors Product Guide). To determine 
+the orientation setting, read the acceleration vector. When in a static level condition, Az should be approximately +1000mg and Ax and Ay should be close to zero.
+
+14: Read Transducers ($xxXDR<cr><lf>)
+Command used? False
+Description: Reads current magnetic heading, true heading, pitch, roll, temperature,
+and magnetic error. This command provides the most frequently used information in one command string.
+
+15: NMEA RFS Access ($PSRFS,<rfs variable name>,get<cr><lf>)
+Command used? False
+Most of the RFS variables are accessible via the NMEA protocol. Strings and BitFields are not supported (see the NMEA column in the 2.4.1 Variable Summary Table). This 
+section describes the method used to set or get these variables. Note: NMEA and RFS variable names are case sensitive and must be matched exactly. NMEA access to RFS 
+variables (see Variable Summary Table, 2.4.1 for variable availability) is with one of two commands, with options. The first command is to “get” or read a variable.
+
+16: NMEA/RFS RPT and GLOM ($PSRFS,yaw,get,RPT=5.0<cr><lf>)
+Command used? False
+NMEA/RFS commands may have the RPT=# option applied to make an output repeat at the specified rate. In addition, NMEA/RFS commands allow additional (up to 8) NMEA/RFS 
+commands to be “GLOM”d onto the current repeating output. This is best described by the following example that shows how to output the magnetic heading (yaw) at a 5 
+second rate and to GLOM on the true heading (yawt) at the same rate.
+
