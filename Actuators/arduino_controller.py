@@ -3,7 +3,8 @@ from enum import Enum
 import serial
 import time
 
-class ArduinoActions(Enum):
+
+class ArduinoAction(Enum):
     """
     Enumerated representation of all of the possible actions for the Arduino.
     Allows conversion of useful names to string that the Arduino understands and can be sent to the Arduino over serial.
@@ -39,7 +40,7 @@ class ArduinoController:
         self.arduino = serial.Serial(self.arduino_port, self.baud_rate, timeout=self.time_out)
         time.sleep(self.time_out)
         self.arduino.flush()
-        self.send(ArduinoActions.START)
+        self.send(ArduinoAction.START)
         self.receive(receipt="arduino ready")
         self.arduino.flush()
 
@@ -49,8 +50,8 @@ class ArduinoController:
         If the str Keyword Arg receipt is not modified it defaults to the value "status: done".
         If the Arduino returns the str "killed" this method will return.
 
-        Note: I'm realizing it may be beneficial to implement multi-threading in the RobotController Class.
-        If that happens all methods in this class should impose a lock until a ack is received.
+        Note: I'm realizing it may be beneficial to implement multiprocessing in the RobotController Class.
+        If that happens all methods in this class should impose a lock until an ack is received.
 
         :param receipt: str to wait to receive from the Arduino via serial. Represents a TCP ACK.
         :return: str representation of the value received from the Arduino over serial.
@@ -65,7 +66,7 @@ class ArduinoController:
             time.sleep(self.time_out * 0.01)
         return s
 
-    def send(self, command: str) -> None:
+    def send(self, command: ArduinoAction) -> None:
         """
         Sends the string command to the Arduino over serial.
         :param command: str representation of a command to send to the Arduino.
@@ -88,7 +89,7 @@ class ArduinoController:
         s: str = ""
         while s != "status: killed":
             s = self.arduino.readline().decode('utf-8').rstrip()
-            self.send(ArduinoActions.KILL)
+            self.send(ArduinoAction.KILL.value)
             time.sleep(0.01)
         self.arduino.flush()
         self.arduino.close()
@@ -122,17 +123,19 @@ class ArduinoController:
             print("command not recognized")
         self.receive()
 
-    def send_arduino_command(self, arduino_action: str, arduino_receipt: str = "status: done") -> bool:
+    def send_arduino_command(self, arduino_action: ArduinoAction, arduino_receipt: str = "status: done") -> bool:
         """
         Poor man's implementation of TCP networking protocol over serial.
         Essentially, send a str to the Arduino via serial and wait for a response.
-        :param arduino_action: Value from ArduinoActions Enum Class. See Class doc for explanation and example.
+        :param: arduino_action: Value from ArduinoActions Enum Class. See Class doc for explanation and example.
+        :param: arduino_receipt:
         :return bool representation of the success of sending the command to the Arduino. If the Arduino was killed at any point return False. Otherwise True.
         """
         self.send(arduino_action)
         return False if self.receive(receipt=arduino_receipt) == "killed" else True
-    
+
+
 if __name__ == '__main__':
     arduino: ArduinoController = ArduinoController()
     time.sleep(arduino.time_out)
-    arduino.send_arduino_command(ArduinoActions.KILL)
+    arduino.send_arduino_command(ArduinoAction.KILL)

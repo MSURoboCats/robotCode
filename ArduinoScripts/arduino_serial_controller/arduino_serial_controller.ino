@@ -38,7 +38,7 @@ void setup() {  //looks like this attaches the servos with a delay, the comment 
 void loop() {  //seems to be a method that tests all of the different ways the robot could move. -ZW
     if(Serial.available() > 0) {
       String incomingString = Serial.readStringUntil('\n');
-      Serial.print("recieved: ");
+      Serial.print("received: ");
       Serial.println(incomingString);
       if(killFlag == 0) {
         neut();
@@ -66,10 +66,10 @@ void loop() {  //seems to be a method that tests all of the different ways the r
           dive();
           neut();
         } else if (incomingString == "hoverForward") {
-          hoverforward();
+          hoverForward();
           neut();
         } else if (incomingString == "hoverSpin") {
-          hoverspin();
+          hoverSpin();
           neut();
         } else if (incomingString == "all") {
           all();
@@ -155,7 +155,7 @@ void spin() {
     delay(3000);
 }
 
-void hoverspin() {
+void hoverSpin() {
     //Serial.println("hover spin");
     servo2.writeMicroseconds(forward);
     servo3.writeMicroseconds(forward);
@@ -166,7 +166,7 @@ void hoverspin() {
     delay(1000);
 }
 
-void hoverforward() {
+void hoverForward() {
     //Serial.println("hover forward");
     servo2.writeMicroseconds(reverse);
     servo3.writeMicroseconds(forward);
