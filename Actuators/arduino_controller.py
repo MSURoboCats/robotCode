@@ -30,21 +30,29 @@ class ArduinoController:
     Class that can be instantiated to control an Arduino and send it commands over serial.
     """
 
-    def __init__(self, *, arduino_port: str = '/dev/ttyACM0', baud_rate: int = 115200, time_out: int = 1):
+    def __init__(self, *, arduino_port: str = '/dev/ttyACM0', baud_rate: int = 115200, time_out: int = 1,
+                 name: str = "Impeller Controller", arduino_type: str = "mega"):
         """
         Initializes the Arduino and connection.
         Starts the Arduino.
         arduino_port, baud_rate, time_out default values can be overridden by passing values into the constructor on instantiation.
         """
+        self.name: str = name
+        self.arduino_type: str = arduino_type
         self.arduino_port: str = arduino_port
         self.baud_rate: int = baud_rate
         self.time_out: int = time_out
-        self.arduino = serial.Serial(self.arduino_port, self.baud_rate, timeout=self.time_out)
-        time.sleep(self.time_out)
-        self.arduino.flush()
-        self.send(ArduinoAction.START)
-        self.receive(receipt="arduino ready")
-        self.arduino.flush()
+        try:
+            self.arduino = serial.Serial(self.arduino_port, self.baud_rate, timeout=self.time_out)
+            time.sleep(self.time_out)
+            self.arduino.flush()
+            self.send(ArduinoAction.START)
+            self.receive(receipt="arduino ready")
+            self.arduino.flush()
+        except serial.serialutil.SerialException:
+            StaticUtilities.logger.error(f"Failed to initialize {self.name} Arduino {self.arduino_type} on {self.arduino_port} at {self.baud_rate}")
+        else:
+            StaticUtilities.logger.info(f"{self.name} Arduino {self.arduino_type} initialized on {self.arduino_port} at {self.baud_rate}")
 
     def receive(self, *, receipt: str = "status: done") -> str:
         """

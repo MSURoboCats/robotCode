@@ -8,8 +8,8 @@ from static_utilities import StaticUtilities
 
 class ImuAhrsSparton:
 
-    def __init__(self, *, port: str = "COM5", baud_rate: int = 115200):
-        self.name: str = "AHRS Sparton IMU"
+    def __init__(self, *, port: str = "COM5", baud_rate: int = 115200, name: str = "AHRS Sparton IMU"):
+        self.name: str = name
         self.port: str = port  # COM5 on Josh PC
         self.baud_rate: int = baud_rate
         self.fs_sample_rate: float = 100.0  # in Hz
@@ -17,8 +17,13 @@ class ImuAhrsSparton:
         self.cutoff_frequency: float = self.fs_sample_rate / 2  # Desired cutoff frequency of the filter, Hz, Sightly higher than actual 1.2 Hznyq = 0.5 * fs
         self.nyq_nyquist_frequency: float = 0.5 * self.fs_sample_rate  # Nyquist Frequencyorder = 2, Sin wave can be approx represented as quadratic ##JG-?
         self.n_number_of_samples: int = int(self.T_period * self.fs_sample_rate)  # Total number of samples
-        self.ser = serial.Serial(self.port, self.baud_rate)
-        self.ser.flush()
+        try:
+            self.ser = serial.Serial(self.port, self.baud_rate)
+            self.ser.flush()
+        except serial.serialutil.SerialException:
+            StaticUtilities.logger.error(f"Failed to initialize {self.name} on {self.port} at {self.baud_rate}")
+        else:
+            StaticUtilities.logger.info(f"{self.name} initialized on {self.port} at {self.baud_rate}")
 
     def get_imu_data(self, command):
         self.ser.write(command.encode())
