@@ -8,7 +8,7 @@ from static_utilities import StaticUtilities
 
 class ArduinoAction(Enum):
     """
-    Enumerated representation of all of the possible actions for the Arduino.
+    Enumerated representation of all the possible actions for the Arduino.
     Allows conversion of useful names to string that the Arduino understands and can be sent to the Arduino over serial.
     For example: the value of ArduinoActions.DIVE is the str "dive".
     Sending this to the Arduino over serial with the method ArduinoController.send_arduino_command()
@@ -63,7 +63,7 @@ class ArduinoController:
         Note: I'm realizing it may be beneficial to implement multiprocessing in the RobotController Class.
         If that happens all methods in this class should impose a lock until an ack is received.
 
-        :param receipt: str to wait to receive from the Arduino via serial. Represents a TCP ACK.
+        :param: receipt: str to wait to receive from the Arduino via serial. Represents a TCP ACK.
         :return: str representation of the value received from the Arduino over serial.
         """
         s: str = ""
@@ -79,7 +79,7 @@ class ArduinoController:
     def send(self, command: ArduinoAction) -> None:
         """
         Sends the string command to the Arduino over serial.
-        :param command: str representation of a command to send to the Arduino.
+        :param: command: str representation of a command to send to the Arduino.
         :return: None.
         """
         command: str = command.value
@@ -103,7 +103,7 @@ class ArduinoController:
             time.sleep(0.01)
         self.arduino.flush()
         self.arduino.close()
-        StaticUtilities.logger.info(f"Arduino on {self.arduino_port} killed. Restart Arduino to continue.")
+        StaticUtilities.logger.warning(f"Arduino on {self.arduino_port} killed. Restart Arduino to continue.")
 
     def legacy_send_arduino_command(self, entry: str):
         """
@@ -139,7 +139,7 @@ class ArduinoController:
         Essentially, send a str to the Arduino via serial and wait for a response.
         :param: arduino_action: Value from ArduinoActions Enum Class. See Class doc for explanation and example.
         :param: arduino_receipt:
-        :return bool representation of the success of sending the command to the Arduino. If the Arduino was killed at any point return False. Otherwise True.
+        :return bool representation of the success of sending the command to the Arduino. If the Arduino was killed at any point return False, otherwise True.
         """
         self.send(arduino_action)
         return False if self.receive(receipt=arduino_receipt) == "killed" else True
