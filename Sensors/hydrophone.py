@@ -1,0 +1,2 @@
+class Hydrophone:
+    pass

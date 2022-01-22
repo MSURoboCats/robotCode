@@ -1,0 +1,2 @@
+class Vision:
+    pass
