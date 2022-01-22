@@ -6,6 +6,7 @@ submarine is ran/tested.
 
 """
 
+
 class Main:
 
     def __init__(self):
@@ -14,5 +15,7 @@ class Main:
     def main(self):
         print("TODO: prompt for run mode and execute accordingly")
 
-m = Main()
-m.main()
+
+if __name__ == "__main__":
+    m = Main()
+    m.main()
