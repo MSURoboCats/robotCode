@@ -3,6 +3,8 @@ from enum import Enum
 import serial
 import time
 
+from static_utilities import StaticUtilities
+
 
 class ArduinoAction(Enum):
     """
@@ -60,7 +62,7 @@ class ArduinoController:
         while s != receipt:
             s = self.arduino.readline().decode('utf-8').rstrip()
             if s != "":
-                print(s)
+                StaticUtilities.logger.info(f"{s}")
             if s == "status: killed":
                 return "killed"
             time.sleep(self.time_out * 0.01)
@@ -93,7 +95,7 @@ class ArduinoController:
             time.sleep(0.01)
         self.arduino.flush()
         self.arduino.close()
-        print(f"Arduino on {self.arduino_port} killed. Restart Arduino to continue.")
+        StaticUtilities.logger.info(f"Arduino on {self.arduino_port} killed. Restart Arduino to continue.")
 
     def legacy_send_arduino_command(self, entry: str):
         """
@@ -120,7 +122,7 @@ class ArduinoController:
         elif entry == "kill":
             self.arduino.write(b"kill\n")
         else:
-            print("command not recognized")
+            StaticUtilities.logger.info(f"command not recognized")
         self.receive()
 
     def send_arduino_command(self, arduino_action: ArduinoAction, arduino_receipt: str = "status: done") -> bool:

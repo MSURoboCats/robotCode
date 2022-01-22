@@ -3,6 +3,8 @@ import numpy as np
 import re
 import time
 
+from static_utilities import StaticUtilities
+
 
 class ImuAhrsSparton:
 
@@ -25,41 +27,42 @@ class ImuAhrsSparton:
         return values
 
     def get_dist_north(self):
-        print("Getting the heading away from north!")
+        StaticUtilities.logger.info("Getting the heading away from north")
         # Call the get data func at data point $PSPA,QUAT\r\n
         # See manual for locations of data
         # This will return a float from -1 to 1
         magnetometer = self.get_imu_data("$PSPA,QUAT\r\n")
         # Make it the true hedding by multiplying by 180
         heading = ((magnetometer[0]) * 180)
-        print(magnetometer[0])
+        StaticUtilities.logger.info(f"{magnetometer[0]}")
         # Returns deg off of north
         return heading
 
     def get_heading(self):
-        print("Getting the true heading!")
+        StaticUtilities.logger.info("Getting the true heading!")
         # Call the get data func at data point $PSPA,QUAT\r\n
         # See manual for locations of data
         # This will return a float from -1 to 1
         magnetometer = self.get_imu_data("$PSPA,QUAT\r\n")
         # Make it the true heading by multiplying by 180
         heading = ((magnetometer[0] + 1) * 180)
-        print(magnetometer[0])
+        StaticUtilities.logger.info(f"{magnetometer[0]}")
         # Returns deg off of north
         return heading
 
     def get_pitch(self):
-        print("Getting the pitch!")
+        StaticUtilities.logger.info("Getting the pitch!")
         # Call the get data func at data point $PSP
         # See manual for locations of data
         # This will return a pitch, roll,
         pitch = self.get_imu_data("$PSPA,PR\n")
-        print(pitch[1])
+        StaticUtilities.logger.info(f"{pitch[1]}")
         # Returns deg off of level
         return pitch
 
     def get_roll(self):
         # Not currently implemented
+        StaticUtilities.logger.warning("Getting the roll: Not Implemented")
         t = 0
         return t
 
@@ -67,14 +70,13 @@ class ImuAhrsSparton:
         """
         Gets the pitch according to the TyphoonII IMU for testing sensor
         """
-        print("Main run!")
-        print(self.get_pitch())
+        StaticUtilities.logger.info(f"Running test_pitch\n{self.get_pitch()}")
         time.sleep(5)
-        print(self.get_pitch())
+        StaticUtilities.logger.info(f"{self.get_pitch()}")
         time.sleep(5)
-        print(self.get_pitch())
+        StaticUtilities.logger.info(f"{self.get_pitch()}")
         time.sleep(5)
-        print("Done!")
+        StaticUtilities.logger.info(f"{self.get_pitch()}\ntest_pitch Done")
 
 
 if __name__ == "__main__":

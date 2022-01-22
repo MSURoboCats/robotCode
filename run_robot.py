@@ -5,6 +5,7 @@ This is the file from which everything on the
 submarine is ran/tested.
 
 """
+from static_utilities import StaticUtilities
 
 
 class Main:
@@ -13,7 +14,7 @@ class Main:
         pass
 
     def main(self):
-        print("TODO: prompt for run mode and execute accordingly")
+        StaticUtilities.logger.info("TODO: prompt for run mode and execute accordingly")
 
 
 if __name__ == "__main__":
