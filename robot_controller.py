@@ -32,3 +32,6 @@ class RobotController:
 
     def test(self) -> None:
         pass
+
+    def control_with_heading(self):
+        self.arduino.send_imu_control([])

@@ -23,6 +23,7 @@ class ArduinoAction(Enum):
     KILL = "kill"
     TEST_ALL_THRUSTERS = "all"
     SEQUENTIALLY_TEST_ALL_THRUSTERS = "seqTest"
+    CONTROL_WITH_IMU = "imuControl"
 
 
 class ArduinoController:
@@ -85,6 +86,10 @@ class ArduinoController:
         command: str = command.value
         command += "\n"
         self.arduino.write(command.encode('UTF-8'))
+        return
+
+    def send_imu_control(self, data):
+        self.arduino.write(f"{ArduinoAction.CONTROL_WITH_IMU.value}::{data}\n".encode('UTF-8'))
         return
 
     def kill(self) -> None:
