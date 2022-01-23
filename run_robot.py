@@ -16,7 +16,7 @@ class Main:
 
     def main(self):
         StaticUtilities.logger.info("TODO: prompt for run mode and execute accordingly")
-        robot_controller: RobotController = RobotController()
+        robot_controller: RobotController = RobotController(no_gui=True, number_of_processes=3)
         robot_controller.autonomous()
 
 
