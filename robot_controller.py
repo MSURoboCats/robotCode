@@ -3,7 +3,6 @@ import multiprocessing
 from multiprocessing import Process, Queue
 
 from Actuators.arduino_controller import ArduinoController
-from Sensors.depth_pressure import DepthPressure
 from Sensors.imu import ImuAhrsSparton
 from Sensors.vision import Vision
 from Sensors.hydrophone import Hydrophone
@@ -15,10 +14,13 @@ class RobotController:
 
     def __init__(self, no_gui: bool = False, number_of_processes: int = (multiprocessing.cpu_count() - 1)) -> None:
         self.imu: ImuAhrsSparton = ImuAhrsSparton(port="COM5", baud_rate=115200)
-        self.arduino: ArduinoController = ArduinoController(arduino_port="/dev/ttyACM0")
+        self.arduino_thruster_controller: ArduinoController = ArduinoController(arduino_port="/dev/ttyACM0",
+                                                                                name="Thruster Controller")
+        self.arduino_depth_pressure_controller: ArduinoController = ArduinoController(arduino_port="/dev/ttyACM1",
+                                                                                      name="Depth Pressure Controller",
+                                                                                      arduino_type="Uno")
         self.vision: Vision = Vision()
         self.gui: GUI = GUI() if no_gui is False else None
-        self.depth_pressure: DepthPressure = DepthPressure()
         self.number_hydrophones: int = 3
         self.hydrophones: List[Hydrophone] = []
         for i in range(self.number_hydrophones):

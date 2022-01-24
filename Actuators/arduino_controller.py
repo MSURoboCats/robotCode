@@ -32,7 +32,7 @@ class ArduinoController:
     """
 
     def __init__(self, *, arduino_port: str = '/dev/ttyACM0', baud_rate: int = 115200, time_out: int = 1,
-                 name: str = "Impeller Controller", arduino_type: str = "mega"):
+                 name: str = "Arduino Controller", arduino_type: str = "Mega"):
         """
         Initializes the Arduino and connection.
         Starts the Arduino.
@@ -108,7 +108,7 @@ class ArduinoController:
             time.sleep(0.01)
         self.arduino.flush()
         self.arduino.close()
-        StaticUtilities.logger.warning(f"Arduino on {self.arduino_port} killed. Restart Arduino to continue.")
+        StaticUtilities.logger.warning(f"Arduino {self.arduino_type} on {self.arduino_port} killed. Restart Arduino {self.arduino_type} to continue.")
 
     def legacy_send_arduino_command(self, entry: str):
         """
