@@ -2,7 +2,7 @@ from typing import List
 import multiprocessing
 from multiprocessing import Process, Queue
 
-from Actuators.arduino_controller import ArduinoController
+from Actuators.arduino_controller import ArduinoController, ArduinoAction
 from Sensors.imu import ImuAhrsSparton
 from Sensors.vision import Vision
 from Sensors.hydrophone import Hydrophone
@@ -16,7 +16,7 @@ class RobotController:
         self.imu: ImuAhrsSparton = ImuAhrsSparton(port="COM5", baud_rate=115200)
         self.arduino_thruster_controller: ArduinoController = ArduinoController(arduino_port="/dev/ttyACM0",
                                                                                 name="Thruster Controller")
-        self.arduino_depth_pressure_controller: ArduinoController = ArduinoController(arduino_port="/dev/ttyACM1",
+        self.arduino_depth_pressure_controller: ArduinoController = ArduinoController(arduino_port="COM7",
                                                                                       name="Depth Pressure Controller",
                                                                                       arduino_type="Uno")
         self.vision: Vision = Vision()
@@ -35,11 +35,12 @@ class RobotController:
         StaticUtilities.logger.info(f"{RobotController.__name__} initialized")
 
     def autonomous(self) -> None:
-        pass
+        self.arduino_depth_pressure_controller.send(ArduinoAction.ALL_PRESSURE_DEPTH_MEASURES)
+        StaticUtilities.logger.info(f"{self.arduino_depth_pressure_controller.receive()}")
 
     def test(self) -> None:
         pass
 
     def control_with_heading(self):
         # Make this run on a process alongside main?
-        self.arduino.send_imu_control([])
+        self.arduino_thruster_controller.send_imu_control([])

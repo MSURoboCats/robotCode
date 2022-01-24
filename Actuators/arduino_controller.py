@@ -50,6 +50,7 @@ class ArduinoController:
         self.time_out: int = time_out
         try:
             self.arduino = serial.Serial(self.arduino_port, self.baud_rate, timeout=self.time_out)
+            self.receive(receipt="arduino starting...")
             time.sleep(self.time_out)
             self.arduino.flush()
             self.send(ArduinoAction.START)
@@ -60,7 +61,7 @@ class ArduinoController:
         else:
             StaticUtilities.logger.info(f"{self.name} Arduino {self.arduino_type} initialized on {self.arduino_port} at {self.baud_rate}")
 
-    def receive(self, *, receipt: str = "status: done") -> str:
+    def receive(self, *, receipt: str = "status: done", receive_data: bool = True) -> str:
         """
         Waits to receive a response from the Arduino via serial that matches the str receipt.
         If the str Keyword Arg receipt is not modified it defaults to the value "status: done".
@@ -72,15 +73,17 @@ class ArduinoController:
         :param: receipt: str to wait to receive from the Arduino via serial. Represents a TCP ACK.
         :return: str representation of the value received from the Arduino over serial.
         """
+        data: str = ""
         s: str = ""
         while s != receipt:
+            data = s
             s = self.arduino.readline().decode('utf-8').rstrip()
             if s != "":
-                StaticUtilities.logger.info(f"{s}")
+                StaticUtilities.logger.debug(f"{self.name}: {s}")
             if s == "status: killed":
                 return "killed"
             time.sleep(self.time_out * 0.01)
-        return s
+        return data if receive_data else s
 
     def send(self, command: ArduinoAction) -> None:
         """
