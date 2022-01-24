@@ -78,7 +78,7 @@ void loop() {  //seems to be a method that tests all of the different ways the r
           sequentialTestAll();
           neut();
         } else if (incomingString.startsWith("imuControl")) {
-          imuControl(incomingString.substring(13));
+          imuControl(incomingString.substring(12));
         } else {
           Serial.println("command not recognized");
           neut();
@@ -291,4 +291,5 @@ void testMotor8() {
 }
 
 void imuControl(String data) {
+  Serial.println(data);
 }

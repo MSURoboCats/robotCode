@@ -14,9 +14,9 @@ class RobotController:
 
     def __init__(self, no_gui: bool = False, number_of_processes: int = (multiprocessing.cpu_count() - 1)) -> None:
         self.imu: ImuAhrsSparton = ImuAhrsSparton(port="COM5", baud_rate=115200)
-        self.arduino_thruster_controller: ArduinoController = ArduinoController(arduino_port="/dev/ttyACM0",
+        self.arduino_thruster_controller: ArduinoController = ArduinoController(arduino_port="COM7",
                                                                                 name="Thruster Controller")
-        self.arduino_depth_pressure_controller: ArduinoController = ArduinoController(arduino_port="COM7",
+        self.arduino_depth_pressure_controller: ArduinoController = ArduinoController(arduino_port="/dev/ttyACM1",
                                                                                       name="Depth Pressure Controller",
                                                                                       arduino_type="Uno")
         self.vision: Vision = Vision()
@@ -35,12 +35,14 @@ class RobotController:
         StaticUtilities.logger.info(f"{RobotController.__name__} initialized")
 
     def autonomous(self) -> None:
-        self.arduino_depth_pressure_controller.send(ArduinoAction.ALL_PRESSURE_DEPTH_MEASURES)
-        StaticUtilities.logger.info(f"{self.arduino_depth_pressure_controller.receive()}")
+        self.arduino_thruster_controller.send_imu_control("test_data")
+        StaticUtilities.logger.info(f"{self.arduino_thruster_controller.receive()}")
+        # self.arduino_depth_pressure_controller.send(ArduinoAction.ALL_PRESSURE_DEPTH_MEASURES)
+        # StaticUtilities.logger.info(f"{self.arduino_depth_pressure_controller.receive()}")
 
     def test(self) -> None:
         pass
 
     def control_with_heading(self):
         # Make this run on a process alongside main?
-        self.arduino_thruster_controller.send_imu_control([])
+        self.arduino_thruster_controller.send_imu_control("")

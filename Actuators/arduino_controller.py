@@ -96,7 +96,7 @@ class ArduinoController:
         self.arduino.write(command.encode('UTF-8'))
         return
 
-    def send_imu_control(self, data):
+    def send_imu_control(self, data: str):
         self.arduino.write(f"{ArduinoAction.CONTROL_WITH_IMU.value}::{data}\n".encode('UTF-8'))
         return
 
