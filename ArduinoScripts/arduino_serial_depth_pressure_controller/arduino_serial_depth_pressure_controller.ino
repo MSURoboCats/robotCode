@@ -6,11 +6,8 @@ MS5837 sensor;
 int startFlag = 1; //false
 int killFlag = 1; //false
 
-int forward = 1250;
-int testingDelay = 1000;
-
 void setup() {
-    Serial.begin(9600);
+    Serial.begin(115200);
     Serial.println("arduino starting...");
     Wire.begin();
     
@@ -42,14 +39,26 @@ void loop() {
           return;
         } else if(incomingString == "pressure"){
           Serial.println(sensor.pressure());
-        } else if (incomingString == "temp") {
+        } else if (incomingString == "temperature") {
           Serial.println(sensor.temperature());
         } else if (incomingString == "altitude") {
           Serial.println(sensor.altitude());
         } else if (incomingString == "depth") {
           Serial.println(sensor.depth());
         } else if (incomingString == "measures") {
-          Serial.print(“pressure: “ + sensor.pressure() + “, depth: “ + sensor.depth() + “, altitude: “ + sensor.altitude() + “, temp: “ + sensor.temperature());
+          String pressure = String(sensor.pressure());
+          String depth = String(sensor.depth());
+          String altitude = String(sensor.altitude());
+          String temperature = String(sensor.temperature());
+          String str = "pressure: ";
+          str += pressure;
+          str += ", depth: ";
+          str += depth;
+          str += ", altitude: ";
+          str += altitude;
+          str += ", temp: ";
+          str += temperature;
+          Serial.println(str);
         } else {
           Serial.println("command not recognized");
         }

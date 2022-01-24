@@ -77,8 +77,8 @@ void loop() {  //seems to be a method that tests all of the different ways the r
         } else if (incomingString == "seqTest") {
           sequentialTestAll();
           neut();
-        } else if (incomingString.startsWith("imuControl") {
-          imuControl(incomingString.substring(13))
+        } else if (incomingString.startsWith("imuControl")) {
+          imuControl(incomingString.substring(13));
         } else {
           Serial.println("command not recognized");
           neut();

@@ -14,7 +14,7 @@ class ArduinoAction(Enum):
     Sending this to the Arduino over serial with the method ArduinoController.send_arduino_command()
     """
     START = "start"
-    FORWARD = "forward\n"
+    FORWARD = "forward"
     REVERSE = "reverse"
     NEUTRAL = "neutral"
     DIVE = "dive"
@@ -24,6 +24,11 @@ class ArduinoAction(Enum):
     TEST_ALL_THRUSTERS = "all"
     SEQUENTIALLY_TEST_ALL_THRUSTERS = "seqTest"
     CONTROL_WITH_IMU = "imuControl"
+    PRESSURE = "pressure"
+    TEMPERATURE = "temperature"
+    DEPTH = "depth"
+    ALTITUDE = "altitude"
+    ALL_PRESSURE_DEPTH_MEASURES = "measures"
 
 
 class ArduinoController:
