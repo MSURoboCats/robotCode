@@ -2,7 +2,7 @@
 #include "MS5837.h"
 #include <Servo.h>
 
-MS5837 sensor;
+MS5837 depth_pressure_sensor;
 
 Servo servo2;
 Servo servo3;
@@ -35,7 +35,7 @@ void setup() {  //looks like this attaches the servos with a delay, the comment 
     // We can't continue with the rest of the program unless we can initialize the sensor
     while (!sensor.init()) {
       Serial.println("Blue Robotics Bar02: Init failed");
-      sensor.setFluidDensity(1.225); // kg/m^3 (1.225 air, 997 freshwater, 1029 for seawater)
+      depth_pressure_sensor.setFluidDensity(1.225); // kg/m^3 (1.225 air, 997 freshwater, 1029 for seawater)
     }
     
     servo2.attach(2);
@@ -94,18 +94,18 @@ void loop() {  //seems to be a method that tests all of the different ways the r
         } else if (incomingString.startsWith("imuControl")) {
           imuControl(incomingString.substring(12));
          } else if(incomingString == "pressure"){
-          Serial.println(sensor.pressure());
+          Serial.println(depth_pressure_sensor.pressure());
         } else if (incomingString == "temperature") {
-          Serial.println(sensor.temperature());
+          Serial.println(depth_pressure_sensor.temperature());
         } else if (incomingString == "altitude") {
-          Serial.println(sensor.altitude());
+          Serial.println(depth_pressure_sensor.altitude());
         } else if (incomingString == "depth") {
-          Serial.println(sensor.depth());
+          Serial.println(depth_pressure_sensor.depth());
         } else if (incomingString == "measures") {
-          String pressure = String(sensor.pressure());
-          String depth = String(sensor.depth());
-          String altitude = String(sensor.altitude());
-          String temperature = String(sensor.temperature());
+          String pressure = String(depth_pressure_sensor.pressure());
+          String depth = String(depth_pressure_sensor.depth());
+          String altitude = String(depth_pressure_sensor.altitude());
+          String temperature = String(depth_pressure_sensor.temperature());
           String str = "pressure: ";
           str += pressure;
           str += ", depth: ";
