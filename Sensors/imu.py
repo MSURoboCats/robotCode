@@ -43,7 +43,7 @@ class ImuAhrsSparton:
         # Returns deg off of north
         return heading
 
-    def get_heading(self):
+    def heading(self):
         StaticUtilities.logger.info("Getting the true heading!")
         # Call the get data func at data point $PSPA,QUAT\r\n
         # See manual for locations of data
@@ -55,7 +55,7 @@ class ImuAhrsSparton:
         # Returns deg off of north
         return heading
 
-    def get_pitch(self):
+    def pitch(self):
         StaticUtilities.logger.info("Getting the pitch!")
         # Call the get data func at data point $PSP
         # See manual for locations of data
@@ -65,23 +65,27 @@ class ImuAhrsSparton:
         # Returns deg off of level
         return pitch
 
-    def get_roll(self):
-        # Not currently implemented
+    def roll(self):
+        # TODO: Not currently implemented
         StaticUtilities.logger.warning("Getting the roll: Not Implemented")
         t = 0
         return t
+
+    def yaw(self):
+        # TODO
+        return
 
     def test_pitch(self) -> None:
         """
         Gets the pitch according to the TyphoonII IMU for testing sensor
         """
-        StaticUtilities.logger.info(f"Running test_pitch\n{self.get_pitch()}")
+        StaticUtilities.logger.info(f"Running test_pitch\n{self.pitch()}")
         time.sleep(5)
-        StaticUtilities.logger.info(f"{self.get_pitch()}")
+        StaticUtilities.logger.info(f"{self.pitch()}")
         time.sleep(5)
-        StaticUtilities.logger.info(f"{self.get_pitch()}")
+        StaticUtilities.logger.info(f"{self.pitch()}")
         time.sleep(5)
-        StaticUtilities.logger.info(f"{self.get_pitch()}\ntest_pitch Done")
+        StaticUtilities.logger.info(f"{self.pitch()}\ntest_pitch Done")
 
 
 if __name__ == "__main__":

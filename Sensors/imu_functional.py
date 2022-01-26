@@ -74,9 +74,14 @@ def get_pitch():
 
 
 def get_roll():
-    # Not currently implemented
+    # TODO: Not currently implemented
     t = 0
     return t
+
+
+def get_yaw():
+    # TODO
+    return
 
 
 if __name__ == "__main__":

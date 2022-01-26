@@ -33,10 +33,10 @@ void setup() {  //looks like this attaches the servos with a delay, the comment 
     // Initialize pressure sensor
     // Returns true if initialization was successful
     // We can't continue with the rest of the program unless we can initialize the sensor
-    while (!sensor.init()) {
-      Serial.println("Blue Robotics Bar02: Init failed");
-      depth_pressure_sensor.setFluidDensity(1.225); // kg/m^3 (1.225 air, 997 freshwater, 1029 for seawater)
-    }
+//    while (!sensor.init()) {
+//      Serial.println("Blue Robotics Bar02: Init failed");
+//      depth_pressure_sensor.setFluidDensity(1.225); // kg/m^3 (1.225 air, 997 freshwater, 1029 for seawater)
+//    }
     
     servo2.attach(2);
     servo3.attach(3);
@@ -69,26 +69,31 @@ void loop() {  //seems to be a method that tests all of the different ways the r
           Serial.println("status: killed");
           return;
         } else if(incomingString == "forward"){
+          neut();
           moveForward();
-          neut();
         } else if (incomingString == "reverse") {
-          moveReverse();
           neut();
+          moveReverse();
         } else if (incomingString == "neutral") {
           neut();
         } else if (incomingString == "dive") {
+          neut();
           dive();
-          neut();
         } else if (incomingString == "hoverForward") {
+          neut();
           hoverForward();
-          neut();
         } else if (incomingString == "hoverSpin") {
-          hoverSpin();
           neut();
+          hoverSpin();
+        } else if (incomingString == "surface") {
+          neut();
+          surface();
         } else if (incomingString == "all") {
+          neut();
           all();
           neut();
         } else if (incomingString == "seqTest") {
+          neut();
           sequentialTestAll();
           neut();
         } else if (incomingString.startsWith("imuControl")) {
@@ -133,7 +138,6 @@ void surface() {
     servo7.writeMicroseconds(forward);
     servo8.writeMicroseconds(forward);
     servo9.writeMicroseconds(reverse);
-    delay(6000);
 }
 
 void neut() {
@@ -147,21 +151,18 @@ void neut() {
     servo8.writeMicroseconds(neutral);
     servo9.writeMicroseconds(neutral);
     delay(500);
-    
 }
 
 void moveForward() {
     //Serial.println("forward");
     servo2.writeMicroseconds(reverse);
     servo3.writeMicroseconds(forward);
-    delay(3000);
 }
 
 void moveReverse() {
     //Serial.println("reverse");
     servo2.writeMicroseconds(forward);
     servo3.writeMicroseconds(reverse);
-    delay(3000);
 }
 
 void dive() {
@@ -181,14 +182,12 @@ void diveForward() {
     servo9.writeMicroseconds(forward);
     servo2.writeMicroseconds(reverse);
     servo3.writeMicroseconds(forward);
-    delay(6000);   
 }
 
 void spin() {
     //Serial.println("spin");
     servo2.writeMicroseconds(forward);
     servo3.writeMicroseconds(forward);
-    delay(3000);
 }
 
 void hoverSpin() {
@@ -199,7 +198,6 @@ void hoverSpin() {
     servo7.writeMicroseconds(reverse-25);
     servo8.writeMicroseconds(reverse-25);
     servo9.writeMicroseconds(forward+25);
-    delay(1000);
 }
 
 void hoverForward() {
@@ -210,7 +208,6 @@ void hoverForward() {
     servo7.writeMicroseconds(reverse-25);
     servo8.writeMicroseconds(reverse-25);
     servo9.writeMicroseconds(forward+25);
-    delay(3500);
 }
 
 void all() {

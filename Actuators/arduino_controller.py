@@ -19,7 +19,8 @@ class ArduinoAction(Enum):
     NEUTRAL = "neutral"
     DIVE = "dive"
     HOVER_FORWARD = "hoverForward"
-    HOVER_REVERSE = "hoverSpin"
+    HOVER_SPIN = "hoverSpin"
+    SURFACE = "surface"
     KILL = "kill"
     TEST_ALL_THRUSTERS = "all"
     SEQUENTIALLY_TEST_ALL_THRUSTERS = "seqTest"
@@ -61,7 +62,7 @@ class ArduinoController:
         else:
             StaticUtilities.logger.info(f"{self.name} Arduino {self.arduino_type} initialized on {self.arduino_port} at {self.baud_rate}")
 
-    def receive(self, *, receipt: str = "status: done", receive_data: bool = True) -> str:
+    def receive(self, *, receipt: str = "status: done", receive_data: bool = False) -> str:
         """
         Waits to receive a response from the Arduino via serial that matches the str receipt.
         If the str Keyword Arg receipt is not modified it defaults to the value "status: done".
@@ -94,10 +95,6 @@ class ArduinoController:
         command: str = command.value
         command += "\n"
         self.arduino.write(command.encode('UTF-8'))
-        return
-
-    def send_imu_control(self, data: str):
-        self.arduino.write(f"{ArduinoAction.CONTROL_WITH_IMU.value}::{data}\n".encode('UTF-8'))
         return
 
     def kill(self) -> None:
@@ -156,6 +153,34 @@ class ArduinoController:
         """
         self.send(arduino_action)
         return False if self.receive(receipt=arduino_receipt) == "killed" else True
+
+    # TODO: most of the following methods should probably be moved into a child class but is fine as long as there is only one arduino
+    def drive_thruster(self, thruster_number: int):  # TODO
+        return
+
+    def send_imu_control(self, data: str):  # TODO
+        self.arduino.write(f"{ArduinoAction.CONTROL_WITH_IMU.value}::{data}\n".encode('UTF-8'))
+        return
+
+    def altitude(self) -> float:
+        self.send(ArduinoAction.ALTITUDE)
+        s: str = self.receive(receive_data=True)
+        return float(s)
+
+    def depth(self) -> float:
+        self.send(ArduinoAction.DEPTH)
+        s: str = self.receive(receive_data=True)
+        return float(s)
+
+    def temperature(self) -> float:
+        self.send(ArduinoAction.TEMPERATURE)
+        s: str = self.receive(receive_data=True)
+        return float(s)
+
+    def pressure(self) -> float:
+        self.send(ArduinoAction.PRESSURE)
+        s: str = self.receive(receive_data=True)
+        return float(s)
 
 
 if __name__ == '__main__':
