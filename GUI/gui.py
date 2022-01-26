@@ -1,9 +1,13 @@
+import logging
 import sys
 
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton
+from pyqt5_plugins.examplebuttonplugin import QtGui
 
+from GUI.qt_handler import QTextEditLogger
 from Actuators.arduino_controller import ArduinoAction
+from GUI.gui_console import GUIConsole
 from robot_controller import RobotController
 from static_utilities import StaticUtilities
 
@@ -11,7 +15,9 @@ from static_utilities import StaticUtilities
 class GUI(object):
 
     def __init__(self) -> None:
-        self.robot_controller: RobotController = RobotController(number_of_processes=1)
+        self.gui_logging_handler = None
+        self.robot_controller = None
+        self.file_logging_handler = None
         self.app = QApplication(sys.argv)
         self.resolution = self.app.desktop().screenGeometry()
         self.width, self.height = self.resolution.width(), self.resolution.height()
@@ -21,9 +27,24 @@ class GUI(object):
         self.window.setGeometry(int(self.window_width/2), int(self.window_height/2), int(self.window_width), int(self.window_height))
         StaticUtilities.logger.info(f"GUI initialized")
 
+    def _setup_logging_handlers(self) -> None:
+        self.console.clear()
+        self.gui_logging_handler = QTextEditLogger(self.console)
+        self.gui_logging_handler.setFormatter(
+            logging.Formatter('%(asctime)s %(levelname)s %(module)s %(funcName)s %(message)s'))
+        self.gui_logging_handler.setLevel(logging.DEBUG)
+        StaticUtilities.logger.addHandler(self.gui_logging_handler)
+        self.file_logging_handler = logging.FileHandler('gui_log.log')
+        self.file_logging_handler.setFormatter(
+            logging.Formatter('%(asctime)s %(levelname)s %(module)s %(funcName)s %(message)s'))
+        self.file_logging_handler.setLevel(logging.DEBUG)
+        StaticUtilities.logger.addHandler(self.file_logging_handler)
+
     def gui(self) -> None:
         self._setupUi()
         self._connections()
+        self._setup_logging_handlers()
+        self.robot_controller = RobotController(number_of_processes=1)
         self.window.show()
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.NEUTRAL)
         try:

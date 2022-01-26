@@ -5,7 +5,12 @@ This is the file from which everything on the
 submarine is ran/tested.
 
 """
-from gui import GUI
+import sys
+
+from pyqt5_plugins.examplebuttonplugin import QtGui
+
+from GUI.gui import GUI
+from GUI.gui_console import GUIConsole
 from robot_controller import RobotController
 from static_utilities import StaticUtilities
 
