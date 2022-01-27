@@ -1,5 +1,6 @@
+#include <MS5837.h>
+
 #include <Wire.h>
-#include "MS5837.h"
 #include <Servo.h>
 
 MS5837 depth_pressure_sensor;
@@ -67,6 +68,14 @@ void loop() {  //seems to be a method that tests all of the different ways the r
           killFlag = 0;
           Serial.println("Mega Halted: Power Cycle to restart");
           Serial.println("status: killed");
+          servo2.detach(2);
+          servo3.detach(3);
+          servo4.detach(4);
+          servo5.detach(5);
+          servo6.detach(6);
+          servo7.detach(7);
+          servo8.detach(8);
+          servo9.detach(9);
           return;
         } else if(incomingString == "forward"){
           neut();
@@ -219,7 +228,6 @@ void all() {
     servo7.writeMicroseconds(reverse);
     servo8.writeMicroseconds(reverse);
     servo9.writeMicroseconds(reverse);
-    delay(3500);
 }
 
 void sequentialTestAll(){
@@ -319,6 +327,10 @@ void testMotor8() {
   delay(testingDelay);
   servo9.writeMicroseconds(reverse);
   delay(testingDelay);
+}
+
+void motor1(int percentage) {
+  servo2.writeMicroseconds(map(percentage, reverse, forward, -100, 100));
 }
 
 void imuControl(String data) {
