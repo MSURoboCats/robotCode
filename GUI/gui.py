@@ -7,7 +7,6 @@ from pyqt5_plugins.examplebuttonplugin import QtGui
 
 from GUI.qt_handler import QTextEditLogger
 from Actuators.arduino_controller import ArduinoAction
-from GUI.gui_console import GUIConsole
 from robot_controller import RobotController
 from static_utilities import StaticUtilities
 
