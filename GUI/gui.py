@@ -7,7 +7,6 @@ from pyqt5_plugins.examplebuttonplugin import QtGui
 
 from GUI.qt_handler import QTextEditLogger
 from Actuators.arduino_controller import ArduinoAction
-from GUI.gui_console import GUIConsole
 from robot_controller import RobotController
 from static_utilities import StaticUtilities
 
@@ -31,7 +30,7 @@ class GUI(object):
         self.console.clear()
         self.gui_logging_handler = QTextEditLogger(self.console)
         self.gui_logging_handler.setFormatter(
-            logging.Formatter('%(asctime)s %(levelname)s %(module)s %(funcName)s %(message)s'))
+            logging.Formatter('%(message)s'))
         self.gui_logging_handler.setLevel(logging.DEBUG)
         StaticUtilities.logger.addHandler(self.gui_logging_handler)
         self.file_logging_handler = logging.FileHandler('gui_log.log')
@@ -132,7 +131,13 @@ class GUI(object):
         self.central_widget.setObjectName("centralwidget")
         self.console = QtWidgets.QTextBrowser(self.central_widget)
         self.console.setGeometry(QtCore.QRect(360, 760, 681, 192))
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.console.sizePolicy().hasHeightForWidth())
+        self.console.setSizePolicy(sizePolicy)
         self.console.setMinimumSize(QtCore.QSize(681, 192))
+        self.console.setTabStopWidth(78)
         self.console.setObjectName("console")
         self.e_stop_button = QPushButton(self.central_widget)
         self.e_stop_button.setGeometry(QtCore.QRect(1150, 760, 192, 192))
@@ -466,8 +471,9 @@ class GUI(object):
                                         "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
                                         "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
                                         "p, li { white-space: pre-wrap; }\n"
-                                        "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:6.6pt; font-weight:400; font-style:normal;\">\n"
-                                        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Console:</p></body></html>"))
+                                        "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:7.8pt; font-weight:400; font-style:normal;\">\n"
+                                        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">Console:zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz</span></p>\n"
+                                        "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;\"><br /></p></body></html>"))
         self.e_stop_button.setText(_translate("MainWindow", "E-STOP"))
         self.neutral_button.setText(_translate("MainWindow", "Neutral"))
         self.dive_button.setText(_translate("MainWindow", "Dive"))
