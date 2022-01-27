@@ -68,14 +68,14 @@ void loop() {  //seems to be a method that tests all of the different ways the r
           killFlag = 0;
           Serial.println("Mega Halted: Power Cycle to restart");
           Serial.println("status: killed");
-          servo2.detach(2);
-          servo3.detach(3);
-          servo4.detach(4);
-          servo5.detach(5);
-          servo6.detach(6);
-          servo7.detach(7);
-          servo8.detach(8);
-          servo9.detach(9);
+          servo2.detach();
+          servo3.detach();
+          servo4.detach();
+          servo5.detach();
+          servo6.detach();
+          servo7.detach();
+          servo8.detach();
+          servo9.detach();
           return;
         } else if(incomingString == "forward"){
           neut();
@@ -100,11 +100,16 @@ void loop() {  //seems to be a method that tests all of the different ways the r
         } else if (incomingString == "all") {
           neut();
           all();
-          neut();
-        } else if (incomingString == "seqTest") {
-          neut();
-          sequentialTestAll();
-          neut();
+//        } else if (incomingString == "seqTest") {
+//          neut();
+//          sequentialTestAll();
+//          neut();
+        } else if (incomingString.startsWith("driveMotor:")){
+          String num_str = incomingString.substring(12,13);
+          int num = num_str.toInt();
+          String per_str = incomingString.substring(14,incomingString.indexOf(";"));
+          int per = per_str.toInt();
+          motor(num+1, per);
         } else if (incomingString.startsWith("imuControl")) {
           imuControl(incomingString.substring(12));
          } else if(incomingString == "pressure"){
@@ -231,6 +236,7 @@ void all() {
 }
 
 void sequentialTestAll(){
+  Serial.println("Blocking Function: E-stop does not function during sequential test");
   testMotor1();
   neut();
   testMotor2();
@@ -329,8 +335,34 @@ void testMotor8() {
   delay(testingDelay);
 }
 
-void motor1(int percentage) {
-  servo2.writeMicroseconds(map(percentage, reverse, forward, -100, 100));
+void motor(int motor_number, int percentage) {
+  int micorseconds = map(percentage, reverse, forward, -100, 100);
+  switch (motor_number) {
+    case 1:
+      servo2.writeMicroseconds(micorseconds);
+      break;
+    case 2:
+      servo3.writeMicroseconds(micorseconds);
+      break;
+    case 3:
+      servo2.writeMicroseconds(micorseconds);
+      break;
+    case 4:
+      servo2.writeMicroseconds(micorseconds);
+      break;
+    case 5:
+      servo2.writeMicroseconds(micorseconds);
+      break;
+    case 6:
+      servo2.writeMicroseconds(micorseconds);
+      break;
+    case 7:
+      servo2.writeMicroseconds(micorseconds);
+      break;
+    case 8:
+      servo2.writeMicroseconds(micorseconds);
+      break;
+  }
 }
 
 void imuControl(String data) {

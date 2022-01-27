@@ -30,6 +30,7 @@ class ArduinoAction(Enum):
     DEPTH = "depth"
     ALTITUDE = "altitude"
     ALL_PRESSURE_DEPTH_MEASURES = "measures"
+    DRIVE_THRUSTER = "driveMotor"
 
 
 class ArduinoController:
@@ -155,7 +156,12 @@ class ArduinoController:
         return False if self.receive(receipt=arduino_receipt) == "killed" else True
 
     # TODO: most of the following methods should probably be moved into a child class but is fine as long as there is only one arduino
-    def drive_thruster(self, thruster_number: int):  # TODO
+    def drive_thruster(self, thruster_number: int, thruster_percentage: int):  # TODO
+        if thruster_percentage > 100 or thruster_percentage < -100:
+            return
+        if thruster_number < 1 or thruster_number > 8:
+            return
+        self.arduino.write(f"{ArduinoAction.DRIVE_THRUSTER.value.encode('UTF-8')}:{thruster_number}>{thruster_percentage};")
         return
 
     def send_imu_control(self, data: str):  # TODO
