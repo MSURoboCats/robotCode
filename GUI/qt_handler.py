@@ -16,4 +16,4 @@ class QTextEditLogger(logging.Handler, QtCore.QObject):
 
     def emit(self, record):
         msg = self.format(record)
-        self.appendPlainText.emit(msg)
+        self.appendPlainText.emit(f"{msg}\t\t\t\t\t")
