@@ -52,7 +52,7 @@ class ImuAhrsSparton:
         # Make it the true heading by multiplying by 180
         heading = ((magnetometer[0] + 1) * 180)
         StaticUtilities.logger.info(f"{magnetometer[0]}")
-        # Returns deg off of north
+        # Returns true heading from 0-360
         return heading
 
     def pitch(self):
