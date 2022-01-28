@@ -43,37 +43,43 @@ class ImuAhrsSparton:
         # Returns deg off of north
         return heading
 
-    def heading(self):
-        StaticUtilities.logger.info("Getting the true heading!")
-        # Call the get data func at data point $PSPA,QUAT\r\n
+    def pitch(self):
+        StaticUtilities.logger.info("Getting the pitch!")
+        # Call the get data func at data point $PSPA,PR
+        # This will return a pitch from -90 to 90
+        pitch = self.get_imu_data("$PSPA,PR\n")[0]
+        StaticUtilities.logger.info(f"{pitch}")
+        # Returns deg off of level
+        return pitch
+    
+    def roll(self):
+        StaticUtilities.logger.info("Getting the roll!")
+        # Call the get data func at data point $PSPA,PR
         # See manual for locations of data
+        # This will return a roll from -180 to 180
+        roll = self.get_imu_data("$PSPA,PR\n")[1]
+        StaticUtilities.logger.info(f"{roll}")
+        # Returns deg of roll
+        return roll
+
+    def yaw(self):
+        StaticUtilities.logger.info("Getting the yaw!")
+        # Call the get data func at data point $PSPA,QUAT
         # This will return a float from -1 to 1
         magnetometer = self.get_imu_data("$PSPA,QUAT\r\n")
         # Make it the true heading by multiplying by 180
-        heading = ((magnetometer[0] + 1) * 180)
-        StaticUtilities.logger.info(f"{magnetometer[0]}")
-        # Returns true heading from 0-360
-        return heading
-
-    def pitch(self):
-        StaticUtilities.logger.info("Getting the pitch!")
-        # Call the get data func at data point $PSP
-        # See manual for locations of data
-        # This will return a pitch, roll,
-        pitch = self.get_imu_data("$PSPA,PR\n")
-        StaticUtilities.logger.info(f"{pitch[1]}")
-        # Returns deg off of level
-        return pitch
-
-    def roll(self):
-        # TODO: Not currently implemented
-        StaticUtilities.logger.warning("Getting the roll: Not Implemented")
-        t = 0
-        return t
-
-    def yaw(self):
-        # TODO
-        return
+        heading = ((magnetometer[0] + 1) * 180)[0]
+        StaticUtilities.logger.info(f"{magnetometer}")
+        # Returns a heading from 0-360 aka a "yaw"
+        return yaw
+    
+    def get_temperature(self):
+        #TO DO!
+        return temperature
+    
+    def get_acceleration(self):
+        #TO DO!
+        return accelerometers
 
     def test_pitch(self) -> None:
         """
