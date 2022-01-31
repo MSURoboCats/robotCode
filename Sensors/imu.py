@@ -74,11 +74,18 @@ class ImuAhrsSparton:
         return yaw
     
     def get_temperature(self):
-        #TO DO!
+        StaticUtilities.logger.info("Getting the temperature in celsius!")
+        # Call the get data func at data point $PSPA,TEMP
+        # This will return the temperature in celsius from the IMU
+        temperature = self.get_imu_data("$PSPA,TEMP\r\n")
+        StaticUtilities.logger.info(f"{temperature}")
+        # Returns the temperature in celsius
         return temperature
     
     def get_acceleration(self):
-        #TO DO!
+        #To Do
+        StaticUtilities.logger.info("Getting Gyro data!")
+        # Call the get data func at point 
         return accelerometers
 
     def test_pitch(self) -> None:
