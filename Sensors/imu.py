@@ -43,63 +43,37 @@ class ImuAhrsSparton:
         # Returns deg off of north
         return heading
 
-    def pitch(self):
-        StaticUtilities.logger.info("Getting the pitch!")
-        # Call the get data func at data point $PSPA,PR
-        # This will return a pitch from -90 to 90
-        pitch = self.get_imu_data("$PSPA,PR\n")[0]
-        StaticUtilities.logger.info(f"{pitch}")
-        # Returns deg off of level
-        return pitch
-    
-    def roll(self):
-        StaticUtilities.logger.info("Getting the roll!")
-        # Call the get data func at data point $PSPA,PR
+    def heading(self):
+        StaticUtilities.logger.info("Getting the true heading!")
+        # Call the get data func at data point $PSPA,QUAT\r\n
         # See manual for locations of data
-        # This will return a roll from -180 to 180
-        roll = self.get_imu_data("$PSPA,PR\n")[1]
-        StaticUtilities.logger.info(f"{roll}")
-        # Returns deg of roll
-        return roll
-
-    def yaw(self):
-        StaticUtilities.logger.info("Getting the yaw!")
-        # Call the get data func at data point $PSPA,QUAT
         # This will return a float from -1 to 1
         magnetometer = self.get_imu_data("$PSPA,QUAT\r\n")
         # Make it the true heading by multiplying by 180
-        heading = ((magnetometer[0] + 1) * 180)[0]
-        StaticUtilities.logger.info(f"{magnetometer}")
-        # Returns a heading from 0-360 aka a "yaw"
-        return yaw
-    
-    def get_temperature(self):
-        ##NOT TESTED YET##
-        StaticUtilities.logger.info("Getting the temperature in celsius!")
-        # Call the get data func at data point $PSPA,TEMP
-        # This will return the temperature in celsius from the IMU
-        temperature = self.get_imu_data("$PSPA,TEMP\r\n")
-        StaticUtilities.logger.info(f"{temperature}")
-        # Returns the temperature in celsius
-        return temperature
-    
-    def get_acceleration(self):
-        ##NOT TESTED YET## 
-        ## We might want three different functions for x, y, and z. Just let me know! -JG
-        StaticUtilities.logger.info("Getting acceleration data!")
-        # Call the get data func at point $PSPA,A
-        # This will return the accelerometer data without quaternions
-        # Data will be in the form of [X,Y,Z]
-        accelerometers = self.get_imu_data("$PSPA,A")
-        StaticUtilities.logger.info(f"{accelerometers}")
-        # Returns all the gyro data for all three directions
-        return accelerometers
-    
-    def calibrate_gyro(self):
-        ##NOT TESTED YET## Really need to test this/ do more research on this. -JG
-        StaticUtilities.logger.info("Please wait while I calibrate!")
-        self.get_imu_data("$PSPA,GYROCAL")
-        StaticUtilities.logger.info("All done! Thank you!")
+        heading = ((magnetometer[0] + 1) * 180)
+        StaticUtilities.logger.info(f"{magnetometer[0]}")
+        # Returns deg off of north
+        return heading
+
+    def pitch(self):
+        StaticUtilities.logger.info("Getting the pitch!")
+        # Call the get data func at data point $PSP
+        # See manual for locations of data
+        # This will return a pitch, roll,
+        pitch = self.get_imu_data("$PSPA,PR\n")
+        StaticUtilities.logger.info(f"{pitch[1]}")
+        # Returns deg off of level
+        return pitch
+
+    def roll(self):
+        # TODO: Not currently implemented
+        StaticUtilities.logger.warning("Getting the roll: Not Implemented")
+        t = 0
+        return t
+
+    def yaw(self):
+        # TODO
+        return
 
     def test_pitch(self) -> None:
         """

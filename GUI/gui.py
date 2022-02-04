@@ -20,10 +20,12 @@ class GUI(object):
         self.app = QApplication(sys.argv)
         self.resolution = self.app.desktop().screenGeometry()
         self.width, self.height = self.resolution.width(), self.resolution.height()
-        self.window_width = self.width/2
-        self.window_height = self.height/2
+        #self.window_width = self.width/2
+        #self.window_height = self.height/2
         self.window = QMainWindow()
-        self.window.setGeometry(int(self.window_width/2), int(self.window_height/2), int(self.window_width), int(self.window_height))
+        self.window.setFixedWidth(1280)
+        self.window.setFixedHeight(720)
+        #self.window.setGeometry(int(self.window_width/2), int(self.window_height/2), int(self.window_width), int(self.window_height))
         StaticUtilities.logger.info(f"GUI initialized")
 
     def _setup_logging_handlers(self) -> None:

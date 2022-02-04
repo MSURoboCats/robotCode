@@ -14,9 +14,9 @@ class RobotController:
     def __init__(self, number_of_processes: int = (multiprocessing.cpu_count() - 1)) -> None:
         StaticUtilities.logger.info(f"{RobotController.__name__} initializing components")
 
-        self.imu: ImuAhrsSparton = ImuAhrsSparton(port="COM5", baud_rate=115200)
+        self.imu: ImuAhrsSparton = ImuAhrsSparton(port="/dev/ttyUSB0", baud_rate=115200)
         self.arduino_thruster_depth_pressure_controller: ArduinoController = ArduinoController(
-            arduino_port="COM7",  # /dev/ttyACM0",
+            arduino_port="/dev/ttyACM0",  # /dev/ttyACM0",
             name="Thruster Depth Pressure Controller")
         self.vision: Vision = Vision()
         self.number_hydrophones: int = 3
