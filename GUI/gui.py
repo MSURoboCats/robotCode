@@ -23,7 +23,9 @@ class GUI(object):
         self.window_width = self.width/2
         self.window_height = self.height/2
         self.window = QMainWindow()
-        self.window.setGeometry(int(self.window_width/2), int(self.window_height/2), int(self.window_width), int(self.window_height))
+        # self.window.setFixedWidth(w=1280)
+        # self.window.setFixedHeight(h=720)
+        # self.window.setGeometry(int(self.window_width/2), int(self.window_height/2), int(self.window_width), int(self.window_height))
         StaticUtilities.logger.info(f"GUI initialized")
 
     def _setup_logging_handlers(self) -> None:
@@ -45,7 +47,7 @@ class GUI(object):
         self._setup_logging_handlers()
         self.robot_controller = RobotController(number_of_processes=1)
         self.window.show()
-        self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.NEUTRAL)
+        # self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.NEUTRAL)
         try:
             self.app.exec_()
         finally:
