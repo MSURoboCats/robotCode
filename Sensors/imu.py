@@ -74,6 +74,7 @@ class ImuAhrsSparton:
         return yaw
     
     def get_temperature(self):
+        ##NOT TESTED YET##
         StaticUtilities.logger.info("Getting the temperature in celsius!")
         # Call the get data func at data point $PSPA,TEMP
         # This will return the temperature in celsius from the IMU
@@ -83,10 +84,22 @@ class ImuAhrsSparton:
         return temperature
     
     def get_acceleration(self):
-        #To Do
-        StaticUtilities.logger.info("Getting Gyro data!")
-        # Call the get data func at point 
+        ##NOT TESTED YET## 
+        ## We might want three different functions for x, y, and z. Just let me know! -JG
+        StaticUtilities.logger.info("Getting acceleration data!")
+        # Call the get data func at point $PSPA,A
+        # This will return the accelerometer data without quaternions
+        # Data will be in the form of [X,Y,Z]
+        accelerometers = self.get_imu_data("$PSPA,A")
+        StaticUtilities.logger.info(f"{accelerometers}")
+        # Returns all the gyro data for all three directions
         return accelerometers
+    
+    def calibrate_gyro(self):
+        ##NOT TESTED YET## Really need to test this/ do more research on this. -JG
+        StaticUtilities.logger.info("Please wait while I calibrate!")
+        self.get_imu_data("$PSPA,GYROCAL")
+        StaticUtilities.logger.info("All done! Thank you!")
 
     def test_pitch(self) -> None:
         """
