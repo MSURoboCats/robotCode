@@ -37,11 +37,11 @@ class RobotController:
 
     def set_current_thruster_values(self, thruster, value):
         self.arduino_thruster_depth_pressure_controller.drive_thruster(thruster, value) # -100 to 100
-        self.current_thruster_values[thruster] = value
+        self.current_thruster_values[thruster - 1] = value
         return
 
     def get_current_thruster_values(self, thruster):
-        return self.current_thruster_values[thruster]
+        return self.current_thruster_values[thruster - 1]
 
     def autonomous(self) -> None:
         pass
