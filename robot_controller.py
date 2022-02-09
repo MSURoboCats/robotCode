@@ -24,6 +24,8 @@ class RobotController:
         for i in range(self.number_hydrophones):
             self.hydrophones.append(Hydrophone(name=f"Hydrophone {i}"))
 
+        self.current_thruster_values = [0,0,0,0,0,0,0,0]
+
         self._process_pool: List[
             Process] = []  # use this to assign things that need to get updated constantly. Ie: IMU, Vision and other sensor data
         self._process_queue: Queue = Queue()
@@ -31,6 +33,15 @@ class RobotController:
         self._available_threads: int = number_of_processes
 
         StaticUtilities.logger.info(f"{RobotController.__name__} initialized")
+        return
+
+    def set_current_thruster_values(self, thruster, value):
+        self.arduino_thruster_depth_pressure_controller.drive_thruster(thruster, value) # -100 to 100
+        self.current_thruster_values[thruster] = value
+        return
+
+    def get_current_thruster_values(self, thruster):
+        return self.current_thruster_values[thruster]
 
     def autonomous(self) -> None:
         pass
@@ -45,3 +56,4 @@ class RobotController:
     def control_with_heading(self):
         # Make this run on a process alongside main?
         self.arduino_thruster_controller.send_imu_control("")
+        return
