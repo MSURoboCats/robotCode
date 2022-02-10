@@ -1,9 +1,8 @@
 import logging
 import sys
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton
-from pyqt5_plugins.examplebuttonplugin import QtGui
 
 from GUI.qt_handler import QTextEditLogger
 from Actuators.arduino_controller import ArduinoAction
@@ -75,10 +74,27 @@ class GUI(object):
         self.altitude_lcd.display(self.robot_controller.arduino_thruster_depth_pressure_controller.altitude())
         return
 
+
     def _update_motor_sliders(self) -> None:
         return
 
     def _update_motor_spin_boxes(self) -> None:
+        self.motor_1_spin.setValue(self.robot_controller.current_thruster_values[0])
+        self.motor_1_spin.update()
+        self.motor_2_spin.setValue(self.robot_controller.current_thruster_values[1])
+        self.motor_2_spin.update()
+        self.motor_3_spin.setValue(self.robot_controller.current_thruster_values[2])
+        self.motor_3_spin.update()
+        self.motor_4_spin.setValue(self.robot_controller.current_thruster_values[3])
+        self.motor_4_spin.update()
+        self.motor_5_spin.setValue(self.robot_controller.current_thruster_values[4])
+        self.motor_5_spin.update()
+        self.motor_6_spin.setValue(self.robot_controller.current_thruster_values[5])
+        self.motor_6_spin.update()
+        self.motor_7_spin.setValue(self.robot_controller.current_thruster_values[6])
+        self.motor_7_spin.update()
+        self.motor_8_spin.setValue(self.robot_controller.current_thruster_values[7])
+        self.motor_8_spin.update()
         return
 
     def _e_stop_pressed(self) -> None:
@@ -303,6 +319,7 @@ class GUI(object):
         self.motor_1_spin.setMinimum(-100)
         self.motor_1_spin.setMaximum(100)
         self.motor_1_spin.setObjectName("motor_1_spin")
+        self.motor_1_spin.valueChanged.connect(lambda: self._update_motor(1, self.motor_1_spin.value()))
         self.gridLayout.addWidget(self.motor_1_spin, 1, 0, 1, 1)
         self.motor_1_slider = QtWidgets.QSlider(self.motor_1_lh)
         self.motor_1_slider.setMinimum(-100)
@@ -323,6 +340,7 @@ class GUI(object):
         self.motor_2_spin.setMinimum(-100)
         self.motor_2_spin.setMaximum(100)
         self.motor_2_spin.setObjectName("motor_2_spin")
+        self.motor_2_spin.valueChanged.connect(lambda: self._update_motor(2, self.motor_2_spin.value()))
         self.gridLayout_2.addWidget(self.motor_2_spin, 1, 0, 1, 1)
         self.motor_2_slider = QtWidgets.QSlider(self.motor_2_rh)
         self.motor_2_slider.setMinimum(-100)
@@ -343,6 +361,7 @@ class GUI(object):
         self.motor_3_spin.setMinimum(-100)
         self.motor_3_spin.setMaximum(100)
         self.motor_3_spin.setObjectName("motor_3_spin")
+        self.motor_3_spin.valueChanged.connect(lambda: self._update_motor(3, self.motor_3_spin.value()))
         self.gridLayout_8.addWidget(self.motor_3_spin, 1, 0, 1, 1)
         self.motor_3_slider = QtWidgets.QSlider(self.motor_3_fh)
         self.motor_3_slider.setMinimum(-100)
@@ -363,6 +382,7 @@ class GUI(object):
         self.motor_4_spin.setMinimum(-100)
         self.motor_4_spin.setMaximum(100)
         self.motor_4_spin.setObjectName("motor_4_spin")
+        self.motor_4_spin.valueChanged.connect(lambda: self._update_motor(4, self.motor_4_spin.value()))
         self.gridLayout_6.addWidget(self.motor_4_spin, 1, 0, 1, 1)
         self.motor_4_slider = QtWidgets.QSlider(self.motor_4_bh)
         self.motor_4_slider.setMinimum(-100)
@@ -383,6 +403,7 @@ class GUI(object):
         self.motor_5_spin.setMinimum(-100)
         self.motor_5_spin.setMaximum(100)
         self.motor_5_spin.setObjectName("motor_5_spin")
+        self.motor_5_spin.valueChanged.connect(lambda: self._update_motor(5, self.motor_5_spin.value()))
         self.gridLayout_7.addWidget(self.motor_5_spin, 1, 0, 1, 1)
         self.motor_5_slider = QtWidgets.QSlider(self.motor_5_fvh)
         self.motor_5_slider.setMinimum(-100)
@@ -403,6 +424,7 @@ class GUI(object):
         self.motor_6_spin.setMinimum(-100)
         self.motor_6_spin.setMaximum(100)
         self.motor_6_spin.setObjectName("motor_6_spin")
+        self.motor_6_spin.valueChanged.connect(lambda: self._update_motor(6, self.motor_6_spin.value()))
         self.gridLayout_4.addWidget(self.motor_6_spin, 1, 0, 1, 1)
         self.motor_6_slider = QtWidgets.QSlider(self.motor_6_frv)
         self.motor_6_slider.setMinimum(-100)
@@ -423,6 +445,7 @@ class GUI(object):
         self.motor_7_spin.setMinimum(-100)
         self.motor_7_spin.setMaximum(100)
         self.motor_7_spin.setObjectName("motor_7_spin")
+        self.motor_7_spin.valueChanged.connect(lambda: self._update_motor(7, self.motor_7_spin.value()))
         self.gridLayout_5.addWidget(self.motor_7_spin, 1, 0, 1, 1)
         self.motor_7_slider = QtWidgets.QSlider(self.motor_7_blv)
         self.motor_7_slider.setMinimum(-100)
@@ -443,6 +466,7 @@ class GUI(object):
         self.motor_8_spin.setMinimum(-100)
         self.motor_8_spin.setMaximum(100)
         self.motor_8_spin.setObjectName("motor_8_spin")
+        self.motor_8_spin.valueChanged.connect(lambda: self._update_motor(8, self.motor_8_spin.value()))
         self.gridLayout_3.addWidget(self.motor_8_spin, 1, 0, 1, 1)
         self.motor_8_slider = QtWidgets.QSlider(self.motor_8_brv)
         self.motor_8_slider.setMinimum(-100)
@@ -460,9 +484,14 @@ class GUI(object):
         self.statusbar = QtWidgets.QStatusBar(self.window)
         self.statusbar.setObjectName("statusbar")
         self.window.setStatusBar(self.statusbar)
-
         self._retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self.window)
+
+    def _update_motor(self, thruster, value):
+        StaticUtilities.logger.info(f"{value}")
+        self.robot_controller.set_current_thruster_values(thruster, value)
+        self._update_motor_spin_boxes()
+        return
 
     def _retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
