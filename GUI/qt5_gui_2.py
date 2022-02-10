@@ -356,6 +356,12 @@ class Ui_MainWindow(object):
         self.console = QtWidgets.QTextBrowser(self.centralwidget)
         self.console.setGeometry(QtCore.QRect(70, 370, 256, 192))
         self.console.setObjectName("console")
+        self.write_to_motors_button = QtWidgets.QPushButton(self.centralwidget)
+        self.write_to_motors_button.setGeometry(QtCore.QRect(1190, 90, 111, 28))
+        self.write_to_motors_button.setObjectName("write_to_motors_button")
+        self.checkBox = QtWidgets.QCheckBox(self.centralwidget)
+        self.checkBox.setGeometry(QtCore.QRect(1190, 130, 111, 20))
+        self.checkBox.setObjectName("checkBox")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1384, 26))
@@ -396,6 +402,8 @@ class Ui_MainWindow(object):
         self.label_11.setText(_translate("MainWindow", "Motor 6: FRV"))
         self.label_12.setText(_translate("MainWindow", "Motor 7: BLV"))
         self.label_10.setText(_translate("MainWindow", "Motor 8: BRV"))
+        self.write_to_motors_button.setText(_translate("MainWindow", "Write to Motors"))
+        self.checkBox.setText(_translate("MainWindow", "Update Motors"))
 
 
 if __name__ == "__main__":
