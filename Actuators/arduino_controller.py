@@ -50,6 +50,7 @@ class ArduinoController:
         self.arduino_port: str = arduino_port
         self.baud_rate: int = baud_rate
         self.time_out: int = time_out
+        self.current_thruster_values = [1, 2, 3, 4, 5, 6, 7, 8]  # [0, 0, 0, 0, 0, 0, 0, 0]
         try:
             self.arduino = serial.Serial(self.arduino_port, self.baud_rate, timeout=self.time_out)
             self.receive(receipt="arduino starting...")
@@ -187,6 +188,14 @@ class ArduinoController:
         self.send(ArduinoAction.PRESSURE)
         s: str = self.receive(receive_data=True)
         return float(s)
+
+    def set_current_thruster_values(self, thruster, value):
+        self.drive_thruster(thruster, value)  # -100 to 100
+        self.current_thruster_values[thruster - 1] = value
+        return
+
+    def get_current_thruster_values(self, thruster):
+        return self.current_thruster_values[thruster - 1]
 
 
 if __name__ == '__main__':
