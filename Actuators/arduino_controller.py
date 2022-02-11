@@ -157,13 +157,20 @@ class ArduinoController:
         return False if self.receive(receipt=arduino_receipt) == "killed" else True
 
     # TODO: most of the following methods should probably be moved into a child class but is fine as long as there is only one arduino
-    def drive_thruster(self, thruster_number: int, thruster_percentage: int):  # TODO
-        if thruster_percentage > 100 or thruster_percentage < -100:
-            return
+    def drive_thruster(self, thruster_number: int, thruster_percentage: int) -> int:
+        """
+        Returns the current percentage of power on the thruster.
+        """
         if thruster_number < 1 or thruster_number > 8:
-            return
+            return 0
+        if thruster_percentage > 100 or thruster_percentage < -100:
+            return self.current_thruster_values[thruster_number-1]
         self.arduino.write(f"{ArduinoAction.DRIVE_THRUSTER.value.encode('UTF-8')}:{thruster_number}>{thruster_percentage};")
-        return
+        self.current_thruster_values[thruster_number-1] = thruster_percentage
+        return thruster_percentage
+
+    def thruster(self, thruster_number: int) -> int:
+        return self.current_thruster_values[thruster_number-1]
 
     def send_imu_control(self, data: str):  # TODO
         self.arduino.write(f"{ArduinoAction.CONTROL_WITH_IMU.value}::{data}\n".encode('UTF-8'))
@@ -188,14 +195,6 @@ class ArduinoController:
         self.send(ArduinoAction.PRESSURE)
         s: str = self.receive(receive_data=True)
         return float(s)
-
-    def set_current_thruster_values(self, thruster, value):
-        self.drive_thruster(thruster, value)  # -100 to 100
-        self.current_thruster_values[thruster - 1] = value
-        return
-
-    def get_current_thruster_values(self, thruster):
-        return self.current_thruster_values[thruster - 1]
 
 
 if __name__ == '__main__':

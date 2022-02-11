@@ -58,7 +58,7 @@ class GUI(object):
         # self._update_imu_data()
         # self._update_depth_pressure_data()
         # TODO: make arduino return motor data automatically with GUI only.
-        # TODO: make arduino return sensor data automatically on every loop with GUI only.
+        # TODO: make arduino return sensor data automatically at a given time step.
 
     def _update_imu_data(self) -> None:
         self.roll_lcd.display(self.robot_controller.imu.roll())
@@ -73,7 +73,6 @@ class GUI(object):
         self.temperature_lcd.display(self.robot_controller.arduino_thruster_depth_pressure_controller.temperature())
         self.altitude_lcd.display(self.robot_controller.arduino_thruster_depth_pressure_controller.altitude())
         return
-
 
     def _update_motor_sliders(self) -> None:
         return
@@ -98,6 +97,7 @@ class GUI(object):
 
     def _e_stop_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.KILL)
+        self._update()
 
     def _neutral_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.NEUTRAL)
@@ -105,33 +105,35 @@ class GUI(object):
 
     def _dive_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.DIVE)
+        self._update()
 
     def _surface_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.SURFACE)
+        self._update()
 
     def _all_motors_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.TEST_ALL_THRUSTERS)
+        self._update()
 
     def _sequential_test_motors_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.SEQUENTIALLY_TEST_ALL_THRUSTERS)
+        self._update()
 
     def _forward_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.FORWARD)
+        self._update()
 
     def _hover_forward_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.HOVER_FORWARD)
+        self._update()
 
     def _reverse_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.REVERSE)
+        self._update()
 
     def _hover_spin_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.HOVER_SPIN)
-
-    # def _update_motor(self, thruster, value):
-    #     StaticUtilities.logger.info(f"{value}")
-    #     self.robot_controller.set_current_thruster_values(thruster, value)
-    #     self._update_motor_spin_boxes()
-    #     return
+        self._update()
 
     def _connections(self) -> None:
         self.e_stop_button.clicked.connect(self._e_stop_pressed)
@@ -144,6 +146,7 @@ class GUI(object):
         self.hover_forward_button.clicked.connect(self._hover_forward_pressed)
         self.reverse_button.clicked.connect(self._reverse_pressed)
         self.hover_spin_button.clicked.connect(self._hover_spin_pressed)
+        self.
 
     def _setupUi(self):
         self.window.setObjectName("Robocats Testing GUI")
