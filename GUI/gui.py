@@ -2,11 +2,13 @@ import logging
 import sys
 
 from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton
 from pyqt5_plugins.examplebuttonplugin import QtGui
 
 from GUI.qt_handler import QTextEditLogger
 from Actuators.arduino_controller import ArduinoAction
+from GUI.video_stream import VideoStream
 from robot_controller import RobotController
 from static_utilities import StaticUtilities
 
@@ -23,6 +25,7 @@ class GUI(object):
         self.window_width = self.width/2
         self.window_height = self.height/2
         self.window = QMainWindow()
+        self.video_stream_thread = VideoStream()
         # self.window.setFixedWidth(w=1280)
         # self.window.setFixedHeight(h=720)
         # self.window.setGeometry(int(self.window_width/2), int(self.window_height/2), int(self.window_width), int(self.window_height))
@@ -46,11 +49,14 @@ class GUI(object):
         self._connections()
         self._setup_logging_handlers()
         self.robot_controller = RobotController(number_of_processes=1)
+        self.video_stream_thread.start()
+        self.video_stream_thread.image_update.connect(self._image_update_slot)
         self.window.show()
         # self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.NEUTRAL)
         try:
             self.app.exec_()
         finally:
+            self._cancel_feed()
             self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.NEUTRAL)
             sys.exit()
 
@@ -125,6 +131,12 @@ class GUI(object):
         self.hover_forward_button.clicked.connect(self._hover_forward_pressed)
         self.reverse_button.clicked.connect(self._reverse_pressed)
         self.hover_spin_button.clicked.connect(self._hover_spin_pressed)
+
+    def _image_update_slot(self, image) -> None:
+        self.forward_camera_widget.setPixmap(QPixmap.fromImage(image))
+
+    def _cancel_feed(self) -> None:
+        self.video_stream_thread.stop()
 
     def _setupUi(self):
         self.window.setObjectName("Robocats Testing GUI")
@@ -467,19 +479,21 @@ class GUI(object):
         self.motor_8_spin.setObjectName("motor_8_spin")
         self.gridLayout_3.addWidget(self.motor_8_spin, 1, 0, 1, 1)
         self.thruster_widgets_h_layout.addWidget(self.motor_8_brv)
-        self.forward_camera_widget = QtWidgets.QWidget(self.centralwidget)
+        self.forward_camera_widget = QtWidgets.QLabel(self.centralwidget)
         self.forward_camera_widget.setGeometry(QtCore.QRect(760, 520, 491, 311))
         self.forward_camera_widget.setMinimumSize(QtCore.QSize(331, 241))
         self.forward_camera_widget.setMaximumSize(QtCore.QSize(491, 311))
         self.forward_camera_widget.setObjectName("forward_camera_widget")
         self.console = QtWidgets.QTextBrowser(self.centralwidget)
-        self.console.setGeometry(QtCore.QRect(70, 21, 256, 541))
+        self.console.setGeometry(QtCore.QRect(10, 10, 331, 541))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.console.sizePolicy().hasHeightForWidth())
         self.console.setSizePolicy(sizePolicy)
-        self.console.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+        self.console.setMinimumSize(QtCore.QSize(256, 541))
+        self.console.setMaximumSize(QtCore.QSize(331, 541))
+        self.console.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustIgnored)
         self.console.setObjectName("console")
         self.write_to_motors_button = QtWidgets.QPushButton(self.centralwidget)
         self.write_to_motors_button.setGeometry(QtCore.QRect(1240, 30, 111, 28))
@@ -489,7 +503,7 @@ class GUI(object):
         self.checkBox.setObjectName("checkBox")
         self.window.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(self.window)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1384, 26))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1384, 21))
         self.menubar.setObjectName("menubar")
         self.window.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(self.window)

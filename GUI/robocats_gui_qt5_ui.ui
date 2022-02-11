@@ -10,6 +10,12 @@
     <height>1039</height>
    </rect>
   </property>
+  <property name="maximumSize">
+   <size>
+    <width>1384</width>
+    <height>1039</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
@@ -938,9 +944,9 @@
    <widget class="QTextBrowser" name="console">
     <property name="geometry">
      <rect>
-      <x>70</x>
-      <y>21</y>
-      <width>256</width>
+      <x>10</x>
+      <y>10</y>
+      <width>331</width>
       <height>541</height>
      </rect>
     </property>
@@ -950,8 +956,20 @@
       <verstretch>0</verstretch>
      </sizepolicy>
     </property>
+    <property name="minimumSize">
+     <size>
+      <width>256</width>
+      <height>541</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>331</width>
+      <height>541</height>
+     </size>
+    </property>
     <property name="sizeAdjustPolicy">
-     <enum>QAbstractScrollArea::AdjustToContents</enum>
+     <enum>QAbstractScrollArea::AdjustIgnored</enum>
     </property>
    </widget>
    <widget class="QPushButton" name="write_to_motors_button">
@@ -987,7 +1005,7 @@
      <x>0</x>
      <y>0</y>
      <width>1384</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
