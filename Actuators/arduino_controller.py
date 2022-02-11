@@ -98,6 +98,13 @@ class ArduinoController:
         self.arduino.write(command.encode('UTF-8'))
         return
 
+    def reset(self, *, kill_on_reset: bool = False) -> None:
+        self.arduino.close()
+        self.arduino = serial.Serial(self.arduino_port, self.baud_rate, timeout=self.time_out)
+        self.receive(receipt="arduino starting...")
+        if kill_on_reset:
+            self.kill()
+
     def kill(self) -> None:
         """
         Sends a kill command to the Arduino until a killed acknowledgement is received.

@@ -164,7 +164,6 @@ void neut() {
     servo7.writeMicroseconds(neutral);
     servo8.writeMicroseconds(neutral);
     servo9.writeMicroseconds(neutral);
-    delay(500);
 }
 
 void moveForward() {
@@ -185,7 +184,6 @@ void dive() {
     servo7.writeMicroseconds(reverse-25);
     servo8.writeMicroseconds(reverse-25);
     servo9.writeMicroseconds(forward+25);
-    delay(3000);
 }
 
 void diveForward() {

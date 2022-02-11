@@ -84,7 +84,7 @@ class GUI(object):
         return
 
     def _e_stop_pressed(self) -> None:
-        self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.KILL)
+        self.robot_controller.arduino_thruster_depth_pressure_controller.reset(kill_on_reset=True)
 
     def _neutral_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.NEUTRAL)
