@@ -56,8 +56,9 @@ class GUI(object):
             sys.exit()
 
     def _update(self) -> None:
-        self._update_motor_sliders()
-        self._update_motor_spin_boxes()
+        if self.checkBox.isChecked():
+            self._update_motor_sliders()
+            self._update_motor_spin_boxes()
         # self._update_imu_data()
         # self._update_depth_pressure_data()
         # TODO: make arduino return motor data automatically with GUI only.
@@ -138,6 +139,10 @@ class GUI(object):
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.HOVER_SPIN)
         self._update()
 
+    def _write_spin_boxes_to_motors(self) -> None:
+        StaticUtilities.logger.info(f"Should write to thrusters now")
+        pass
+
     def _connections(self) -> None:
         self.e_stop_button.clicked.connect(self._e_stop_pressed)
         self.neutral_button.clicked.connect(self._neutral_pressed)
@@ -149,7 +154,7 @@ class GUI(object):
         self.hover_forward_button.clicked.connect(self._hover_forward_pressed)
         self.reverse_button.clicked.connect(self._reverse_pressed)
         self.hover_spin_button.clicked.connect(self._hover_spin_pressed)
-        self.
+        self.write_to_motors_button.clicked.connect(self._write_spin_boxes_to_motors)
 
     def _setupUi(self):
         self.window.setObjectName("Robocats Testing GUI")
@@ -522,6 +527,7 @@ class GUI(object):
         self.checkBox = QtWidgets.QCheckBox(self.centralwidget)
         self.checkBox.setGeometry(QtCore.QRect(1240, 70, 111, 20))
         self.checkBox.setObjectName("checkBox")
+        self.checkBox.setChecked(True)
         self.window.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(self.window)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1384, 21))

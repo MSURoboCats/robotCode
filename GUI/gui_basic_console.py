@@ -11,7 +11,7 @@ from robot_controller import RobotController
 from static_utilities import StaticUtilities
 
 
-class GUI(object):
+class BasicConsoleGUI(object):
 
     def __init__(self) -> None:
         self.gui_logging_handler = None
@@ -79,5 +79,5 @@ class GUI(object):
 
 
 if __name__ == "__main__":
-    gui: GUI = GUI()
+    gui: BasicConsoleGUI = BasicConsoleGUI()
     gui.gui()

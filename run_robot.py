@@ -5,7 +5,7 @@ This is the file from which everything on the
 submarine is ran/tested.
 
 """
-from GUI.gui_basic_console import GUI
+from GUI.gui import GUI
 from robot_controller import RobotController
 from static_utilities import StaticUtilities
 
