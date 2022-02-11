@@ -8,7 +8,6 @@ from pyqt5_plugins.examplebuttonplugin import QtGui
 
 from GUI.qt_handler import QTextEditLogger
 from Actuators.arduino_controller import ArduinoAction
-from GUI.video_stream import VideoStream
 from robot_controller import RobotController
 from static_utilities import StaticUtilities
 
@@ -25,7 +24,6 @@ class GUI(object):
         self.window_width = self.width/2
         self.window_height = self.height/2
         self.window = QMainWindow()
-        self.video_stream_thread = VideoStream()
         # self.window.setFixedWidth(w=1280)
         # self.window.setFixedHeight(h=720)
         # self.window.setGeometry(int(self.window_width/2), int(self.window_height/2), int(self.window_width), int(self.window_height))
@@ -49,14 +47,11 @@ class GUI(object):
         self._connections()
         self._setup_logging_handlers()
         self.robot_controller = RobotController(number_of_processes=1)
-        self.video_stream_thread.start()
-        self.video_stream_thread.image_update.connect(self._image_update_slot)
         self.window.show()
         # self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.NEUTRAL)
         try:
             self.app.exec_()
         finally:
-            self._cancel_feed()
             self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.NEUTRAL)
             sys.exit()
 
@@ -131,12 +126,6 @@ class GUI(object):
         self.hover_forward_button.clicked.connect(self._hover_forward_pressed)
         self.reverse_button.clicked.connect(self._reverse_pressed)
         self.hover_spin_button.clicked.connect(self._hover_spin_pressed)
-
-    def _image_update_slot(self, image) -> None:
-        self.forward_camera_widget.setPixmap(QPixmap.fromImage(image))
-
-    def _cancel_feed(self) -> None:
-        self.video_stream_thread.stop()
 
     def _setupUi(self):
         self.window.setObjectName("Robocats Testing GUI")
@@ -479,7 +468,7 @@ class GUI(object):
         self.motor_8_spin.setObjectName("motor_8_spin")
         self.gridLayout_3.addWidget(self.motor_8_spin, 1, 0, 1, 1)
         self.thruster_widgets_h_layout.addWidget(self.motor_8_brv)
-        self.forward_camera_widget = QtWidgets.QLabel(self.centralwidget)
+        self.forward_camera_widget = QtWidgets.QWidget(self.centralwidget)
         self.forward_camera_widget.setGeometry(QtCore.QRect(760, 520, 491, 311))
         self.forward_camera_widget.setMinimumSize(QtCore.QSize(331, 241))
         self.forward_camera_widget.setMaximumSize(QtCore.QSize(491, 311))
