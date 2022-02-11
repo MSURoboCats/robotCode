@@ -16,13 +16,15 @@ class RobotController:
 
         self.imu: ImuAhrsSparton = ImuAhrsSparton(port="COM5", baud_rate=115200)
         self.arduino_thruster_depth_pressure_controller: ArduinoController = ArduinoController(
-            arduino_port="COM8",  # /dev/ttyACM0",
+            arduino_port="COM4",  # /dev/ttyACM0",
             name="Thruster Depth Pressure Controller")
         self.vision: Vision = Vision()
         self.number_hydrophones: int = 3
         self.hydrophones: List[Hydrophone] = []
         for i in range(self.number_hydrophones):
             self.hydrophones.append(Hydrophone(name=f"Hydrophone {i}"))
+
+        self.current_thruster_values = [0,0,0,0,0,0,0,0]
 
         self._process_pool: List[
             Process] = []  # use this to assign things that need to get updated constantly. Ie: IMU, Vision and other sensor data
@@ -32,6 +34,14 @@ class RobotController:
 
         StaticUtilities.logger.info(f"{RobotController.__name__} initialized")
         return
+
+    def set_current_thruster_values(self, thruster, value):
+        self.arduino_thruster_depth_pressure_controller.drive_thruster(thruster, value) # -100 to 100
+        self.current_thruster_values[thruster - 1] = value
+        return
+
+    def get_current_thruster_values(self, thruster):
+        return self.current_thruster_values[thruster - 1]
 
     def autonomous(self) -> None:
         pass
@@ -45,5 +55,5 @@ class RobotController:
 
     def control_with_heading(self):
         # Make this run on a process alongside main?
-        self.arduino_thruster_depth_pressure_controller.send_imu_control("")
+        self.arduino_thruster_controller.send_imu_control("")
         return
