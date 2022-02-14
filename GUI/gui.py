@@ -1,10 +1,11 @@
 import logging
 import sys
+from typing import List
 
+from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton
-from pyqt5_plugins.examplebuttonplugin import QtGui
 
 from GUI.qt_handler import QTextEditLogger
 from Actuators.arduino_controller import ArduinoAction
@@ -56,13 +57,13 @@ class GUI(object):
             sys.exit()
 
     def _update(self) -> None:
-        self._update_motor_sliders()
-        self._update_motor_spin_boxes()
+        if self.checkBox.isChecked():
+            self._update_motor_sliders()
+            self._update_motor_spin_boxes()
         # self._update_imu_data()
-        self._update_depth_pressure_data()
-        self._update_motor_spin_boxes()
+        # self._update_depth_pressure_data()
         # TODO: make arduino return motor data automatically with GUI only.
-        # TODO: make arduino return sensor data automatically on every loop with GUI only.
+        # TODO: make arduino return sensor data automatically at a given time step.
 
     def _update_imu_data(self) -> None:
         self.roll_lcd.display(self.robot_controller.imu.roll())
@@ -82,10 +83,26 @@ class GUI(object):
         return
 
     def _update_motor_spin_boxes(self) -> None:
-        return
+        self.motor_1_spin.setValue(self.robot_controller.arduino_thruster_depth_pressure_controller.current_thruster_values[0])
+        self.motor_1_spin.update()
+        self.motor_2_spin.setValue(self.robot_controller.arduino_thruster_depth_pressure_controller.current_thruster_values[1])
+        self.motor_2_spin.update()
+        self.motor_3_spin.setValue(self.robot_controller.arduino_thruster_depth_pressure_controller.current_thruster_values[2])
+        self.motor_3_spin.update()
+        self.motor_4_spin.setValue(self.robot_controller.arduino_thruster_depth_pressure_controller.current_thruster_values[3])
+        self.motor_4_spin.update()
+        self.motor_5_spin.setValue(self.robot_controller.arduino_thruster_depth_pressure_controller.current_thruster_values[4])
+        self.motor_5_spin.update()
+        self.motor_6_spin.setValue(self.robot_controller.arduino_thruster_depth_pressure_controller.current_thruster_values[5])
+        self.motor_6_spin.update()
+        self.motor_7_spin.setValue(self.robot_controller.arduino_thruster_depth_pressure_controller.current_thruster_values[6])
+        self.motor_7_spin.update()
+        self.motor_8_spin.setValue(self.robot_controller.arduino_thruster_depth_pressure_controller.current_thruster_values[7])
+        self.motor_8_spin.update()
 
     def _e_stop_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.reset(kill_on_reset=True)
+        self._update()
 
     def _neutral_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.NEUTRAL)
@@ -93,27 +110,39 @@ class GUI(object):
 
     def _dive_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.DIVE)
+        self._update()
 
     def _surface_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.SURFACE)
+        self._update()
 
     def _all_motors_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.TEST_ALL_THRUSTERS)
+        self._update()
 
     def _sequential_test_motors_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.SEQUENTIALLY_TEST_ALL_THRUSTERS)
+        self._update()
 
     def _forward_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.FORWARD)
+        self._update()
 
     def _hover_forward_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.HOVER_FORWARD)
+        self._update()
 
     def _reverse_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.REVERSE)
+        self._update()
 
     def _hover_spin_pressed(self) -> None:
         self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.HOVER_SPIN)
+        self._update()
+
+    def _write_spin_boxes_to_motors(self) -> None:
+        StaticUtilities.logger.info(f"Should write to thrusters now")
+        pass
 
     def _connections(self) -> None:
         self.e_stop_button.clicked.connect(self._e_stop_pressed)
@@ -126,6 +155,7 @@ class GUI(object):
         self.hover_forward_button.clicked.connect(self._hover_forward_pressed)
         self.reverse_button.clicked.connect(self._reverse_pressed)
         self.hover_spin_button.clicked.connect(self._hover_spin_pressed)
+        self.write_to_motors_button.clicked.connect(self._write_spin_boxes_to_motors)
 
     def _setupUi(self):
         self.window.setObjectName("Robocats Testing GUI")
@@ -299,6 +329,7 @@ class GUI(object):
         self.motor_1_spin.setMinimum(-100)
         self.motor_1_spin.setMaximum(100)
         self.motor_1_spin.setObjectName("motor_1_spin")
+        # self.motor_1_spin.valueChanged.connect(lambda: self._update_motor(1, self.motor_1_spin.value()))
         self.gridLayout.addWidget(self.motor_1_spin, 1, 0, 1, 1)
         self.motor_1_slider = QtWidgets.QSlider(self.motor_1_lh)
         self.motor_1_slider.setMinimum(-100)
@@ -322,6 +353,7 @@ class GUI(object):
         self.motor_2_spin.setMinimum(-100)
         self.motor_2_spin.setMaximum(100)
         self.motor_2_spin.setObjectName("motor_2_spin")
+        # self.motor_2_spin.valueChanged.connect(lambda: self._update_motor(2, self.motor_2_spin.value()))
         self.gridLayout_2.addWidget(self.motor_2_spin, 1, 0, 1, 1)
         self.motor_2_slider = QtWidgets.QSlider(self.motor_2_rh)
         self.motor_2_slider.setMinimum(-100)
@@ -344,6 +376,7 @@ class GUI(object):
         self.motor_3_spin.setMinimum(-100)
         self.motor_3_spin.setMaximum(100)
         self.motor_3_spin.setObjectName("motor_3_spin")
+        # self.motor_3_spin.valueChanged.connect(lambda: self._update_motor(3, self.motor_3_spin.value()))
         self.gridLayout_8.addWidget(self.motor_3_spin, 1, 0, 1, 1)
         self.motor_3_slider = QtWidgets.QSlider(self.motor_3_fh)
         self.motor_3_slider.setMinimum(-100)
@@ -366,6 +399,7 @@ class GUI(object):
         self.motor_4_spin.setMinimum(-100)
         self.motor_4_spin.setMaximum(100)
         self.motor_4_spin.setObjectName("motor_4_spin")
+        # self.motor_4_spin.valueChanged.connect(lambda: self._update_motor(4, self.motor_4_spin.value()))
         self.gridLayout_6.addWidget(self.motor_4_spin, 1, 0, 1, 1)
         self.motor_4_slider = QtWidgets.QSlider(self.motor_4_bh)
         self.motor_4_slider.setMinimum(-100)
@@ -388,6 +422,7 @@ class GUI(object):
         self.motor_5_spin.setMinimum(-100)
         self.motor_5_spin.setMaximum(100)
         self.motor_5_spin.setObjectName("motor_5_spin")
+        # self.motor_5_spin.valueChanged.connect(lambda: self._update_motor(5, self.motor_5_spin.value()))
         self.gridLayout_7.addWidget(self.motor_5_spin, 1, 0, 1, 1)
         self.motor_5_slider = QtWidgets.QSlider(self.motor_5_fvh)
         self.motor_5_slider.setMinimum(-100)
@@ -422,6 +457,7 @@ class GUI(object):
         self.motor_6_spin.setMinimum(-100)
         self.motor_6_spin.setMaximum(100)
         self.motor_6_spin.setObjectName("motor_6_spin")
+        # self.motor_6_spin.valueChanged.connect(lambda: self._update_motor(6, self.motor_6_spin.value()))
         self.gridLayout_4.addWidget(self.motor_6_spin, 1, 0, 1, 1)
         self.thruster_widgets_h_layout.addWidget(self.motor_6_frv)
         self.motor_7_blv = QtWidgets.QWidget(self.horizontalLayoutWidget)
@@ -444,6 +480,7 @@ class GUI(object):
         self.motor_7_spin.setMinimum(-100)
         self.motor_7_spin.setMaximum(100)
         self.motor_7_spin.setObjectName("motor_7_spin")
+        # self.motor_7_spin.valueChanged.connect(lambda: self._update_motor(7, self.motor_7_spin.value()))
         self.gridLayout_5.addWidget(self.motor_7_spin, 1, 0, 1, 1)
         self.thruster_widgets_h_layout.addWidget(self.motor_7_blv)
         self.motor_8_brv = QtWidgets.QWidget(self.horizontalLayoutWidget)
@@ -466,6 +503,7 @@ class GUI(object):
         self.motor_8_spin.setMinimum(-100)
         self.motor_8_spin.setMaximum(100)
         self.motor_8_spin.setObjectName("motor_8_spin")
+        # self.motor_8_spin.valueChanged.connect(lambda: self._update_motor(8, self.motor_8_spin.value()))
         self.gridLayout_3.addWidget(self.motor_8_spin, 1, 0, 1, 1)
         self.thruster_widgets_h_layout.addWidget(self.motor_8_brv)
         self.forward_camera_widget = QtWidgets.QWidget(self.centralwidget)
@@ -491,6 +529,31 @@ class GUI(object):
         self.checkBox.setGeometry(QtCore.QRect(1240, 70, 111, 20))
         self.checkBox.setObjectName("checkBox")
         self.window.setCentralWidget(self.centralwidget)
+        self.thruster_widgets_h_layout.addWidget(self.motor_8_brv)
+        self.forward_camera_widget = QtWidgets.QWidget(self.centralwidget)
+        self.forward_camera_widget.setGeometry(QtCore.QRect(760, 520, 491, 311))
+        self.forward_camera_widget.setMinimumSize(QtCore.QSize(331, 241))
+        self.forward_camera_widget.setMaximumSize(QtCore.QSize(491, 311))
+        self.forward_camera_widget.setObjectName("forward_camera_widget")
+        self.console = QtWidgets.QTextBrowser(self.centralwidget)
+        self.console.setGeometry(QtCore.QRect(10, 10, 331, 541))
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.console.sizePolicy().hasHeightForWidth())
+        self.console.setSizePolicy(sizePolicy)
+        self.console.setMinimumSize(QtCore.QSize(256, 541))
+        self.console.setMaximumSize(QtCore.QSize(331, 541))
+        self.console.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustIgnored)
+        self.console.setObjectName("console")
+        self.write_to_motors_button = QtWidgets.QPushButton(self.centralwidget)
+        self.write_to_motors_button.setGeometry(QtCore.QRect(1240, 30, 111, 28))
+        self.write_to_motors_button.setObjectName("write_to_motors_button")
+        self.checkBox = QtWidgets.QCheckBox(self.centralwidget)
+        self.checkBox.setGeometry(QtCore.QRect(1240, 70, 111, 20))
+        self.checkBox.setObjectName("checkBox")
+        self.checkBox.setChecked(True)
+        self.window.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(self.window)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1384, 21))
         self.menubar.setObjectName("menubar")
@@ -499,10 +562,10 @@ class GUI(object):
         self.statusbar.setObjectName("statusbar")
         self.window.setStatusBar(self.statusbar)
 
-        self.retranslateUi()
+        self._retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self.window)
 
-    def retranslateUi(self):
+    def _retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
         self.window.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.e_stop_button.setText(_translate("MainWindow", "E-STOP"))

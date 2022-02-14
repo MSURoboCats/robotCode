@@ -31,6 +31,7 @@ class RobotController:
         self._available_threads: int = number_of_processes
 
         StaticUtilities.logger.info(f"{RobotController.__name__} initialized")
+        return
 
     def autonomous(self) -> None:
         pass
@@ -44,4 +45,5 @@ class RobotController:
 
     def control_with_heading(self):
         # Make this run on a process alongside main?
-        self.arduino_thruster_controller.send_imu_control("")
+        self.arduino_thruster_depth_pressure_controller.send_imu_control("")
+        return

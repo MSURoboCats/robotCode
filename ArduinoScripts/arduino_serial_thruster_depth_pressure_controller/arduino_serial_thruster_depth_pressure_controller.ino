@@ -88,9 +88,15 @@ void loop() {  //seems to be a method that tests all of the different ways the r
         } else if (incomingString == "dive") {
           neut();
           dive();
+         } else if (incomingString == "diveForward") {
+          neut();
+          diveForward();
         } else if (incomingString == "hoverForward") {
           neut();
           hoverForward();
+        } else if (incomingString == "spin"){
+          neut();
+          spin();
         } else if (incomingString == "hoverSpin") {
           neut();
           hoverSpin();
@@ -179,7 +185,7 @@ void moveReverse() {
 }
 
 void dive() {
-    //Serial.println("drive");
+    //Serial.println("dive");
     servo6.writeMicroseconds(forward+25);
     servo7.writeMicroseconds(reverse-25);
     servo8.writeMicroseconds(reverse-25);
