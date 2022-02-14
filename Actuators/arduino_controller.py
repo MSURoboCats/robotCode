@@ -18,7 +18,9 @@ class ArduinoAction(Enum):
     REVERSE = "reverse"
     NEUTRAL = "neutral"
     DIVE = "dive"
+    DIVE_FORWARD = "diveForward" # not on gui
     HOVER_FORWARD = "hoverForward"
+    SPIN = "spin"       # not on gui
     HOVER_SPIN = "hoverSpin"
     SURFACE = "surface"
     KILL = "kill"
@@ -31,6 +33,30 @@ class ArduinoAction(Enum):
     ALTITUDE = "altitude"
     ALL_PRESSURE_DEPTH_MEASURES = "measures"
     DRIVE_THRUSTER = "driveMotor"
+
+
+class ArduinoActionThrusterMap(Enum):
+    """
+    Enumerated representation of all the possible actions for the Arduino.
+    Allows conversion of useful names to string that the Arduino understands and can be sent to the Arduino over serial.
+    For example: the value of ArduinoActions.DIVE is the str "dive".
+    Sending this to the Arduino over serial with the method ArduinoController.send_arduino_command()
+    """
+    START = [0, 0, 0, 0, 0, 0, 0, 0]
+    FORWARD = [-100, 100, 0, 0, 0, 0, 0, 0]
+    REVERSE = [100, -100, 0, 0, 0, 0, 0, 0]
+    NEUTRAL = [0, 0, 0, 0, 0, 0, 0, 0]
+    DIVE = [0, 0, 0, 0, 90, -90, -90, 90]
+    DIVE_FORWARD = [-100, 100, 0, 0, 100, -80, -80, 100]
+    HOVER_FORWARD = [-100, 100, 0, 0, 90, -90, -90, 90]
+    SPIN = [100, 100, 0, 0, 0, 0, 0, 0]
+    HOVER_SPIN = [100, 100, 0, 0, 90, -90, -90, 90]
+    SURFACE = [0, 0, 0, 0, -100, 100, 100, -100]
+    KILL = [0, 0, 0, 0, 0, 0, 0, 0]
+    TEST_ALL_THRUSTERS = [-100, -100, -100, -100, -100, -100, -100, -100]
+    SEQUENTIALLY_TEST_ALL_THRUSTERS = [0, 0, 0, 0, 0, 0, 0, 0]
+    CONTROL_WITH_IMU = [0, 0, 0, 0, 0, 0, 0, 0]
+    DRIVE_THRUSTER = [0, 0, 0, 0, 0, 0, 0, 0]
 
 
 class ArduinoController:
@@ -50,6 +76,7 @@ class ArduinoController:
         self.arduino_port: str = arduino_port
         self.baud_rate: int = baud_rate
         self.time_out: int = time_out
+        self.current_thruster_values = [0, 0, 0, 0, 0, 0, 0, 0]  # [1, 2, 3, 4, 5, 6, 7, 8]
         try:
             self.arduino = serial.Serial(self.arduino_port, self.baud_rate, timeout=self.time_out)
             self.receive(receipt="arduino starting...")
@@ -97,6 +124,13 @@ class ArduinoController:
         command += "\n"
         self.arduino.write(command.encode('UTF-8'))
         return
+
+    def reset(self, *, kill_on_reset: bool = False) -> None:
+        self.arduino.close()
+        self.arduino = serial.Serial(self.arduino_port, self.baud_rate, timeout=self.time_out)
+        self.receive(receipt="arduino starting...")
+        if kill_on_reset:
+            self.kill()
 
     def kill(self) -> None:
         """
@@ -153,16 +187,31 @@ class ArduinoController:
         :return bool representation of the success of sending the command to the Arduino. If the Arduino was killed at any point return False, otherwise True.
         """
         self.send(arduino_action)
+        self._update_thruster_values(arduino_action)
         return False if self.receive(receipt=arduino_receipt) == "killed" else True
 
     # TODO: most of the following methods should probably be moved into a child class but is fine as long as there is only one arduino
-    def drive_thruster(self, thruster_number: int, thruster_percentage: int):  # TODO
-        if thruster_percentage > 100 or thruster_percentage < -100:
-            return
+    def drive_thruster(self, thruster_number: int, thruster_percentage: int) -> int:
+        """
+        Returns the current percentage of power on the thruster.
+        """
         if thruster_number < 1 or thruster_number > 8:
-            return
+            return 0
+        if thruster_percentage > 100 or thruster_percentage < -100:
+            return self.current_thruster_values[thruster_number-1]
         self.arduino.write(f"{ArduinoAction.DRIVE_THRUSTER.value.encode('UTF-8')}:{thruster_number}>{thruster_percentage};")
-        return
+        self.current_thruster_values[thruster_number-1] = thruster_percentage
+        return thruster_percentage
+
+    def thruster(self, thruster_number: int) -> int:
+        return self.current_thruster_values[thruster_number-1]
+
+    def _update_thruster_values(self, arduino_action: ArduinoAction) -> None:
+        if arduino_action in [ArduinoAction.NEUTRAL, ArduinoAction.START, ArduinoAction.KILL, ArduinoAction.SEQUENTIALLY_TEST_ALL_THRUSTERS]:
+            self.current_thruster_values = ArduinoActionThrusterMap.NEUTRAL.value
+        elif arduino_action == ArduinoAction.SURFACE:
+            self.current_thruster_values = ArduinoActionThrusterMap.SURFACE.value
+        #elif
 
     def send_imu_control(self, data: str):  # TODO
         self.arduino.write(f"{ArduinoAction.CONTROL_WITH_IMU.value}::{data}\n".encode('UTF-8'))
