@@ -1,0 +1,1 @@
+This is an evolving README intended to organize all notes related to implementing the full vision system.
