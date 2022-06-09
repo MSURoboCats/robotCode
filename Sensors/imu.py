@@ -6,7 +6,7 @@ import time
 from static_utilities import StaticUtilities
 
 
-class ImuAhrsSparton:
+class ImuAhrsSpartan:
 
     def __init__(self, *, port: str = "COM5", baud_rate: int = 115200, name: str = "AHRS Sparton IMU"):
         self.name: str = name
@@ -51,7 +51,7 @@ class ImuAhrsSparton:
         StaticUtilities.logger.info(f"{pitch}")
         # Returns deg off of level
         return pitch
-    
+
     def roll(self):
         StaticUtilities.logger.info("Getting the roll!")
         # Call the get data func at data point $PSPA,PR
@@ -68,13 +68,13 @@ class ImuAhrsSparton:
         # This will return a float from -1 to 1
         magnetometer = self.get_imu_data("$PSPA,QUAT\r\n")
         # Make it the true heading by multiplying by 180
-        heading = ((magnetometer[0] + 1) * 180)[0]
+        yaw = ((magnetometer[0] + 1) * 180)[0]
         StaticUtilities.logger.info(f"{magnetometer}")
         # Returns a heading from 0-360 aka a "yaw"
         return yaw
-    
+
     def get_temperature(self):
-        ##NOT TESTED YET##
+        # NOT TESTED YET
         StaticUtilities.logger.info("Getting the temperature in celsius!")
         # Call the get data func at data point $PSPA,TEMP
         # This will return the temperature in celsius from the IMU
@@ -82,10 +82,10 @@ class ImuAhrsSparton:
         StaticUtilities.logger.info(f"{temperature}")
         # Returns the temperature in celsius
         return temperature
-    
+
     def get_acceleration(self):
-        ##NOT TESTED YET## 
-        ## We might want three different functions for x, y, and z. Just let me know! -JG
+        # NOT TESTED YET
+        # We might want three different functions for x, y, and z. Just let me know! -JG
         StaticUtilities.logger.info("Getting acceleration data!")
         # Call the get data func at point $PSPA,A
         # This will return the accelerometer data without quaternions
@@ -94,9 +94,9 @@ class ImuAhrsSparton:
         StaticUtilities.logger.info(f"{accelerometers}")
         # Returns all the gyro data for all three directions
         return accelerometers
-    
+
     def calibrate_gyro(self):
-        ##NOT TESTED YET## Really need to test this/ do more research on this. -JG
+        # NOT TESTED YET## Really need to test this/ do more research on this. -JG
         StaticUtilities.logger.info("Please wait while I calibrate!")
         self.get_imu_data("$PSPA,GYROCAL")
         StaticUtilities.logger.info("All done! Thank you!")
@@ -115,6 +115,5 @@ class ImuAhrsSparton:
 
 
 if __name__ == "__main__":
-    imu: ImuAhrsSparton = ImuAhrsSparton()
+    imu: ImuAhrsSpartan = ImuAhrsSpartan()
     imu.test_pitch()
-

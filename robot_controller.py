@@ -3,7 +3,7 @@ import multiprocessing
 from multiprocessing import Process, Queue
 
 from Actuators.arduino_controller import ArduinoController, ArduinoAction
-from Sensors.imu import ImuAhrsSparton
+from Sensors.imu import ImuAhrsSpartan
 from Sensors.vision import Vision
 from Sensors.hydrophone import Hydrophone
 from static_utilities import StaticUtilities
@@ -14,7 +14,7 @@ class RobotController:
     def __init__(self, number_of_processes: int = (multiprocessing.cpu_count() - 1)) -> None:
         StaticUtilities.logger.info(f"{RobotController.__name__} initializing components")
 
-        self.imu: ImuAhrsSparton = ImuAhrsSparton(port="COM5", baud_rate=115200)
+        self.imu: ImuAhrsSpartan = ImuAhrsSpartan(port="COM5", baud_rate=115200)
         self.arduino_thruster_depth_pressure_controller: ArduinoController = ArduinoController(
             arduino_port="COM7",  # /dev/ttyACM0",
             name="Thruster Depth Pressure Controller")
