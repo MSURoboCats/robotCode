@@ -2,7 +2,7 @@ from typing import List
 import multiprocessing
 from multiprocessing import Process, Queue
 
-from Actuators.arduino_controller import ArduinoController, ArduinoAction
+from Actuators.arduino_serial_interface import ArduinoController, ArduinoAction
 from Sensors.imu import ImuAhrsSpartan
 from Sensors.vision import Vision
 from Sensors.hydrophone import Hydrophone

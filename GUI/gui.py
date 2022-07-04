@@ -5,7 +5,7 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton
 
 from GUI.qt_handler import QTextEditLogger
-from Actuators.arduino_controller import ArduinoAction
+from Actuators.arduino_serial_interface import ArduinoAction
 from robot_controller import RobotController
 from static_utilities import StaticUtilities
 
