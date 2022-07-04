@@ -17,16 +17,11 @@ class RobotController:
 
         self.imu: ImuAhrsSpartan = ImuAhrsSpartan(port=("COM5" if platform.system() == "Windows" else ("/dev/ttyACM1" if platform.system() == "Linux" else "")), baud_rate=115200)
 
-        self.arduino_thruster_depth_pressure_controller: ArduinoSerialInterfaceController = ArduinoSerialInterfaceController(
+        self.arduino: ArduinoSerialInterfaceController = ArduinoSerialInterfaceController(
             arduino_port="COM7" if platform.system() == "Windows" else ("/dev/ttyACM0" if platform.system() == "Linux" else ""),
             name="Arduino Serial Interface Controller")
 
         self.vision: Vision = Vision()
-
-        # self.number_hydrophones: int = 3
-        # self.hydrophones: List[Hydrophone] = []
-        # for i in range(self.number_hydrophones):
-        #     self.hydrophones.append(Hydrophone(name=f"Hydrophone {i}"))
 
         self._process_pool: List[
             Process] = []  # use this to assign things that need to get updated constantly. Ie: IMU, Vision and other sensor data
@@ -49,4 +44,4 @@ class RobotController:
 
     def control_with_heading(self):
         # Make this run on a process alongside main?
-        self.arduino_thruster_controller.send_imu_control("")
+        self.arduino.send_imu_control("")

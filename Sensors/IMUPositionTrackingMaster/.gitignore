@@ -1,0 +1,5 @@
+/__pycache__/
+/.ipynb_checkpoints/
+.vscode/.ropeproject/config.py
+.vscode/.ropeproject/objectdb
+data.txt

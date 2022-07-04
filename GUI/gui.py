@@ -44,11 +44,11 @@ class GUI(object):
         self._setup_logging_handlers()
         self.robot_controller = RobotController(number_of_processes=1)
         self.window.show()
-        self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.NEUTRAL)
+        self.robot_controller.arduino.send_arduino_command(ArduinoAction.NEUTRAL)
         try:
             self.app.exec_()
         finally:
-            self.robot_controller.arduino_thruster_depth_pressure_controller.send_arduino_command(ArduinoAction.NEUTRAL)
+            self.robot_controller.arduino.send_arduino_command(ArduinoAction.NEUTRAL)
             sys.exit()
 
     def _update(self) -> None:
