@@ -2,7 +2,7 @@
 ---- MSU RoboCats ----
 
 This is the file from which everything on the
-submarine is ran/tested.
+sub is run or tested.
 
 """
 import argparse
@@ -26,7 +26,6 @@ guiFlag = args.gui
 
 
 def main(gui: bool = False):
-    StaticUtilities.logger.info("TODO: prompt for run mode and execute accordingly")
     if gui:
         testing_gui: GUI = GUI()
         testing_gui.gui()

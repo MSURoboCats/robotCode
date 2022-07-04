@@ -15,19 +15,36 @@ class ImuAhrsSpartan:
         self.fs_sample_rate: float = 100.0  # in Hz
         self.T_period: float = 1 / self.fs_sample_rate
         self.cutoff_frequency: float = self.fs_sample_rate / 2  # Desired cutoff frequency of the filter, Hz, Sightly higher than actual 1.2 Hznyq = 0.5 * fs
-        self.nyq_nyquist_frequency: float = 0.5 * self.fs_sample_rate  # Nyquist Frequencyorder = 2, Sin wave can be approx represented as quadratic ##JG-?
+        self.nyq_nyquist_frequency: float = 0.5 * self.fs_sample_rate  # Nyquist frequency order = 2, Sin wave can be approx represented as quadratic ##JG-?
         self.n_number_of_samples: int = int(self.T_period * self.fs_sample_rate)  # Total number of samples
+        self.serial_object = None
+        self.serial_connection_established: bool = False
+        self.initialize_serial_connection(self.port)
+        if not self.serial_connection_established:
+            available_serial_devices = StaticUtilities.serial_devices()
+            for device in available_serial_devices:
+                if "ahrs" not in device[1].lower():
+                    StaticUtilities.logger.debug(f"No IMU on {device[0]}")
+                    continue
+                StaticUtilities.logger.info(f"Found {device[1]} on {device[0]}. Attempting connection.")
+                self.initialize_serial_connection(device[0])
+                if self.serial_connection_established:
+                    break
+
+    def initialize_serial_connection(self, port: str) -> None:
         try:
-            self.ser = serial.Serial(self.port, self.baud_rate)
-            self.ser.flush()
+            self.serial_object = serial.Serial(port, self.baud_rate)
+            self.serial_object.flush()
         except serial.serialutil.SerialException:
-            StaticUtilities.logger.error(f"Failed to initialize {self.name} on {self.port} at {self.baud_rate}")
+            StaticUtilities.logger.error(f"Failed to initialize {self.name} on {port} at {self.baud_rate}")
+            self.serial_connection_established = False
         else:
-            StaticUtilities.logger.info(f"{self.name} initialized on {self.port} at {self.baud_rate}")
+            StaticUtilities.logger.info(f"{self.name} initialized on {port} at {self.baud_rate}")
+            self.serial_connection_established = True
 
     def get_imu_data(self, command):
-        self.ser.write(command.encode())
-        data = self.ser.readline().decode('utf-8')
+        self.serial_object.write(command.encode())
+        data = self.serial_object.readline().decode('utf-8')
         values = np.array(re.findall('([-\d.]+)', data)).astype(float)
         return values
 

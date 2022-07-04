@@ -2,6 +2,7 @@ import logging
 import os
 import pathlib
 from logging import Logger
+from typing import Tuple, List
 
 from custom_formatter import CustomFormatter
 
@@ -38,3 +39,11 @@ class StaticUtilities:
         logging.Formatter('%(levelname)s %(module)s %(funcName)s %(message)s'))
     extended_file_logging_handler.setLevel(logging.DEBUG)
     logger.addHandler(extended_file_logging_handler)
+
+    @staticmethod
+    def serial_devices() -> List[Tuple[str, str, str]]:
+        """
+        :returns: List of serial devices as a Tuple with the format (port,description,HardwareID). See class serial.tools.list_ports.ListPortInfo
+        """
+        import serial.tools.list_ports
+        return [tuple(p) for p in list(serial.tools.list_ports.comports())]

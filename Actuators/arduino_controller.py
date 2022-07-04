@@ -1,7 +1,8 @@
 from enum import Enum
 
-import serial
 import time
+
+import serial
 
 from static_utilities import StaticUtilities
 
@@ -50,8 +51,22 @@ class ArduinoController:
         self.arduino_port: str = arduino_port
         self.baud_rate: int = baud_rate
         self.time_out: int = time_out
+        self.arduino = None
+        self.arduino_serial_connection_established: bool = self.initialize_serial_connection(self.arduino_port)
+        if not self.arduino_serial_connection_established:
+            available_serial_devices = StaticUtilities.serial_devices()
+            for device in available_serial_devices:
+                if "arduino" not in device[1].lower():
+                    StaticUtilities.logger.debug(f"No Arduino on {device[0]}")
+                    continue
+                StaticUtilities.logger.info(f"Found {device[1]} on {device[0]}. Attempting connection.")
+                self.arduino_serial_connection_established = self.initialize_serial_connection(device[0])
+                if self.arduino_serial_connection_established:
+                    break
+
+    def initialize_serial_connection(self, port: str) -> bool:
         try:
-            self.arduino = serial.Serial(self.arduino_port, self.baud_rate, timeout=self.time_out)
+            self.arduino = serial.Serial(port, self.baud_rate, timeout=self.time_out)
             self.receive(receipt="arduino starting...")
             time.sleep(self.time_out)
             self.arduino.flush()
@@ -59,9 +74,13 @@ class ArduinoController:
             self.receive(receipt="arduino ready")
             self.arduino.flush()
         except serial.serialutil.SerialException:
-            StaticUtilities.logger.error(f"Failed to initialize {self.name} Arduino {self.arduino_type} on {self.arduino_port} at {self.baud_rate}")
+            StaticUtilities.logger.error(
+                f"Failed to initialize {self.name} Arduino {self.arduino_type} on {port} at {self.baud_rate}")
+            return False
         else:
-            StaticUtilities.logger.info(f"{self.name} Arduino {self.arduino_type} initialized on {self.arduino_port} at {self.baud_rate}")
+            StaticUtilities.logger.info(
+                f"{self.name} Arduino {self.arduino_type} initialized on {port} at {self.baud_rate}")
+            return True
 
     def receive(self, *, receipt: str = "status: done", receive_data: bool = False) -> str:
         """
@@ -114,7 +133,8 @@ class ArduinoController:
             time.sleep(0.01)
         self.arduino.flush()
         self.arduino.close()
-        StaticUtilities.logger.warning(f"Arduino {self.arduino_type} on {self.arduino_port} killed. Restart Arduino {self.arduino_type} to continue.")
+        StaticUtilities.logger.warning(
+            f"Arduino {self.arduino_type} on {self.arduino_port} killed. Restart Arduino {self.arduino_type} to continue.")
 
     def legacy_send_arduino_command(self, entry: str):
         """
@@ -161,7 +181,8 @@ class ArduinoController:
             return
         if thruster_number < 1 or thruster_number > 8:
             return
-        self.arduino.write(f"{ArduinoAction.DRIVE_THRUSTER.value.encode('UTF-8')}:{thruster_number}>{thruster_percentage};")
+        self.arduino.write(
+            f"{ArduinoAction.DRIVE_THRUSTER.value.encode('UTF-8')}:{thruster_number}>{thruster_percentage};")
         return
 
     def send_imu_control(self, data: str):  # TODO
