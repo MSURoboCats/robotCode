@@ -1,8 +1,9 @@
+import platform
 from typing import List
 import multiprocessing
 from multiprocessing import Process, Queue
 
-from Actuators.arduino_serial_interface import ArduinoController, ArduinoAction
+from Actuators.arduino_serial_interface import ArduinoSerialInterfaceController, ArduinoAction
 from Sensors.imu import ImuAhrsSpartan
 from Sensors.vision import Vision
 from Sensors.hydrophone import Hydrophone
@@ -14,21 +15,25 @@ class RobotController:
     def __init__(self, number_of_processes: int = (multiprocessing.cpu_count() - 1)) -> None:
         StaticUtilities.logger.info(f"{RobotController.__name__} initializing components")
 
-        self.imu: ImuAhrsSpartan = ImuAhrsSpartan(port="COM5", baud_rate=115200)
-        self.arduino_thruster_depth_pressure_controller: ArduinoController = ArduinoController(
-            arduino_port="COM7",  # /dev/ttyACM0",
-            name="Thruster Depth Pressure Controller")
+        self.imu: ImuAhrsSpartan = ImuAhrsSpartan(port=("COM5" if platform.system() == "Windows" else ("/dev/ttyACM1" if platform.system() == "Linux" else "")), baud_rate=115200)
+
+        self.arduino_thruster_depth_pressure_controller: ArduinoSerialInterfaceController = ArduinoSerialInterfaceController(
+            arduino_port="COM7" if platform.system() == "Windows" else ("/dev/ttyACM0" if platform.system() == "Linux" else ""),
+            name="Arduino Serial Interface Controller")
+
         self.vision: Vision = Vision()
-        self.number_hydrophones: int = 3
-        self.hydrophones: List[Hydrophone] = []
-        for i in range(self.number_hydrophones):
-            self.hydrophones.append(Hydrophone(name=f"Hydrophone {i}"))
+
+        # self.number_hydrophones: int = 3
+        # self.hydrophones: List[Hydrophone] = []
+        # for i in range(self.number_hydrophones):
+        #     self.hydrophones.append(Hydrophone(name=f"Hydrophone {i}"))
 
         self._process_pool: List[
             Process] = []  # use this to assign things that need to get updated constantly. Ie: IMU, Vision and other sensor data
         self._process_queue: Queue = Queue()
         self._process_lock: multiprocessing.Lock = multiprocessing.Lock()
-        self._available_threads: int = number_of_processes
+        self._available_processes: int = multiprocessing.cpu_count()
+        self._available_threads: int = number_of_processes*2
 
         StaticUtilities.logger.info(f"{RobotController.__name__} initialized")
 

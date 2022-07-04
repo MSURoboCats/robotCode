@@ -34,13 +34,13 @@ class ArduinoAction(Enum):
     DRIVE_THRUSTER = "driveMotor"
 
 
-class ArduinoController:
+class ArduinoSerialInterfaceController:
     """
     Class that can be instantiated to control an Arduino and send it commands over serial.
     """
 
     def __init__(self, *, arduino_port: str = '/dev/ttyACM0', baud_rate: int = 115200, time_out: int = 1,
-                 name: str = "Arduino Controller", arduino_type: str = "Mega"):
+                 name: str = "Arduino Serial Interface Controller", arduino_type: str = "Mega"):
         """
         Initializes the Arduino and connection.
         Starts the Arduino.
@@ -211,6 +211,6 @@ class ArduinoController:
 
 
 if __name__ == '__main__':
-    arduino: ArduinoController = ArduinoController()
+    arduino: ArduinoSerialInterfaceController = ArduinoSerialInterfaceController()
     time.sleep(arduino.time_out)
     arduino.send_arduino_command(ArduinoAction.KILL)
