@@ -3,7 +3,6 @@ import sys
 
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton
-from pyqt5_plugins.examplebuttonplugin import QtGui
 
 from GUI.qt_handler import QTextEditLogger
 from Actuators.arduino_controller import ArduinoAction

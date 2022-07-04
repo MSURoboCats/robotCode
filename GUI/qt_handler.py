@@ -1,7 +1,6 @@
 import logging
 
-from pyqt5_plugins.examplebutton import QtWidgets
-from pyqt5_tools.examples.exampleqmlitem import QtCore
+from PyQt5 import QtCore, QtWidgets
 
 
 class QTextEditLogger(logging.Handler, QtCore.QObject):
