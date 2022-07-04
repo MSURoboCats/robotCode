@@ -1,3 +1,4 @@
+import threading
 from typing import Tuple, List
 
 import serial
@@ -38,6 +39,7 @@ class ImuAhrsSpartan:
                     break
 
         self.running: bool = True
+        self.lock = threading.Lock()
 
     def initialize_serial_connection(self, port: str) -> None:
         try:
@@ -50,7 +52,7 @@ class ImuAhrsSpartan:
             StaticUtilities.logger.info(f"{self.name} initialized on {port} at {self.baud_rate}")
             self.serial_connection_established = True
 
-    def __update_position(self):
+    def update_position(self):
         tracker = IMUTracker(sampling=100)
         for i in range(0, 30):
             time.sleep(0.1)
@@ -77,7 +79,9 @@ class ImuAhrsSpartan:
             # plot3([v])
 
             # Integration Step
+            self.lock.acquire(timeout=.5)
             self.position = tracker.positionTrack(a_nav_filtered, v)
+            self.lock.release()
 
         # update gyro
         # update accel

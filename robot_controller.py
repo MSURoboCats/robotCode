@@ -1,4 +1,5 @@
 import platform
+from threading import Thread
 from typing import List
 import multiprocessing
 from multiprocessing import Process, Queue
@@ -25,15 +26,22 @@ class RobotController:
 
         self._process_pool: List[
             Process] = []  # use this to assign things that need to get updated constantly. Ie: IMU, Vision and other sensor data
+        self._thread_pool: List[Thread] = []
         self._process_queue: Queue = Queue()
         self._process_lock: multiprocessing.Lock = multiprocessing.Lock()
         self._available_processes: int = multiprocessing.cpu_count()
         self._available_threads: int = number_of_processes*2
 
+        self._process_pool.append(multiprocessing.Process(target=self.imu.update_position, args=(), name="IMU Position Update Process"))
+
         StaticUtilities.logger.info(f"{RobotController.__name__} initialized")
 
     def autonomous(self) -> None:
-        pass
+
+        for process in self._process_pool:
+            process.start()
+        for process in self._process_pool:
+            process.join()
         # self.arduino_thruster_controller.send_imu_control("test_data")
         # StaticUtilities.logger.info(f"{self.arduino_thruster_controller.receive()}")
         # self.arduino_depth_pressure_controller.send(ArduinoAction.ALL_PRESSURE_DEPTH_MEASURES)
