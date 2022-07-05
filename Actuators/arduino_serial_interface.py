@@ -178,6 +178,9 @@ class ArduinoSerialInterfaceController:
         return False if self.receive(receipt=arduino_receipt) == "killed" else True
 
     def drive_thruster(self, thruster_number: int, thruster_percentage: int):
+        """
+        Allows you to drive an individual thruster.
+        """
         if thruster_percentage > 100 or thruster_percentage < -100:
             return
         if thruster_number < 1 or thruster_number > 8:
@@ -187,12 +190,18 @@ class ArduinoSerialInterfaceController:
         return
 
     def imu_control(self, thruster_numbers: List[int], thruster_percentages: List[int]) -> None:  # TODO
+        """
+        Note: Thrusters that are not defined will be set to neutral.
+        """
         if len(thruster_numbers) != len(thruster_percentages):
             return
         self.arduino.write(f"{ArduinoAction.CONTROL_WITH_IMU.value}:{len(thruster_numbers)}>{';'.join(str(number)+':'+str(percentage) for number, percentage in zip(thruster_numbers, thruster_percentages))}".encode('UTF-8'))
         return
 
     def each_thruster(self, thruster_power_percentages: List[int]) -> None:
+        """
+        Note: all thruster percentages must be defined in order.
+        """
         if len(thruster_power_percentages) != 8:
             return
         else:
