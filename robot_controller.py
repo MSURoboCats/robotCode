@@ -42,6 +42,7 @@ class RobotController:
             process.start()
         for process in self._process_pool:
             process.join()
+
         # self.arduino_thruster_controller.send_imu_control("test_data")
         # StaticUtilities.logger.info(f"{self.arduino_thruster_controller.receive()}")
         # self.arduino_depth_pressure_controller.send(ArduinoAction.ALL_PRESSURE_DEPTH_MEASURES)
