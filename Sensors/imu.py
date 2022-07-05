@@ -102,7 +102,7 @@ class ImuAhrsSpartan:
         # See manual for locations of data
         # This will return a float from -1 to 1
         magnetometer = self.imu_data("$PSPA,QUAT\r\n")
-        # Make it the true hedding by multiplying by 180
+        # Make it the true heading by multiplying by 180
         heading = ((magnetometer[0]) * 180)
         StaticUtilities.logger.info(f"{magnetometer[0]}")
         # Returns deg off of north
