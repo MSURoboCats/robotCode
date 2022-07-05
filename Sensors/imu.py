@@ -53,6 +53,12 @@ class ImuAhrsSpartan:
             self.serial_connection_established = True
 
     def update_position(self):
+        # update gyro
+        # update accel
+        # update mag
+        # update data list
+        # computations
+        # update stored position
         tracker = IMUTracker(sampling=100)
         for i in range(0, 30):
             time.sleep(0.1)
@@ -83,14 +89,6 @@ class ImuAhrsSpartan:
             self.lock.acquire(timeout=.5)
             self.position = tracker.positionTrack(a_nav_filtered, v)
             self.lock.release()
-
-        # update gyro
-        # update accel
-        # update mag
-        # update data list
-        # computations
-        # update stored position
-
 
     def imu_data(self, command):
         self.serial_object.write(command.encode())
