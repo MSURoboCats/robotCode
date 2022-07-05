@@ -186,8 +186,10 @@ class ArduinoSerialInterfaceController:
             f"{ArduinoAction.DRIVE_THRUSTER.value}:{thruster_number}>{thruster_percentage};".encode('UTF-8'))
         return
 
-    def imu_control(self, data: str):  # TODO
-        self.arduino.write(f"{ArduinoAction.CONTROL_WITH_IMU.value}::{data}\n".encode('UTF-8'))
+    def imu_control(self, thruster_numbers: List[int], thruster_percentages: List[int]) -> None:  # TODO
+        if len(thruster_numbers) != len(thruster_percentages):
+            return
+        self.arduino.write(f"{ArduinoAction.CONTROL_WITH_IMU.value}:{len(thruster_numbers)}>{';'.join(str(number)+':'+str(percentage) for number, percentage in zip(thruster_numbers, thruster_percentages))}".encode('UTF-8'))
         return
 
     def each_thruster(self, thruster_power_percentages: List[int]) -> None:
