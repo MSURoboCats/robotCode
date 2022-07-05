@@ -53,4 +53,4 @@ class RobotController:
 
     def control_with_heading(self):
         # Make this run on a process alongside main?
-        self.arduino.send_imu_control("")
+        self.arduino.imu_control("")
