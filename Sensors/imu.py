@@ -1,4 +1,5 @@
 import threading
+from multiprocessing import Queue
 from typing import Tuple, List
 
 import serial
@@ -7,6 +8,7 @@ import re
 import time
 
 from IMUPositionTrackingMaster.tracker_main import IMUTracker
+from process_queue_data import ProcessQueueData
 
 from static_utilities import StaticUtilities
 
@@ -52,7 +54,7 @@ class ImuAhrsSpartan:
             StaticUtilities.logger.info(f"{self.name} initialized on {port} at {self.baud_rate}")
             self.serial_connection_established = True
 
-    def update_position(self):
+    def update_position(self, process_queue: Queue[ProcessQueueData]):
         # update gyro
         # update accel
         # update mag

@@ -1,10 +1,12 @@
 from enum import Enum
 
 import time
+from multiprocessing import Queue
 from typing import List
 
 import serial
 
+from process_queue_data import ProcessQueueData
 from static_utilities import StaticUtilities
 
 
@@ -67,7 +69,7 @@ class ArduinoSerialInterfaceController:
                 if self.arduino_serial_connection_established:
                     break
 
-    def run_autonomous(self) -> None:
+    def run_autonomous(self, process_queue: Queue[ProcessQueueData]) -> None:
         while self.running:
             pass
 

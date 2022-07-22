@@ -9,6 +9,7 @@ from Actuators.arduino_serial_interface import ArduinoSerialInterfaceController,
 from Sensors.imu import ImuAhrsSpartan
 from Sensors.vision import Vision
 from Sensors.hydrophone import Hydrophone
+from process_queue_data import ProcessQueueData
 from static_utilities import StaticUtilities
 
 
@@ -25,25 +26,28 @@ class RobotController:
 
         self.vision: Vision = Vision()
 
+        self.running: bool = True
         self._process_pool: List[
             Process] = []  # use this to assign things that need to get updated constantly. Ie: IMU, Vision and other sensor data
-        self._thread_pool: List[Thread] = []
-        self._process_queue: Queue = Queue()
+        self._process_data_queue: Queue[ProcessQueueData] = Queue()
         self._process_lock: multiprocessing.Lock = multiprocessing.Lock()
         self._available_processes: int = multiprocessing.cpu_count()
 
-        self._process_pool.append(multiprocessing.Process(target=self.imu.update_position, args=(), name="IMU Position Update Process"))
-        self._process_pool.append(multiprocessing.Process(target=self.vision.run, args=(), name="Vision Subsystem"))
-        self._process_pool.append(multiprocessing.Process(target=self.arduino.run_autonomous, args=(), name="Arduino Subsystem"))
+        self._process_pool.append(multiprocessing.Process(target=self.imu.update_position, args=(self._process_data_queue,), name="IMU Update Process"))
+        self._process_pool.append(multiprocessing.Process(target=self.vision.run, args=(self._process_data_queue,), name="Vision Subsystem"))
+        self._process_pool.append(multiprocessing.Process(target=self.arduino.run_autonomous, args=(self._process_data_queue,), name="Arduino Subsystem"))
 
         StaticUtilities.logger.info(f"{RobotController.__name__} initialized")
 
     def autonomous(self) -> None:
-        if len(self._process_pool) > self._available_processes:
-            sys.exit("more workers than are available processes. See RobotController.__init__()")
+        if len(self._process_pool) > (self._available_processes - 1):
+            # subtract 1 for the main thread/process
+            sys.exit("more workers than are available processes. See RobotController._process_pool")
         else:
             for process in self._process_pool:
                 process.start()
+            while self.running:
+                pass
             for process in self._process_pool:
                 process.join()
 

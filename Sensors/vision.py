@@ -1,3 +1,6 @@
+from multiprocessing import Queue
+
+from process_queue_data import ProcessQueueData
 from static_utilities import StaticUtilities
 
 
@@ -8,6 +11,6 @@ class Vision:
         self.running: bool = True
         StaticUtilities.logger.info(f"{self.name} initialized")
 
-    def run(self) -> None:
+    def run(self, process_queue: Queue[ProcessQueueData]) -> None:
         while self.running:
             pass
