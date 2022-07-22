@@ -1,6 +1,7 @@
 from enum import Enum
 
 import time
+from typing import List
 
 import serial
 
@@ -26,6 +27,7 @@ class ArduinoAction(Enum):
     TEST_ALL_THRUSTERS = "all"
     SEQUENTIALLY_TEST_ALL_THRUSTERS = "seqTest"
     CONTROL_WITH_IMU = "imuControl"
+    CONTROL_EACH_THRUSTER = "eachMotor"
     PRESSURE = "pressure"
     TEMPERATURE = "temperature"
     DEPTH = "depth"
@@ -175,19 +177,36 @@ class ArduinoSerialInterfaceController:
         self.send(arduino_action)
         return False if self.receive(receipt=arduino_receipt) == "killed" else True
 
-    # TODO: most of the following methods should probably be moved into a child class but is fine as long as there is only one arduino
-    def drive_thruster(self, thruster_number: int, thruster_percentage: int):  # TODO
+    def drive_thruster(self, thruster_number: int, thruster_percentage: int):
+        """
+        Allows you to drive an individual thruster.
+        """
         if thruster_percentage > 100 or thruster_percentage < -100:
             return
         if thruster_number < 1 or thruster_number > 8:
             return
         self.arduino.write(
-            f"{ArduinoAction.DRIVE_THRUSTER.value.encode('UTF-8')}:{thruster_number}>{thruster_percentage};")
+            f"{ArduinoAction.DRIVE_THRUSTER.value}:{thruster_number}>{thruster_percentage};".encode('UTF-8'))
         return
 
-    def send_imu_control(self, data: str):  # TODO
-        self.arduino.write(f"{ArduinoAction.CONTROL_WITH_IMU.value}::{data}\n".encode('UTF-8'))
+    def imu_control(self, thruster_numbers: List[int], thruster_percentages: List[int]) -> None:  # TODO
+        """
+        Note: Thrusters that are not defined will be set to neutral.
+        """
+        if len(thruster_numbers) != len(thruster_percentages):
+            return
+        self.arduino.write(f"{ArduinoAction.CONTROL_WITH_IMU.value}:{len(thruster_numbers)}>{';'.join(str(number)+':'+str(percentage) for number, percentage in zip(thruster_numbers, thruster_percentages))}".encode('UTF-8'))
         return
+
+    def each_thruster(self, thruster_power_percentages: List[int]) -> None:
+        """
+        Note: all thruster percentages must be defined in order.
+        """
+        if len(thruster_power_percentages) != 8:
+            return
+        else:
+            self.arduino.write(f"{ArduinoAction.CONTROL_EACH_THRUSTER.value}:{';'.join(str(percentage) for percentage in thruster_power_percentages)};".encode('UTF-8'))
+            return
 
     def altitude(self) -> float:
         self.send(ArduinoAction.ALTITUDE)
