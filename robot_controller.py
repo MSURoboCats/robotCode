@@ -29,13 +29,16 @@ class RobotController:
         self.running: bool = True
         self._process_pool: List[
             Process] = []  # use this to assign things that need to get updated constantly. Ie: IMU, Vision and other sensor data
-        self._process_data_queue: Queue[ProcessQueueData] = Queue()
+        self._shared_process_data_queue: Queue[ProcessQueueData] = Queue()
+        self._imu_data_queue: Queue[ProcessQueueData] = Queue()
+        self._vision_data_queue: Queue[ProcessQueueData] = Queue()  # TODO: add each processes data queues to their process targets
+        self._arduino_data_queue: Queue[ProcessQueueData] = Queue()
         self._process_lock: multiprocessing.Lock = multiprocessing.Lock()
         self._available_processes: int = multiprocessing.cpu_count()
 
-        self._process_pool.append(multiprocessing.Process(target=self.imu.update_position, args=(self._process_data_queue,), name="IMU Update Process"))
-        self._process_pool.append(multiprocessing.Process(target=self.vision.run, args=(self._process_data_queue,), name="Vision Subsystem"))
-        self._process_pool.append(multiprocessing.Process(target=self.arduino.run_autonomous, args=(self._process_data_queue,), name="Arduino Subsystem"))
+        self._process_pool.append(multiprocessing.Process(target=self.imu.update_position, args=(self._shared_process_data_queue,), name="IMU Update Process"))
+        self._process_pool.append(multiprocessing.Process(target=self.vision.run, args=(self._shared_process_data_queue,), name="Vision Subsystem"))
+        self._process_pool.append(multiprocessing.Process(target=self.arduino.run_autonomous, args=(self._shared_process_data_queue,), name="Arduino Subsystem"))
 
         StaticUtilities.logger.info(f"{RobotController.__name__} initialized")
 
