@@ -54,6 +54,7 @@ class ArduinoSerialInterfaceController:
         self.baud_rate: int = baud_rate
         self.time_out: int = time_out
         self.arduino = None
+        self.running: bool = True
         self.arduino_serial_connection_established: bool = self.initialize_serial_connection(self.arduino_port)
         if not self.arduino_serial_connection_established:
             available_serial_devices = StaticUtilities.serial_devices()
@@ -65,6 +66,10 @@ class ArduinoSerialInterfaceController:
                 self.arduino_serial_connection_established = self.initialize_serial_connection(device[0])
                 if self.arduino_serial_connection_established:
                     break
+
+    def run_autonomous(self) -> None:
+        while self.running:
+            pass
 
     def initialize_serial_connection(self, port: str) -> bool:
         try:

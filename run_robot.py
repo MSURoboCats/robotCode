@@ -30,7 +30,7 @@ def main(gui: bool = False):
         testing_gui: GUI = GUI()
         testing_gui.gui()
     else:
-        robot_controller: RobotController = RobotController(number_of_processes=3)
+        robot_controller: RobotController = RobotController()
         robot_controller.autonomous()
 
 

@@ -1,4 +1,5 @@
 import platform
+import sys
 from threading import Thread
 from typing import List
 import multiprocessing
@@ -13,7 +14,7 @@ from static_utilities import StaticUtilities
 
 class RobotController:
 
-    def __init__(self, number_of_processes: int = (multiprocessing.cpu_count() - 1)) -> None:
+    def __init__(self) -> None:
         StaticUtilities.logger.info(f"{RobotController.__name__} initializing components")
 
         self.imu: ImuAhrsSpartan = ImuAhrsSpartan(port=("COM5" if platform.system() == "Windows" else ("/dev/ttyACM1" if platform.system() == "Linux" else "")), baud_rate=115200)
@@ -30,18 +31,21 @@ class RobotController:
         self._process_queue: Queue = Queue()
         self._process_lock: multiprocessing.Lock = multiprocessing.Lock()
         self._available_processes: int = multiprocessing.cpu_count()
-        self._available_threads: int = number_of_processes*2
 
         self._process_pool.append(multiprocessing.Process(target=self.imu.update_position, args=(), name="IMU Position Update Process"))
+        self._process_pool.append(multiprocessing.Process(target=self.vision.run, args=(), name="Vision Subsystem"))
+        self._process_pool.append(multiprocessing.Process(target=self.arduino.run_autonomous, args=(), name="Arduino Subsystem"))
 
         StaticUtilities.logger.info(f"{RobotController.__name__} initialized")
 
     def autonomous(self) -> None:
-
-        for process in self._process_pool:
-            process.start()
-        for process in self._process_pool:
-            process.join()
+        if len(self._process_pool) > self._available_processes:
+            sys.exit("more workers than are available processes. See RobotController.__init__()")
+        else:
+            for process in self._process_pool:
+                process.start()
+            for process in self._process_pool:
+                process.join()
 
         # self.arduino_thruster_controller.send_imu_control("test_data")
         # StaticUtilities.logger.info(f"{self.arduino_thruster_controller.receive()}")
