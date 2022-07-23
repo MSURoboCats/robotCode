@@ -103,7 +103,9 @@ class ArduinoSerialInterfaceController(Subsystem):
         s: str = ""
         timeout: float = 3
         start_time: float = time.time()
+        StaticUtilities.logger.error(f"receipt: {receipt}. receive_data: {receive_data}. current_s: {s}.")
         while s != receipt.rstrip():
+            StaticUtilities.logger.error(f"receipt: {receipt}. receive_data: {receive_data}. current_s: {s}.")
             data = s
             s = self.arduino_serial_object.readline().decode('utf-8').rstrip()
             if s != "":
