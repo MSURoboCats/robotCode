@@ -63,7 +63,7 @@ class ArduinoSerialInterfaceController(Subsystem):
         counter: int = 1
         while self.running:
             self.imu_control([counter], [100])
-            time.sleep(1)
+            time.sleep(2)
             # self.send_arduino_command(ArduinoAction.NEUTRAL)
             # time.sleep(1)
             counter += 1
@@ -172,6 +172,7 @@ class ArduinoSerialInterfaceController(Subsystem):
         if len(thruster_numbers) != len(thruster_percentages):
             return
         self.arduino_serial_object.write(f"{ArduinoAction.CONTROL_WITH_IMU.value}:{len(thruster_numbers)}>{';'.join(str(number) + ':' + str(percentage) for number, percentage in zip(thruster_numbers, thruster_percentages))}".encode('UTF-8'))
+        self.receive(receipt=f"received: {ArduinoAction.CONTROL_WITH_IMU.name}")
         return
 
     def each_thruster(self, thruster_power_percentages: List[int]) -> None:
