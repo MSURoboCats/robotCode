@@ -71,7 +71,7 @@ class ArduinoSerialInterfaceController(Subsystem):
                 self.running = False
 
     def arduino_serial_startup(self) -> None:
-        self.receive(receipt="arduino starting...")
+        # self.receive(receipt="arduino starting...")
         time.sleep(self.timeout)
         self.arduino_serial_object.flush()
         self.send(ArduinoAction.START)
