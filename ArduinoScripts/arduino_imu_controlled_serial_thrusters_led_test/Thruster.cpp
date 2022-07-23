@@ -25,6 +25,8 @@ Thruster::Thruster(int pin, int minPWM, int maxPWM, int neutralPWM, bool directi
   m_led_pin = pin + 20;
   m_led_state = LOW;
 
+  this->attachLED();
+
 }
 
 void Thruster::attachLED(void) {
