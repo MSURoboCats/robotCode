@@ -6,8 +6,12 @@ sub is run or tested.
 
 """
 import argparse
+import time
 from ast import parse
 from cmath import log
+from multiprocessing import Queue
+
+from Actuators.arduino_serial_interface import ArduinoSerialInterfaceController
 from GUI.gui import GUI
 from robot_controller import RobotController
 from static_utilities import StaticUtilities
@@ -26,12 +30,15 @@ guiFlag = args.gui
 
 
 def main(gui: bool = False):
-    if gui:
-        testing_gui: GUI = GUI()
-        testing_gui.gui()
-    else:
-        robot_controller: RobotController = RobotController()
-        robot_controller.autonomous()
+    # if gui:
+    #     testing_gui: GUI = GUI()
+    #     testing_gui.gui()
+    # else:
+    #     robot_controller: RobotController = RobotController()
+    #     robot_controller.autonomous()
+    asic = ArduinoSerialInterfaceController()
+    asic.run_autonomous(Queue(), Queue())
+    time.sleep(5)
 
 
 if __name__ == "__main__":
