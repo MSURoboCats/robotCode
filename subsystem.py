@@ -1,3 +1,4 @@
+import platform
 import time
 
 import serial
@@ -17,19 +18,31 @@ class Subsystem:
         self.serial_connection_established: bool = False
 
     def initialize_serial_connection(self, identification_string: str):
-        serial_object = self._initialize_serial_connection(identification_string)
-        if not self.serial_connection_established:
+        if platform.system() == "Linux":
             available_serial_devices = StaticUtilities.serial_devices()
             for device in available_serial_devices:
-                if identification_string not in device[1].lower():
-                    StaticUtilities.logger.debug(f"No device matching '{identification_string}' on {device[0]}")
-                    continue
-                StaticUtilities.logger.info(f"Found {device[1]} on {device[0]}. Attempting connection.")
-                serial_object = self._initialize_serial_connection(identification_string, port=device[0])
-                if self.serial_connection_established:
+                try:
+                    StaticUtilities.logger.info(f"Found {device[1]} on {device[0]}. Attempting connection.")
+                    serial_object = serial.Serial(device[0], self.baud_rate, timeout=self.timeout)
                     return serial_object
+                except serial.serialutil.SerialException:
+                    StaticUtilities.logger.debug(f"Failed to initialize {self.name} on {device[0]} at {self.baud_rate}")
+                    self.serial_connection_established = False
+            StaticUtilities.logger.error(f"Failed to initialize {self.name} on any port")
         else:
-            return serial_object
+            serial_object = self._initialize_serial_connection(identification_string)
+            if not self.serial_connection_established:
+                available_serial_devices = StaticUtilities.serial_devices()
+                for device in available_serial_devices:
+                    if identification_string not in device[1].lower():
+                        StaticUtilities.logger.debug(f"No device matching '{identification_string}' on {device[0]}")
+                        continue
+                    StaticUtilities.logger.info(f"Found {device[1]} on {device[0]}. Attempting connection.")
+                    serial_object = self._initialize_serial_connection(identification_string, port=device[0])
+                    if self.serial_connection_established:
+                        return serial_object
+            else:
+                return serial_object
 
     def _initialize_serial_connection(self, identification_string: str, port=None):
         if port is not None:
