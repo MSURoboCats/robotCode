@@ -69,6 +69,7 @@ class ArduinoSerialInterfaceController(Subsystem):
             counter += 1
             if counter > 8:
                 self.running = False
+        self.send_arduino_command(ArduinoAction.KILL)
         # counter: int = 0
         # while self.running:
         #     self.send_arduino_command(ArduinoAction.SURFACE)
