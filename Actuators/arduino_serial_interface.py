@@ -101,14 +101,19 @@ class ArduinoSerialInterfaceController(Subsystem):
         """
         data: str = ""
         s: str = ""
-        while s != receipt:
+        timeout: float = 3
+        elapsed_time: float = 0
+        while receipt not in s:
             data = s
             s = self.arduino_serial_object.readline().decode('utf-8').rstrip()
             if s != "":
                 StaticUtilities.logger.debug(f"{self.name}: {s}")
             if s == "status: killed":
                 return "killed"
+            if elapsed_time > timeout:
+                StaticUtilities.logger.error(f"Receive timeout elapsed. receipt: {receipt} receive_data: {receive_data} current_s: {s}")
             time.sleep(self.timeout * 0.01)
+            elapsed_time += self.timeout * 0.01
         return data if receive_data else s
 
     def send(self, command: ArduinoAction) -> None:
