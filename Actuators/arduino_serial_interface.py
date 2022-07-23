@@ -103,9 +103,7 @@ class ArduinoSerialInterfaceController(Subsystem):
         s: str = ""
         timeout: float = 3
         start_time: float = time.time()
-        StaticUtilities.logger.error(f"receipt: '{receipt}' receive_data: '{receive_data}' current_s: '{s}'")
         while s != receipt.rstrip():
-            StaticUtilities.logger.error(f"receipt: '{receipt}' receive_data: '{receive_data}' current_s: '{s}'")
             data = s
             s = self.arduino_serial_object.readline().decode('utf-8').rstrip()
             if s != "":
@@ -113,8 +111,8 @@ class ArduinoSerialInterfaceController(Subsystem):
             if s == "status: killed":
                 return "killed"
             if (time.time() - start_time) > timeout:
-                StaticUtilities.logger.error(f"Receive timeout elapsed. receipt: '{receipt}' receive_data: '{receive_data}' current_s: '{s}'")
-                return "error"
+                start_time = time.time()
+                StaticUtilities.logger.warning(f"Receive timeout elapsed. receipt: '{receipt}' receive_data: '{receive_data}' current_s: '{s}'")
             time.sleep(self.timeout * 0.01)
         return data if receive_data else s
 
@@ -179,7 +177,7 @@ class ArduinoSerialInterfaceController(Subsystem):
         if len(thruster_numbers) != len(thruster_percentages):
             return
         self.arduino_serial_object.write(f"{ArduinoAction.CONTROL_WITH_IMU.value}:{len(thruster_numbers)}>{';'.join(str(number) + ':' + str(percentage) for number, percentage in zip(thruster_numbers, thruster_percentages))}".encode('UTF-8'))
-        self.receive(receipt=f"received: {ArduinoAction.CONTROL_WITH_IMU.name}")
+        self.receive(receipt=f"received: {ArduinoAction.CONTROL_WITH_IMU.value}")
         return
 
     def each_thruster(self, thruster_power_percentages: List[int]) -> None:
