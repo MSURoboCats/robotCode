@@ -37,7 +37,6 @@ def main(gui: bool = False):
     #     robot_controller.autonomous()
     asic = ArduinoSerialInterfaceController()
     asic.run_autonomous(Queue(), Queue())
-    time.sleep(5)
 
 
 if __name__ == "__main__":

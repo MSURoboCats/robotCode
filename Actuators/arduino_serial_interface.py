@@ -60,8 +60,15 @@ class ArduinoSerialInterfaceController(Subsystem):
             self.arduino_serial_startup()
 
     def run_autonomous(self, send_queue: "Queue[ProcessQueueData]", receive_queue: "Queue[ProcessQueueData]") -> None:
+        counter: int = 0
         while self.running:
-            pass
+            self.send(ArduinoAction.SURFACE)
+            time.sleep(2)
+            self.send(ArduinoAction.NEUTRAL)
+            time.sleep(2)
+            counter += 1
+            if counter > 5:
+                self.running = False
 
     def arduino_serial_startup(self) -> None:
         self.receive(receipt="arduino starting...")
