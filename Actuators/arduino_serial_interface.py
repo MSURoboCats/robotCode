@@ -132,34 +132,6 @@ class ArduinoSerialInterfaceController(Subsystem):
         StaticUtilities.logger.warning(
             f"Arduino {self.arduino_type} on {self.port} killed. Restart Arduino {self.arduino_type} to continue.")
 
-    def legacy_send_arduino_command(self, entry: str):
-        """
-        Old version of send_arduino_command()
-        :param entry: str representation of command to send to the Arduino.
-        :return: None.
-        """
-        if entry == "fwd":
-            self.arduino_serial_object.write(b"forward\n")
-        elif entry == "rvs":
-            self.arduino_serial_object.write(b"reverse\n")
-        elif entry == "neut":
-            self.arduino_serial_object.write(b"neutral\n")
-        elif entry == "dive":
-            self.arduino_serial_object.write(b"dive\n")
-        elif entry == "hover_f":
-            self.arduino_serial_object.write(b"hoverForward\n")
-        elif entry == "hover_s":
-            self.arduino_serial_object.write(b"hoverSpin\n")
-        elif entry == "test_all":
-            self.arduino_serial_object.write(b"all\n")
-        elif entry == "seq_test":
-            self.arduino_serial_object.write(b"seqTest\n")
-        elif entry == "kill":
-            self.arduino_serial_object.write(b"kill\n")
-        else:
-            StaticUtilities.logger.info(f"command not recognized")
-        self.receive()
-
     def send_arduino_command(self, arduino_action: ArduinoAction) -> bool:
         """
         Poor man's implementation of TCP networking protocol over serial.
