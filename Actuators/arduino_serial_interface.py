@@ -62,9 +62,9 @@ class ArduinoSerialInterfaceController(Subsystem):
     def run_autonomous(self, send_queue: "Queue[ProcessQueueData]", receive_queue: "Queue[ProcessQueueData]") -> None:
         counter: int = 0
         while self.running:
-            self.send(ArduinoAction.SURFACE)
+            self.send_arduino_command(ArduinoAction.SURFACE)
             time.sleep(2)
-            self.send(ArduinoAction.NEUTRAL)
+            self.send_arduino_command(ArduinoAction.NEUTRAL)
             time.sleep(2)
             counter += 1
             if counter > 5:
@@ -168,6 +168,7 @@ class ArduinoSerialInterfaceController(Subsystem):
         :param: arduino_receipt:
         :return bool representation of the success of sending the command to the Arduino. If the Arduino was killed at any point return False, otherwise True.
         """
+        StaticUtilities.logger.debug(f"sending arduino command: {arduino_action.name}")
         self.send(arduino_action)
         return False if self.receive(receipt=arduino_receipt) == "killed" else True
 
