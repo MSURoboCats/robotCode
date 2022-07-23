@@ -67,7 +67,11 @@ void loop() {
     if (Serial.available() > 0) {
       String incomingString = Serial.readStringUntil('\n');
       Serial.print("received: ");
-      Serial.println(incomingString);
+      if (incomingString.indexOf(":") == -1) {
+        Serial.println(incomingString); 
+      } else {
+        Serial.println(incomingString.substring(incomingString.indexOf(":")));  
+      }
       if (incomingString == "kill") {
         neut();
         killFlag = 0;
