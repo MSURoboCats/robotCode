@@ -160,7 +160,7 @@ class ArduinoSerialInterfaceController(Subsystem):
             StaticUtilities.logger.info(f"command not recognized")
         self.receive()
 
-    def send_arduino_command(self, arduino_action: ArduinoAction, arduino_receipt: str = "status: done") -> bool:
+    def send_arduino_command(self, arduino_action: ArduinoAction) -> bool:
         """
         Poor man's implementation of TCP networking protocol over serial.
         Essentially, send a str to the Arduino via serial and wait for a response.
@@ -170,7 +170,7 @@ class ArduinoSerialInterfaceController(Subsystem):
         """
         StaticUtilities.logger.debug(f"sending arduino command: {arduino_action.name}")
         self.send(arduino_action)
-        return False if self.receive(receipt=arduino_receipt) == "killed" else True
+        return False if self.receive(receipt=f"received: {arduino_action.name.lower()}") == "killed" else True
 
     def drive_thruster(self, thruster_number: int, thruster_percentage: int):
         """
