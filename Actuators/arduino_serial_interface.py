@@ -8,6 +8,7 @@ import serial
 
 from process_queue_data import ProcessQueueData
 from static_utilities import StaticUtilities
+from subsystem import Subsystem
 
 
 class ArduinoAction(Enum):
@@ -38,58 +39,50 @@ class ArduinoAction(Enum):
     DRIVE_THRUSTER = "driveMotor"
 
 
-class ArduinoSerialInterfaceController:
+class ArduinoSerialInterfaceController(Subsystem):
     """
     Class that can be instantiated to control an Arduino and send it commands over serial.
     """
 
-    def __init__(self, *, arduino_port: str = '/dev/ttyACM0', baud_rate: int = 115200, time_out: int = 1,
+    def __init__(self, *, arduino_port: str = '/dev/ttyACM0', baud_rate: int = 115200, timeout: int = 1,
                  name: str = "Arduino Serial Interface Controller", arduino_type: str = "Mega"):
         """
         Initializes the Arduino and connection.
         Starts the Arduino.
         arduino_port, baud_rate, time_out default values can be overridden by passing values into the constructor on instantiation.
         """
-        self.name: str = name
+        super().__init__(name, arduino_port, baud_rate, timeout)
         self.arduino_type: str = arduino_type
-        self.arduino_port: str = arduino_port
-        self.baud_rate: int = baud_rate
-        self.time_out: int = time_out
-        self.arduino = None
-        self.running: bool = True
-        self.arduino_serial_connection_established: bool = self.initialize_serial_connection(self.arduino_port)
-        if not self.arduino_serial_connection_established:
-            available_serial_devices = StaticUtilities.serial_devices()
-            for device in available_serial_devices:
-                if "arduino" not in device[1].lower():
-                    StaticUtilities.logger.debug(f"No Arduino on {device[0]}")
-                    continue
-                StaticUtilities.logger.info(f"Found {device[1]} on {device[0]}. Attempting connection.")
-                self.arduino_serial_connection_established = self.initialize_serial_connection(device[0])
-                if self.arduino_serial_connection_established:
-                    break
+        self.arduino_serial_object = self.initialize_serial_connection("arduino", startup_method=self.arduino_serial_startup)
 
-    def run_autonomous(self, process_queue: Queue[ProcessQueueData]) -> None:
+    def run_autonomous(self, send_queue: Queue[ProcessQueueData], receive_queue: Queue[ProcessQueueData]) -> None:
         while self.running:
             pass
 
-    def initialize_serial_connection(self, port: str) -> bool:
-        try:
-            self.arduino = serial.Serial(port, self.baud_rate, timeout=self.time_out)
-            self.receive(receipt="arduino starting...")
-            time.sleep(self.time_out)
-            self.arduino.flush()
-            self.send(ArduinoAction.START)
-            self.receive(receipt="arduino ready")
-            self.arduino.flush()
-        except serial.serialutil.SerialException:
-            StaticUtilities.logger.error(
-                f"Failed to initialize {self.name} Arduino {self.arduino_type} on {port} at {self.baud_rate}")
-            return False
-        else:
-            StaticUtilities.logger.info(
-                f"{self.name} Arduino {self.arduino_type} initialized on {port} at {self.baud_rate}")
-            return True
+    def arduino_serial_startup(self) -> None:
+        self.receive(receipt="arduino starting...")
+        time.sleep(self.timeout)
+        self.arduino_serial_object.flush()
+        self.send(ArduinoAction.START)
+        self.receive(receipt="arduino ready")
+
+    # def initialize_serial_connection(self, port: str) -> bool:
+    #     try:
+    #         self.arduino = serial.Serial(port, self.baud_rate, timeout=self.timeout)
+    #         self.receive(receipt="arduino starting...")
+    #         time.sleep(self.timeout)
+    #         self.arduino.flush()
+    #         self.send(ArduinoAction.START)
+    #         self.receive(receipt="arduino ready")
+    #         self.arduino.flush()
+    #     except serial.serialutil.SerialException:
+    #         StaticUtilities.logger.error(
+    #             f"Failed to initialize {self.name} Arduino {self.arduino_type} on {port} at {self.baud_rate}")
+    #         return False
+    #     else:
+    #         StaticUtilities.logger.info(
+    #             f"{self.name} Arduino {self.arduino_type} initialized on {port} at {self.baud_rate}")
+    #         return True
 
     def receive(self, *, receipt: str = "status: done", receive_data: bool = False) -> str:
         """
@@ -107,12 +100,12 @@ class ArduinoSerialInterfaceController:
         s: str = ""
         while s != receipt:
             data = s
-            s = self.arduino.readline().decode('utf-8').rstrip()
+            s = self.arduino_serial_object.readline().decode('utf-8').rstrip()
             if s != "":
                 StaticUtilities.logger.debug(f"{self.name}: {s}")
             if s == "status: killed":
                 return "killed"
-            time.sleep(self.time_out * 0.01)
+            time.sleep(self.timeout * 0.01)
         return data if receive_data else s
 
     def send(self, command: ArduinoAction) -> None:
@@ -123,7 +116,7 @@ class ArduinoSerialInterfaceController:
         """
         command: str = command.value
         command += "\n"
-        self.arduino.write(command.encode('UTF-8'))
+        self.arduino_serial_object.write(command.encode('UTF-8'))
         return
 
     def kill(self) -> None:
@@ -134,16 +127,16 @@ class ArduinoSerialInterfaceController:
         Designed as a safety measure. Basically a Software Level E-STOP.
         :return: None.
         """
-        self.arduino.flush()
+        self.arduino_serial_object.flush()
         s: str = ""
         while s != "status: killed":
-            s = self.arduino.readline().decode('utf-8').rstrip()
+            s = self.arduino_serial_object.readline().decode('utf-8').rstrip()
             self.send(ArduinoAction.KILL.value)
             time.sleep(0.01)
-        self.arduino.flush()
-        self.arduino.close()
+        self.arduino_serial_object.flush()
+        self.arduino_serial_object.close()
         StaticUtilities.logger.warning(
-            f"Arduino {self.arduino_type} on {self.arduino_port} killed. Restart Arduino {self.arduino_type} to continue.")
+            f"Arduino {self.arduino_type} on {self.port} killed. Restart Arduino {self.arduino_type} to continue.")
 
     def legacy_send_arduino_command(self, entry: str):
         """
@@ -152,23 +145,23 @@ class ArduinoSerialInterfaceController:
         :return: None.
         """
         if entry == "fwd":
-            self.arduino.write(b"forward\n")
+            self.arduino_serial_object.write(b"forward\n")
         elif entry == "rvs":
-            self.arduino.write(b"reverse\n")
+            self.arduino_serial_object.write(b"reverse\n")
         elif entry == "neut":
-            self.arduino.write(b"neutral\n")
+            self.arduino_serial_object.write(b"neutral\n")
         elif entry == "dive":
-            self.arduino.write(b"dive\n")
+            self.arduino_serial_object.write(b"dive\n")
         elif entry == "hover_f":
-            self.arduino.write(b"hoverForward\n")
+            self.arduino_serial_object.write(b"hoverForward\n")
         elif entry == "hover_s":
-            self.arduino.write(b"hoverSpin\n")
+            self.arduino_serial_object.write(b"hoverSpin\n")
         elif entry == "test_all":
-            self.arduino.write(b"all\n")
+            self.arduino_serial_object.write(b"all\n")
         elif entry == "seq_test":
-            self.arduino.write(b"seqTest\n")
+            self.arduino_serial_object.write(b"seqTest\n")
         elif entry == "kill":
-            self.arduino.write(b"kill\n")
+            self.arduino_serial_object.write(b"kill\n")
         else:
             StaticUtilities.logger.info(f"command not recognized")
         self.receive()
@@ -192,7 +185,7 @@ class ArduinoSerialInterfaceController:
             return
         if thruster_number < 1 or thruster_number > 8:
             return
-        self.arduino.write(
+        self.arduino_serial_object.write(
             f"{ArduinoAction.DRIVE_THRUSTER.value}:{thruster_number}>{thruster_percentage};".encode('UTF-8'))
         return
 
@@ -202,7 +195,7 @@ class ArduinoSerialInterfaceController:
         """
         if len(thruster_numbers) != len(thruster_percentages):
             return
-        self.arduino.write(f"{ArduinoAction.CONTROL_WITH_IMU.value}:{len(thruster_numbers)}>{';'.join(str(number)+':'+str(percentage) for number, percentage in zip(thruster_numbers, thruster_percentages))}".encode('UTF-8'))
+        self.arduino_serial_object.write(f"{ArduinoAction.CONTROL_WITH_IMU.value}:{len(thruster_numbers)}>{';'.join(str(number) + ':' + str(percentage) for number, percentage in zip(thruster_numbers, thruster_percentages))}".encode('UTF-8'))
         return
 
     def each_thruster(self, thruster_power_percentages: List[int]) -> None:
@@ -212,7 +205,7 @@ class ArduinoSerialInterfaceController:
         if len(thruster_power_percentages) != 8:
             return
         else:
-            self.arduino.write(f"{ArduinoAction.CONTROL_EACH_THRUSTER.value}:{';'.join(str(percentage) for percentage in thruster_power_percentages)};".encode('UTF-8'))
+            self.arduino_serial_object.write(f"{ArduinoAction.CONTROL_EACH_THRUSTER.value}:{';'.join(str(percentage) for percentage in thruster_power_percentages)};".encode('UTF-8'))
             return
 
     def altitude(self) -> float:
@@ -238,5 +231,5 @@ class ArduinoSerialInterfaceController:
 
 if __name__ == '__main__':
     arduino: ArduinoSerialInterfaceController = ArduinoSerialInterfaceController()
-    time.sleep(arduino.time_out)
+    time.sleep(arduino.timeout)
     arduino.send_arduino_command(ArduinoAction.KILL)

@@ -11,14 +11,13 @@ from IMUPositionTrackingMaster.tracker_main import IMUTracker
 from process_queue_data import ProcessQueueData
 
 from static_utilities import StaticUtilities
+from subsystem import Subsystem
 
 
-class ImuAhrsSpartan:
+class ImuAhrsSpartan(Subsystem):
 
     def __init__(self, *, port: str = "COM5", baud_rate: int = 115200, name: str = "AHRS Sparton IMU"):
-        self.name: str = name
-        self.port: str = port  # COM5 on Josh PC
-        self.baud_rate: int = baud_rate
+        super().__init__(name, port, baud_rate)
         self.fs_sample_rate: float = 100.0  # in Hz
         self.T_period: float = 1 / self.fs_sample_rate
         self.cutoff_frequency: float = self.fs_sample_rate / 2  # Desired cutoff frequency of the filter, Hz, Sightly higher than actual 1.2 Hznyq = 0.5 * fs
@@ -26,35 +25,10 @@ class ImuAhrsSpartan:
         self.n_number_of_samples: int = int(self.T_period * self.fs_sample_rate)  # Total number of samples
         self.position = None
         self.data: List[List[float]] = []
-        self.serial_object = None
-        self.serial_connection_established: bool = False
-        self.initialize_serial_connection(self.port)
-        if not self.serial_connection_established:
-            available_serial_devices = StaticUtilities.serial_devices()
-            for device in available_serial_devices:
-                if "ahrs" not in device[1].lower():
-                    StaticUtilities.logger.debug(f"No IMU on {device[0]}")
-                    continue
-                StaticUtilities.logger.info(f"Found {device[1]} on {device[0]}. Attempting connection.")
-                self.initialize_serial_connection(device[0])
-                if self.serial_connection_established:
-                    break
-
-        self.running: bool = True
+        self.imu_serial_object = self.initialize_serial_connection("ahrs")
         self.lock = threading.Lock()
 
-    def initialize_serial_connection(self, port: str) -> None:
-        try:
-            self.serial_object = serial.Serial(port, self.baud_rate)
-            self.serial_object.flush()
-        except serial.serialutil.SerialException:
-            StaticUtilities.logger.error(f"Failed to initialize {self.name} on {port} at {self.baud_rate}")
-            self.serial_connection_established = False
-        else:
-            StaticUtilities.logger.info(f"{self.name} initialized on {port} at {self.baud_rate}")
-            self.serial_connection_established = True
-
-    def update_position(self, process_queue: Queue[ProcessQueueData]):
+    def update_position(self, send_queue: Queue[ProcessQueueData], receive_queue: Queue[ProcessQueueData]):
         # update gyro
         # update accel
         # update mag
@@ -93,8 +67,8 @@ class ImuAhrsSpartan:
             self.lock.release()
 
     def imu_data(self, command):
-        self.serial_object.write(command.encode())
-        data = self.serial_object.readline().decode('utf-8')
+        self.imu_serial_object.write(command.encode())
+        data = self.imu_serial_object.readline().decode('utf-8')
         values = np.array(re.findall('([-\d.]+)', data)).astype(float)
         return values
 

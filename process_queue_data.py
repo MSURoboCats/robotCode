@@ -7,10 +7,10 @@ class ProcessQueueDataType(Enum):
     """
     Encoded representation of the data type expected from the sender for given data.
     """
-    MAIN: 0  # str
-    ARDUINO_INTERFACE: 1  # None?
-    VISION: 2  # ???
-    IMU: 3  # List[?]
+    MAIN: 0  # str from MAIN
+    ARDUINO_INTERFACE: 1  # None? FROM arduino interface
+    VISION: 2  # ??? from Vision
+    IMU: 3  # List[?] from IMU
 
 
 class ProcessQueueDataPriority(Enum):
