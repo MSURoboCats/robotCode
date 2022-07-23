@@ -67,7 +67,7 @@ class ArduinoSerialInterfaceController(Subsystem):
             # self.send_arduino_command(ArduinoAction.NEUTRAL)
             # time.sleep(1)
             counter += 1
-            if counter > 9:
+            if counter > 8:
                 self.running = False
         # counter: int = 0
         # while self.running:
