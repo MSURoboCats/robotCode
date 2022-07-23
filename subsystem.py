@@ -22,8 +22,10 @@ class Subsystem:
             available_serial_devices = StaticUtilities.serial_devices()
             for device in available_serial_devices:
                 try:
-                    StaticUtilities.logger.info(f"Found {device[1]} on {device[0]}. Attempting connection.")
+                    StaticUtilities.logger.info(f"Found device on {device[0]}. Attempting connection.")
                     serial_object = serial.Serial(device[0], self.baud_rate, timeout=self.timeout)
+                    self.port = device[0]
+                    StaticUtilities.logger.info(f"{self.name} initialized on {self.port} at {self.baud_rate}")
                     return serial_object
                 except serial.serialutil.SerialException:
                     StaticUtilities.logger.debug(f"Failed to initialize {self.name} on {device[0]} at {self.baud_rate}")
