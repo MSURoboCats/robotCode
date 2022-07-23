@@ -103,9 +103,9 @@ class ArduinoSerialInterfaceController(Subsystem):
         s: str = ""
         timeout: float = 3
         start_time: float = time.time()
-        StaticUtilities.logger.error(f"receipt: {receipt}. receive_data: {receive_data}. current_s: {s}.")
+        StaticUtilities.logger.error(f"receipt: '{receipt}' receive_data: '{receive_data}' current_s: '{s}'")
         while s != receipt.rstrip():
-            StaticUtilities.logger.error(f"receipt: {receipt}. receive_data: {receive_data}. current_s: {s}.")
+            StaticUtilities.logger.error(f"receipt: '{receipt}' receive_data: '{receive_data}' current_s: '{s}'")
             data = s
             s = self.arduino_serial_object.readline().decode('utf-8').rstrip()
             if s != "":
@@ -113,7 +113,8 @@ class ArduinoSerialInterfaceController(Subsystem):
             if s == "status: killed":
                 return "killed"
             if (time.time() - start_time) > timeout:
-                StaticUtilities.logger.error(f"Receive timeout elapsed. receipt: {receipt} receive_data: {receive_data} current_s: {s}")
+                StaticUtilities.logger.error(f"Receive timeout elapsed. receipt: '{receipt}' receive_data: '{receive_data}' current_s: '{s}'")
+                return "error"
             time.sleep(self.timeout * 0.01)
         return data if receive_data else s
 
