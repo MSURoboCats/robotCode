@@ -1,9 +1,9 @@
 import numpy as np
 from numpy.linalg import inv, norm
 
-import data_receiver
-from mathlib import *
-from plotlib import *
+from Sensors.IMUPositionTrackingMaster import data_receiver
+from Sensors.IMUPositionTrackingMaster.mathlib import *
+from Sensors.IMUPositionTrackingMaster.plotlib import *
 
 
 class IMUTracker:

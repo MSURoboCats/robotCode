@@ -7,7 +7,7 @@ import numpy as np
 import re
 import time
 
-from IMUPositionTrackingMaster.tracker_main import IMUTracker
+from Sensors.IMUPositionTrackingMaster.tracker_main import IMUTracker
 from process_queue_data import ProcessQueueData
 
 from static_utilities import StaticUtilities
@@ -28,7 +28,7 @@ class ImuAhrsSpartan(Subsystem):
         self.imu_serial_object = self.initialize_serial_connection("ahrs")
         self.lock = threading.Lock()
 
-    def update_position(self, send_queue: Queue[ProcessQueueData], receive_queue: Queue[ProcessQueueData]):
+    def update_position(self, send_queue: "Queue[ProcessQueueData]", receive_queue: "Queue[ProcessQueueData]"):
         # update gyro
         # update accel
         # update mag

@@ -12,7 +12,6 @@ from cmath import log
 from multiprocessing import Queue
 
 from Actuators.arduino_serial_interface import ArduinoSerialInterfaceController
-from GUI.gui import GUI
 from robot_controller import RobotController
 from static_utilities import StaticUtilities
 

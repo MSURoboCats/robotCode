@@ -53,9 +53,13 @@ class ArduinoSerialInterfaceController(Subsystem):
         """
         super().__init__(name, arduino_port, baud_rate, timeout)
         self.arduino_type: str = arduino_type
-        self.arduino_serial_object = self.initialize_serial_connection("arduino", startup_method=self.arduino_serial_startup)
+        self.arduino_serial_object = self.initialize_serial_connection("arduino")
+        if self.arduino_serial_object is None:
+            raise serial.serialutil.SerialException("No Arduino connected to this device on any port")
+        else:
+            self.arduino_serial_startup()
 
-    def run_autonomous(self, send_queue: Queue[ProcessQueueData], receive_queue: Queue[ProcessQueueData]) -> None:
+    def run_autonomous(self, send_queue: "Queue[ProcessQueueData]", receive_queue: "Queue[ProcessQueueData]") -> None:
         while self.running:
             pass
 
@@ -65,24 +69,7 @@ class ArduinoSerialInterfaceController(Subsystem):
         self.arduino_serial_object.flush()
         self.send(ArduinoAction.START)
         self.receive(receipt="arduino ready")
-
-    # def initialize_serial_connection(self, port: str) -> bool:
-    #     try:
-    #         self.arduino = serial.Serial(port, self.baud_rate, timeout=self.timeout)
-    #         self.receive(receipt="arduino starting...")
-    #         time.sleep(self.timeout)
-    #         self.arduino.flush()
-    #         self.send(ArduinoAction.START)
-    #         self.receive(receipt="arduino ready")
-    #         self.arduino.flush()
-    #     except serial.serialutil.SerialException:
-    #         StaticUtilities.logger.error(
-    #             f"Failed to initialize {self.name} Arduino {self.arduino_type} on {port} at {self.baud_rate}")
-    #         return False
-    #     else:
-    #         StaticUtilities.logger.info(
-    #             f"{self.name} Arduino {self.arduino_type} initialized on {port} at {self.baud_rate}")
-    #         return True
+        self.arduino_serial_object.flush()
 
     def receive(self, *, receipt: str = "status: done", receive_data: bool = False) -> str:
         """
