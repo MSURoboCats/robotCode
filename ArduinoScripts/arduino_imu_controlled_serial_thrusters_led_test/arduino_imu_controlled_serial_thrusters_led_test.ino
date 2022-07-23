@@ -70,7 +70,7 @@ void loop() {
       if (incomingString.indexOf(":") == -1) {
         Serial.println(incomingString); 
       } else {
-        Serial.println(incomingString.substring(incomingString.indexOf(":")));  
+        Serial.println(incomingString.substring(0, incomingString.indexOf(":")));  
       }
       if (incomingString == "kill") {
         neut();
