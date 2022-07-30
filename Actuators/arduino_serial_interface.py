@@ -94,9 +94,6 @@ class ArduinoSerialInterfaceController(Subsystem):
         If the str Keyword Arg receipt is not modified it defaults to the value "status: done".
         If the Arduino returns the str "killed" this method will return.
 
-        Note: I'm realizing it may be beneficial to implement multiprocessing in the RobotController Class.
-        If that happens all methods in this class should impose a lock until an ack is received.
-
         :param: receipt: str to wait to receive from the Arduino via serial. Represents a TCP ACK.
         :return: str representation of the value received from the Arduino over serial.
         """

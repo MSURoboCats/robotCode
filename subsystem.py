@@ -1,5 +1,6 @@
 import platform
 import time
+import typing
 
 import serial
 from serial import Serial
@@ -17,8 +18,18 @@ class Subsystem:
         self.timeout: float = timeout
         self.serial_connection_established: bool = False
 
-    def initialize_serial_connection(self, identification_string: str):
+    def initialize_serial_connection(self, identification_string: str) -> typing.Optional[Serial]:
+        """
+        Attempts to establish a serial (UART) connection between python and this subsystem and attempts to handle failures.
+        If the connection to the port defined in the constructor fails this method attempts to find and connect to this
+        device on another serial port.
+        :returns: None or the serial object representing this subsystem.
+        """
         if platform.system() == "Linux":
+            serial_object = self._initialize_serial_connection(identification_string)
+            if self.serial_connection_established:
+                StaticUtilities.logger.info(f"{self.name} initialized on {self.port} at {self.baud_rate}")
+                return serial_object
             available_serial_devices = StaticUtilities.serial_devices()
             for device in available_serial_devices:
                 try:
@@ -46,14 +57,19 @@ class Subsystem:
             else:
                 return serial_object
 
-    def _initialize_serial_connection(self, identification_string: str, port=None):
+    def _initialize_serial_connection(self, identification_string: str, port: typing.Optional[str] = None) -> typing.Optional[Serial]:
+        """
+        Attempts to initialize a serial (UART) connection to this subsystem.
+        :return: None or the serial object representing this subsystem.
+        """
         if port is not None:
             self.port = port
         try:
             available_serial_devices = StaticUtilities.serial_devices()
             for device in available_serial_devices:
-                if identification_string not in device[1].lower():
-                    raise serial.serialutil.SerialException(f"Device identifier mismatch on port {identification_string}")
+                if self.port == device[0]:
+                    if identification_string not in device[1]:
+                        StaticUtilities.logger.warning(f"Device identifier mismatch on port '{port}' with identifier '{identification_string}'. Port identifier '{device[1]}'")
             serial_object = serial.Serial(self.port, self.baud_rate, timeout=self.timeout)
         except serial.serialutil.SerialException:
             StaticUtilities.logger.error(f"Failed to initialize {self.name} on {self.port} at {self.baud_rate}")
