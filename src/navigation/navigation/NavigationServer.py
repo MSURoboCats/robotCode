@@ -5,6 +5,7 @@ from rclpy.node import Node
 # Import interface definitions
 from interfaces.action import Navigate
 from interfaces.msg import ThrusterCommand
+from interfaces.msg import DepthInfoCommand
 
 class NavigationServer(Node):
     def __init__(self):
@@ -17,7 +18,17 @@ class NavigationServer(Node):
             'navigate',
             self._navigate
         )
+        self.create_subscription = self.create_subscription(
+            DepthInfoCommand,
+            "depthinfocommand",
+            self._handle_pressure_sensor_message
+        )
+    def _handle_pressure_sensor_message(self):
+        # This is where the (int64) input from the PressureSensorController node will be handled
 
+        # TODO: Add context to log message
+        self.get_logger().info("Processing DepthInfoCommand from PressureSensorController")
+    
     def _navigate(self, goal):
         # This is the entrypoint for completing a navigation goal, and will facilitate the consumption of sensor data and the implementation of the navigation algorithm.
         # TODO: Implement navigation logic
