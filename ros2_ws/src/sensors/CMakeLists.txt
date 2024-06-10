@@ -11,6 +11,20 @@ find_package(ament_cmake REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
+find_package(sensor_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/ControlData.msg"
+  "msg/EnvironmentData.msg"
+  "srv/GetDownward.srv"
+  "srv/GetForward.srv"
+  "srv/GetControlData.srv"
+  "srv/GetEnvironmentData.srv"
+  "srv/GetVoltage.srv"
+  DEPENDENCIES sensor_msgs # Add packages that above messages depend on, in this case geometry_msgs for Sphere.msg
+)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
