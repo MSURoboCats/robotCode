@@ -84,7 +84,7 @@ class SensorArduino:
         Print out the current control data
         """
 
-        print("Value\t\tx\t\ty\t\tz\nOrientation\t%.2f\t%.2f\t%.2f\n(deg)\nGyroscope\t%.2f\t%.2f\t%.2f\n(rad/s)\nAccel.\t\t%.2f\t%.2f\t%.2f\n(m/s^2)\n\nDepth: %.2f m" %
+        print("Value\t\tx\ty\tz\nOrientation\t%.2f\t%.2f\t%.2f\n(deg)\nGyroscope\t%.2f\t%.2f\t%.2f\n(rad/s)\nAccel.\t\t%.2f\t%.2f\t%.2f\n(m/s^2)\n\nDepth: %.2f m" %
               (self.orientation_x,
                self.orientation_y,
                self.orientation_z,
