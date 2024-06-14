@@ -1,2 +1,2 @@
 sensor_msgs/Imu imu_data
-int64 depth
+float64 depth

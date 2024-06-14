@@ -1,4 +1,4 @@
-from tutorial_interfaces.srv import AddThreeInts                            # CHANGE
+from sensors.srv import GetControlData
 import sys
 import rclpy
 from rclpy.node import Node
@@ -8,15 +8,12 @@ class MinimalClientAsync(Node):
 
     def __init__(self):
         super().__init__('minimal_client_async')
-        self.cli = self.create_client(AddThreeInts, 'add_three_ints')       # CHANGE
+        self.cli = self.create_client(GetControlData, 'get_control_data')       # CHANGE
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...')
-        self.req = AddThreeInts.Request()                                   # CHANGE
+        self.req = GetControlData.Request()                                   # CHANGE
 
     def send_request(self):
-        self.req.a = int(sys.argv[1])
-        self.req.b = int(sys.argv[2])
-        self.req.c = int(sys.argv[3])                                       # CHANGE
         self.future = self.cli.call_async(self.req)
 
 
@@ -36,8 +33,7 @@ def main(args=None):
                     'Service call failed %r' % (e,))
             else:
                 minimal_client.get_logger().info(
-                    'Result of add_three_ints: for %d + %d + %d = %d' %                                # CHANGE
-                    (minimal_client.req.a, minimal_client.req.b, minimal_client.req.c, response.sum))  # CHANGE
+                    'Result of get_control_data -> depth: %f' % (response.data.depth))  # CHANGE
             break
 
     minimal_client.destroy_node()

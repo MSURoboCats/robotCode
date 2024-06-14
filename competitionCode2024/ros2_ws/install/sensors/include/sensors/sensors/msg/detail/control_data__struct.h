@@ -25,7 +25,7 @@ extern "C"
 typedef struct sensors__msg__ControlData
 {
   sensor_msgs__msg__Imu imu_data;
-  int64_t depth;
+  double depth;
 } sensors__msg__ControlData;
 
 // Struct for a sequence of sensors__msg__ControlData.

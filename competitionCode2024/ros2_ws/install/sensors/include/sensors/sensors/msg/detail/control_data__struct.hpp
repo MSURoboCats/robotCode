@@ -43,7 +43,7 @@ struct ControlData_
     if (rosidl_runtime_cpp::MessageInitialization::ALL == _init ||
       rosidl_runtime_cpp::MessageInitialization::ZERO == _init)
     {
-      this->depth = 0ll;
+      this->depth = 0.0;
     }
   }
 
@@ -53,7 +53,7 @@ struct ControlData_
     if (rosidl_runtime_cpp::MessageInitialization::ALL == _init ||
       rosidl_runtime_cpp::MessageInitialization::ZERO == _init)
     {
-      this->depth = 0ll;
+      this->depth = 0.0;
     }
   }
 
@@ -62,7 +62,7 @@ struct ControlData_
     sensor_msgs::msg::Imu_<ContainerAllocator>;
   _imu_data_type imu_data;
   using _depth_type =
-    int64_t;
+    double;
   _depth_type depth;
 
   // setters for named parameter idiom
@@ -73,7 +73,7 @@ struct ControlData_
     return *this;
   }
   Type & set__depth(
-    const int64_t & _arg)
+    const double & _arg)
   {
     this->depth = _arg;
     return *this;

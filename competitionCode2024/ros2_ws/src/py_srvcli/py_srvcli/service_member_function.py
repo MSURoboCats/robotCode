@@ -1,4 +1,5 @@
-from tutorial_interfaces.srv import AddThreeInts                                                           # CHANGE
+from sensors.srv import GetControlData
+import py_srvcli.sensor_micro_interface as sensors_interface
 
 import rclpy
 from rclpy.node import Node
@@ -8,11 +9,12 @@ class MinimalService(Node):
 
     def __init__(self):
         super().__init__('minimal_service')
-        self.srv = self.create_service(AddThreeInts, 'add_three_ints', self.add_three_ints_callback)       # CHANGE
+        self.srv = self.create_service(GetControlData, 'get_control_data', self.get_control_data_callback)       # CHANGE
+        self.micro = sensors_interface.SensorArduino('/dev/ttyUSB0')
 
-    def add_three_ints_callback(self, request, response):
-        response.sum = request.a + request.b + request.c                                                   # CHANGE
-        self.get_logger().info('Incoming request\na: %d b: %d c: %d' % (request.a, request.b, request.c))  # CHANGE
+    def get_control_data_callback(self, request, response):
+        response.data.depth = self.micro.get_control_data().get('depth')
+        self.get_logger().info('Incoming request for control data\n')  # CHANGE
 
         return response
 

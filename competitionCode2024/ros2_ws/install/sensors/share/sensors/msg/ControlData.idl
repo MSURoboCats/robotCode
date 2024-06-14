@@ -9,7 +9,7 @@ module sensors {
     struct ControlData {
       sensor_msgs::msg::Imu imu_data;
 
-      int64 depth;
+      double depth;
     };
   };
 };
