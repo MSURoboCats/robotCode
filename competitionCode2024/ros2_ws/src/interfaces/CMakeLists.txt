@@ -15,10 +15,9 @@ find_package(sensor_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/ControlData.msg"
-  "msg/EnvironmentData.msg"
-  "srv/BatHealth.srv"
+  "msg/HullData.msg"
   "srv/MotorPowers.srv"
+  "srv/ControlData.srv"
   DEPENDENCIES sensor_msgs # Add packages that above messages depend on
 )
 

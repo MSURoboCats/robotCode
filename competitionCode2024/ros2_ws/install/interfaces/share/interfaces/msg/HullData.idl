@@ -1,0 +1,19 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from interfaces/msg/HullData.msg
+// generated code does not contain a copyright notice
+
+#include "sensor_msgs/msg/FluidPressure.idl"
+#include "sensor_msgs/msg/RelativeHumidity.idl"
+#include "sensor_msgs/msg/Temperature.idl"
+
+module interfaces {
+  module msg {
+    struct HullData {
+      sensor_msgs::msg::Temperature temperature;
+
+      sensor_msgs::msg::FluidPressure pressure;
+
+      sensor_msgs::msg::RelativeHumidity humidity;
+    };
+  };
+};

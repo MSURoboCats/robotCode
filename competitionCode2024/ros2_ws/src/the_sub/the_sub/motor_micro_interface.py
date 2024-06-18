@@ -35,10 +35,13 @@ class MotorArduino:
 
         return voltage
 
-    def get_assignments(self) -> None:
+    def get_assignments(self) -> tuple:
         """
         Get the current motor/ESC mappings and directions from the sub,
-        saving and printing out results
+        saving, printing, and returning the results
+
+        @rtype tuple
+        @return Tuple holding the motor/ESC mappings (first) and the motor directions (second)
         """
 
         self.__clear_buffer__()
@@ -53,13 +56,19 @@ class MotorArduino:
 
         self.__print_current_assignments__()
 
-    def set_assignments(self) -> None:
+        return (self.motor2esc_mapping[1:], self.esc_reverse_mapping[1:])
+
+    def set_assignments(self) -> tuple:
         """
         Run through basic console interface to test and assign motors
         to their corresponding ESCs and reverse directions as needed,
-        saving results and updating the sub
+        saving, printing, and returning the results.
+
+        @rtype tuple
+        @return Tuple holding the motor/ESC mappings (first) and the motor directions (second)
         """
 
+        self.__print_current_assignments__()
         esc = int(input("Enter esc to test (1-8) or -1 to save and quit: "))
         while esc != -1:
             while esc not in range(1, 9):
@@ -86,8 +95,29 @@ class MotorArduino:
         for i in range(1, 9):
             message += ((self.motor2esc_mapping[i] << 4) | self.esc_reverse_mapping[i]).to_bytes(1, "big")
         message += ">".encode("utf-8")
-
         self.port.write(message)
+
+        return (self.motor2esc_mapping[1:], self.esc_reverse_mapping[1:])
+
+    def load_assignments(self, mappings: list, directions: list) -> tuple:
+        """
+        Load preset motor/ESC mappings and motor directions, returning the updated values
+
+        @rtype tuple
+        @return Tuple holding the motor/ESC mappings (first) and the motor directions (second)
+        """
+
+        for i in range(8):
+            self.motor2esc_mapping[i+1] = mappings[i]
+            self.esc_reverse_mapping[i+1] = directions[i]
+
+        message = "<S".encode("utf-8")
+        for i in range(1, 9):
+            message += ((self.motor2esc_mapping[i] << 4) | self.esc_reverse_mapping[i]).to_bytes(1, "big")
+        message += ">".encode("utf-8")
+        self.port.write(message)
+
+        return (self.motor2esc_mapping[1:], self.esc_reverse_mapping[1:])
 
     def run_motors(self, motor_powers: list):
         """
@@ -121,6 +151,16 @@ class MotorArduino:
         Print out the current motor/ESC mapping and reversed flag
         """
 
+        print("         1<\n" +
+              "  ----------------     * * * * * * *\n" +
+              "  |       DOME   |     * FORWARD:  *\n" +
+              "2o|              |3o   * o - up    *\n" +
+              "  |              |     * < - left  *\n" +
+              "4v|   SUB (TOP)  |5v   * > - right *\n" +
+              "  |              |     * v - down  *\n" +
+              "6o|         PORTS|7o   * o - up    *\n" +
+              "  ----------------     * * * * * * *\n" +
+              "         8>")
         print("Motor: 1 2 3 4 5 6 7 8\nesc:   %d %d %d %d %d %d %d %d\nFlip:  %d %d %d %d %d %d %d %d" %
               (self.motor2esc_mapping[1],
                self.motor2esc_mapping[2],

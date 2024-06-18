@@ -23,7 +23,8 @@ setup(
             'downward_publisher = the_sub.downward_publisher:main',
             'downward_subscriber = the_sub.downward_subscriber:main',
             'motor_micro_node = the_sub.motor_micro_node:main',
-            'motor_tester_node = the_sub.tester_node:main',
+            'sensor_micro_node = the_sub.sensor_micro_node:main',
+            'tester_node = the_sub.tester_node:main',
 
         ],
     },
