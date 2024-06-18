@@ -15,13 +15,15 @@ setup(
     zip_safe=True,
     maintainer='robocats',
     maintainer_email='dhjensen02@gmail.com',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    description='For the whole sub',
+    license='Apache 2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'downward_publisher = the_sub.downward_publisher:main',
             'downward_subscriber = the_sub.downward_subscriber:main',
+            'motor_micro_node = the_sub.motor_micro_node:main',
+            'motor_tester_node = the_sub.tester_node:main',
 
         ],
     },

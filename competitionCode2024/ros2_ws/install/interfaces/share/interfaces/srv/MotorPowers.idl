@@ -1,0 +1,29 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from interfaces/srv/MotorPowers.srv
+// generated code does not contain a copyright notice
+
+
+module interfaces {
+  module srv {
+    struct MotorPowers_Request {
+      double motor1;
+
+      double motor2;
+
+      double motor3;
+
+      double motor4;
+
+      double motor5;
+
+      double motor6;
+
+      double motor7;
+
+      double motor8;
+    };
+    struct MotorPowers_Response {
+      uint8 structure_needs_at_least_one_member;
+    };
+  };
+};

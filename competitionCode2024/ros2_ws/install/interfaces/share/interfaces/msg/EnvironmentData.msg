@@ -1,0 +1,3 @@
+sensor_msgs/Temperature temperature
+sensor_msgs/FluidPressure pressure
+sensor_msgs/RelativeHumidity humidity
