@@ -50,88 +50,55 @@ class TotalTester(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    motor_tester = TotalTester()
-    motor_tester.set_motors([.1]*8)
+    tester = TotalTester()
+    tester.set_motors([.1]*8)
 
     while rclpy.ok():
-        rclpy.spin_once(motor_tester)
-        if motor_tester.motors_future.done():
+        rclpy.spin_once(tester)
+        if tester.motors_future.done():
             try:
-                response = motor_tester.motors_future.result()
+                response = tester.motors_future.result()
             except Exception as e:
-                motor_tester.get_logger().info(
+                tester.get_logger().info(
                     'Service call failed %r' % (e,))
             else:
-                motor_tester.get_logger().info(
+                tester.get_logger().info(
                     'motor values set to .1')  # CHANGE
             break
     
     time.sleep(2)
 
-    motor_tester.set_motors([0.0]*8)
+    tester.set_motors([0.0]*8)
 
     while rclpy.ok():
-        rclpy.spin_once(motor_tester)
-        if motor_tester.motors_future.done():
+        rclpy.spin_once(tester)
+        if tester.motors_future.done():
             try:
-                response = motor_tester.motors_future.result()
+                response = tester.motors_future.result()
             except Exception as e:
-                motor_tester.get_logger().info(
+                tester.get_logger().info(
                     'Service call failed %r' % (e,))
             else:
-                motor_tester.get_logger().info(
+                tester.get_logger().info(
                     'motor values set to 0')  # CHANGE
             break
 
-    motor_tester.set_motor_mappings()
+    tester.get_control_data()
 
     while rclpy.ok():
-        rclpy.spin_once(motor_tester)
-        if motor_tester.motors_future.done():
+        rclpy.spin_once(tester)
+        if tester.control_future.done():
             try:
-                response = motor_tester.motors_future.result()
+                response = tester.control_future.result()
             except Exception as e:
-                motor_tester.get_logger().info(
+                tester.get_logger().info(
                     'Service call failed %r' % (e,))
             else:
-                motor_tester.get_logger().info(
-                    'motors have been mapped')  # CHANGE
-            break
-    
-    motor_tester.set_motor_mappings()
-
-    while rclpy.ok():
-        rclpy.spin_once(motor_tester)
-        if motor_tester.motors_future.done():
-            try:
-                response = motor_tester.motors_future.result()
-            except Exception as e:
-                motor_tester.get_logger().info(
-                    'Service call failed %r' % (e,))
-            else:
-                motor_tester.get_logger().info(
-                    'motors have been mapped')  # CHANGE
-            break
-        
-    motor_tester.destroy_node()
-
-    sensor_tester = TotalTester()
-    sensor_tester.get_control_data()
-
-    while rclpy.ok():
-        rclpy.spin_once(sensor_tester)
-        if sensor_tester.control_future.done():
-            try:
-                response = sensor_tester.control_future.result()
-            except Exception as e:
-                sensor_tester.get_logger().info(
-                    'Service call failed %r' % (e,))
-            else:
-                sensor_tester.get_logger().info(
+                tester.get_logger().info(
                     'Control data received: lin_acc_x %.2f' % response.imu_data.linear_acceleration.x)  # CHANGE
             break
     
-    sensor_tester.destroy_node()
+    tester.destroy_node()
 
     rclpy.shutdown()
 

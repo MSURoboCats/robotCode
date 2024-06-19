@@ -1,4 +1,4 @@
-/motor_micro_node:
+motor_micro_node:
   ros__parameters:
     motor_directions:
     - 0

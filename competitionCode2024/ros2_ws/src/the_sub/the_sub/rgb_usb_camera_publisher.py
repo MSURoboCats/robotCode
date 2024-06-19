@@ -10,6 +10,7 @@ from rclpy.node import Node # Handles the creation of nodes
 from sensor_msgs.msg import Image # Image is the message type
 from cv_bridge import CvBridge # Package to convert between ROS and OpenCV Images
 import cv2 # OpenCV library
+import sys
  
 class ImagePublisher(Node):
   """
@@ -32,10 +33,13 @@ class ImagePublisher(Node):
     # Create the timer
     self.timer = self.create_timer(timer_period, self.timer_callback)
          
-    # Create a VideoCapture object
-    # The argument '0' gets the default webcam.
-    self.cap = cv2.VideoCapture(0)
-         
+    # Create a VideoCapture object (loop to find next camera if needed)
+    cam_idx = int(sys.argv[1])
+    self.cap = cv2.VideoCapture(cam_idx)
+    while not self.cap.isOpened():
+      cam_idx += 1
+      self.cap = cv2.VideoCapture(cam_idx)
+
     # Used to convert between ROS and OpenCV images
     self.br = CvBridge()
    
