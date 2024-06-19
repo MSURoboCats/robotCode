@@ -196,8 +196,8 @@ void receiveMessage() {
  */
 void writeControlData() {
   // read data from the BNO055
-  sensors_event_t orientationData , angVelocityData , linearAccelData;
-  bno.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
+  sensors_event_t angVelocityData , linearAccelData;
+  imu::Quaternion orientationData = bno.getQuat();
   bno.getEvent(&angVelocityData, Adafruit_BNO055::VECTOR_GYROSCOPE);
   bno.getEvent(&linearAccelData, Adafruit_BNO055::VECTOR_LINEARACCEL);
 
@@ -205,11 +205,13 @@ void writeControlData() {
   sensor.read();
 
   Serial.print("C ");
-  Serial.print(orientationData.orientation.x);
+  Serial.print(orientationData.x(), 4);
   Serial.print(" ");
-  Serial.print(orientationData.orientation.y);
+  Serial.print(orientationData.y(), 4);
   Serial.print(" ");
-  Serial.print(orientationData.orientation.z);
+  Serial.print(orientationData.z(), 4);
+  Serial.print(" ");
+  Serial.print(orientationData.w(), 4);
   Serial.print(" ");
   Serial.print(angVelocityData.gyro.x);
   Serial.print(" ");
