@@ -130,15 +130,15 @@ void loop() {
 
     // determine action based off task_byte (char):
     //  C: get control data (gyro/acc/orientation)
-    //  E: get environmental data (temp, pressure, humidity)
+    //  E: get hull data (temp, pressure, humidity)
     switch (read_buff[0]) {
       
       case 'C': // send data used for controls (oreintation, gyro, acc)
         writeControlData();
         break;
 
-      case 'E':
-        writeEnvironmentData();
+      case 'H':
+        writehullData();
         break;
 
       default: // explanation
@@ -238,7 +238,7 @@ void writeControlData() {
  * @return void
  */
 
-void writeEnvironmentData() {
+void writehullData() {
   // read data from the sensors
   //BMP388
   if (!bmp.performReading()) {
@@ -253,7 +253,7 @@ void writeEnvironmentData() {
   // BAR02
   sensor.read();
 
-  Serial.print("E ");
+  Serial.print("H ");
   Serial.print(temp.temperature);
   Serial.print(" ");
   Serial.print(bmp.pressure/100.0);

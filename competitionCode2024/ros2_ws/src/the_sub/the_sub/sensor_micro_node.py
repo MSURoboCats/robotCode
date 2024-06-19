@@ -13,7 +13,7 @@ import the_sub.sensor_micro_interface as sensor_interface
 class SensorMicroNode(Node):
 
     def __init__(self):
-        super().__init__('sensor_arduino_node')
+        super().__init__('sensor_micro_node')
 
         # service for getting control data
         self.get_control_data = self.create_service(ControlData, 'control_data', self.control_data_callback)
@@ -30,10 +30,10 @@ class SensorMicroNode(Node):
         # get control data and populate response
         data = self.sensor_micro.get_control_data()
 
-        response.imu_data.orientation.x = 0
-        response.imu_data.orientation.y = 0
-        response.imu_data.orientation.y = 0
-        response.imu_data.orientation.w = 0
+        response.imu_data.orientation.x = data.get('orientation').get('x')
+        response.imu_data.orientation.y = data.get('orientation').get('y')
+        response.imu_data.orientation.y = data.get('orientation').get('z')
+        response.imu_data.orientation.w = data.get('orientation').get('w')
         response.angular_velocity.x = data.get('angular_velocity').get('x')
         response.angular_velocity.y = data.get('angular_velocity').get('y')
         response.angular_velocity.z = data.get('angular_velocity').get('z')
@@ -48,7 +48,7 @@ class SensorMicroNode(Node):
     
     def pub_hull_data_callback(self):
         # get and publish hull data
-        data = self.sensor_micro.get_environment_data()
+        data = self.sensor_micro.get_hull_data()
 
         cur_conditions = HullData()
         cur_conditions.temperature.temperature = data.get('temperature')
