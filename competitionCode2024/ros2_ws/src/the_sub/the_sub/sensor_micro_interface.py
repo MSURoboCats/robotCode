@@ -73,7 +73,7 @@ class SensorArduino:
         """
 
         self.__clear_buffer__()
-        self.port.write("<E>".encode("utf-8"))
+        self.port.write("<H>".encode("utf-8"))
         self.__read_message__()
 
         out = {"temperature": self.temp,

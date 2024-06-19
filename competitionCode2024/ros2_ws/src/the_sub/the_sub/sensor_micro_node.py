@@ -34,15 +34,15 @@ class SensorMicroNode(Node):
         response.imu_data.orientation.y = data.get('orientation').get('y')
         response.imu_data.orientation.y = data.get('orientation').get('z')
         response.imu_data.orientation.w = data.get('orientation').get('w')
-        response.angular_velocity.x = data.get('angular_velocity').get('x')
-        response.angular_velocity.y = data.get('angular_velocity').get('y')
-        response.angular_velocity.z = data.get('angular_velocity').get('z')
-        response.linear_acceleration.x = data.get('linear_acceleration').get('x')
-        response.linear_acceleration.y = data.get('linear_acceleration').get('y')
-        response.linear_acceleration.z = data.get('linear_acceleration').get('z')
+        response.imu_data.angular_velocity.x = data.get('angular_velocity').get('x')
+        response.imu_data.angular_velocity.y = data.get('angular_velocity').get('y')
+        response.imu_data.angular_velocity.z = data.get('angular_velocity').get('z')
+        response.imu_data.linear_acceleration.x = data.get('linear_acceleration').get('x')
+        response.imu_data.linear_acceleration.y = data.get('linear_acceleration').get('y')
+        response.imu_data.linear_acceleration.z = data.get('linear_acceleration').get('z')
         response.depth = data.get('depth')
 
-        self.get_logger().info('Sending control data: depth %.2fm' % response.depth)
+        self.get_logger().info('Sending control data: depth %.2fm\n' % response.depth)
 
         return response
     
