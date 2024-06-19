@@ -122,13 +122,14 @@ class SensorArduino:
             self.orientation_x = values[0]
             self.orientation_y = values[1]
             self.orientation_z = values[2]
-            self.gyro_x = values[3]
-            self.gyro_y = values[4]
-            self.gyro_z = values[5]
-            self.accelerometer_x = values[6]
-            self.accelerometer_y = values[7]
-            self.accelerometer_z = values[8]
-            self.depth = values[9]
+            self.orientation_w = values[3]
+            self.gyro_x = values[4]
+            self.gyro_y = values[5]
+            self.gyro_z = values[6]
+            self.accelerometer_x = values[7]
+            self.accelerometer_y = values[8]
+            self.accelerometer_z = values[9]
+            self.depth = values[10]
 
         # environment message
         elif line[0] == "E":

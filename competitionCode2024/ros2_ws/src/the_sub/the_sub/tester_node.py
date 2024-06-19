@@ -97,7 +97,22 @@ def main(args=None):
                 motor_tester.get_logger().info(
                     'motors have been mapped')  # CHANGE
             break
+    
+    motor_tester.set_motor_mappings()
 
+    while rclpy.ok():
+        rclpy.spin_once(motor_tester)
+        if motor_tester.motors_future.done():
+            try:
+                response = motor_tester.motors_future.result()
+            except Exception as e:
+                motor_tester.get_logger().info(
+                    'Service call failed %r' % (e,))
+            else:
+                motor_tester.get_logger().info(
+                    'motors have been mapped')  # CHANGE
+            break
+        
     motor_tester.destroy_node()
 
     sensor_tester = TotalTester()

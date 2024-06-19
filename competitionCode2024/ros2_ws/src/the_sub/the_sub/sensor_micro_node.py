@@ -10,26 +10,24 @@ from interfaces.msg import HullData
 
 import the_sub.sensor_micro_interface as sensor_interface
 
-class SensorArduinoNode(Node):
+class SensorMicroNode(Node):
 
     def __init__(self):
         super().__init__('sensor_arduino_node')
 
+        # service for getting control data
         self.get_control_data = self.create_service(ControlData, 'control_data', self.control_data_callback)
         
+        # publisher for hull data every second
         self.pub_hull_data = self.create_publisher(HullData, 'hull_data', 10)
         timer_period = 1
         self.time = self.create_timer(timer_period, self.pub_hull_data_callback)
 
+        # initialize microcontroller
         self.sensor_micro = sensor_interface.SensorArduino('/dev/ttyUSB0')
-        
-        '''
-        Example Parameter:
-        motor_mappings_descriptor = ParameterDescriptor(description="Maps each motor to an ESC - see Notion Code Companion motor_micro_main.ino for mappings.")
-        self.declare_parameter('motor_mappings', [1,2,3,4,5,6,7,8], motor_mappings_descriptor)
-        '''
 
     def control_data_callback(self, request, response):
+        # get control data and populate response
         data = self.sensor_micro.get_control_data()
 
         response.imu_data.orientation.x = 0
@@ -49,6 +47,7 @@ class SensorArduinoNode(Node):
         return response
     
     def pub_hull_data_callback(self):
+        # get and publish hull data
         data = self.sensor_micro.get_environment_data()
 
         cur_conditions = HullData()
@@ -62,7 +61,7 @@ class SensorArduinoNode(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    arduino = SensorArduinoNode()
+    arduino = SensorMicroNode()
 
     rclpy.spin(arduino)
 
