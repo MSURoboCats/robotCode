@@ -18,7 +18,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/HullData.msg"
   "srv/MotorPowers.srv"
   "srv/ControlData.srv"
-  DEPENDENCIES sensor_msgs # Add packages that above messages depend on
+  "srv/UserTwistCommand.srv"
+  DEPENDENCIES sensor_msgs geometry_msgs # Add packages that above messages depend on
 )
 
 if(BUILD_TESTING)

@@ -30,13 +30,13 @@ class TotalTester(Node):
 
     def set_motors(self, values):
         self.motor_req.motor1 = values[0]
-        self.motor_req.motor1 = values[1]
-        self.motor_req.motor1 = values[2]
-        self.motor_req.motor1 = values[3]
-        self.motor_req.motor1 = values[4]
-        self.motor_req.motor1 = values[5]
-        self.motor_req.motor1 = values[6]
-        self.motor_req.motor1 = values[7]
+        self.motor_req.motor2 = values[1]
+        self.motor_req.motor3 = values[2]
+        self.motor_req.motor4 = values[3]
+        self.motor_req.motor5 = values[4]
+        self.motor_req.motor6 = values[5]
+        self.motor_req.motor7 = values[6]
+        self.motor_req.motor8 = values[7]
 
         self.motors_future = self.motor_cli.call_async(self.motor_req)
 
