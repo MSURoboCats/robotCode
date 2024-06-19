@@ -32,28 +32,28 @@ class Twist2Action(Node):
     def twist_command_callback(self, request, response):
         # coordinate system looking at front: x to the right, y up, z out of the page
         if request.twist_command.linear.z == 1:
-            self.set_motors(self.forward)
+            self.set_motors(self.forward*.15)
             self.get_logger().info('Going forward...')
         elif request.twist_command.linear.z == -1:
-            self.set_motors(self.backward)
+            self.set_motors(self.backward*.15)
             self.get_logger().info('Going backward...')
         elif request.twist_command.linear.y == 1:
-            self.set_motors(self.up)
+            self.set_motors(self.up*.15)
             self.get_logger().info('Going up...')
         elif request.twist_command.linear.y == -1:
-            self.set_motors(self.down)
+            self.set_motors(self.down*.15)
             self.get_logger().info('Going down...')
         elif request.twist_command.linear.x == 1:
-            self.set_motors(self.left)
+            self.set_motors(self.left*.15)
             self.get_logger().info('Going left...')
         elif request.twist_command.linear.x == -1:
-            self.set_motors(self.right)
+            self.set_motors(self.right*.15)
             self.get_logger().info('Going right...')
         elif request.twist_command.angular.y == 1:
-            self.set_motors(self.pos_rotate)
+            self.set_motors(self.pos_rotate*.15)
             self.get_logger().info('Rotating positvely...')
         elif request.twist_command.angular.y == -1:
-            self.set_motors(self.neg_rotate)
+            self.set_motors(self.neg_rotate*.15)
             self.get_logger().info('Rotating negatively...')
         else:
             self.set_motors(self.stop)
