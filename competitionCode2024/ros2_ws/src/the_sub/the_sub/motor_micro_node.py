@@ -11,6 +11,7 @@ import the_sub.motor_micro_interface as motor_interface
 from std_srvs.srv import Empty
 
 import yaml
+import os
 
 class MotorMicroNode(Node):
 
@@ -77,10 +78,15 @@ class MotorMicroNode(Node):
         self.set_parameters([updated_mappings, updated_directions])
 
         # dump new parameters
+        yaml_path = os.path.join(os.getcwd(), 'src', 'the_sub', 'config', 'params.yaml')
         params = self.get_parameters(['motor_mappings', 'motor_directions'])
-        params_dict = {'/motor_micro_node': {'ros__parameters' : {param.name : param.value for param in params}}}
-        with open('./motor_micro_node.yaml', 'w') as file:
-            yaml.dump(params_dict, file)
+        params_dict = {'motor_micro_node': {'ros__parameters' : {param.name : param.value for param in params}}}
+        all_params = {}
+        with open(yaml_path, 'r') as file:
+            all_params = yaml.load(file)
+        all_params.update(params_dict)
+        with open(yaml_path, 'w') as file:
+            yaml.dump(all_params, file)
 
         self.get_logger().info('Motor mappings and directions updated and dumped')
         return response

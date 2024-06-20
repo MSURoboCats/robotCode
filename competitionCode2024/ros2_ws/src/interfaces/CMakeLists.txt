@@ -19,6 +19,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/MotorPowers.srv"
   "srv/ControlData.srv"
   "srv/UserTwistCommand.srv"
+  "srv/UserStringCommand.srv"
   DEPENDENCIES sensor_msgs geometry_msgs # Add packages that above messages depend on
 )
 

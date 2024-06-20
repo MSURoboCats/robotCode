@@ -8,6 +8,10 @@ srv/MotorPowers.idl
 srv/MotorPowers.srv
 srv/MotorPowers_Request.msg
 srv/MotorPowers_Response.msg
+srv/UserStringCommand.idl
+srv/UserStringCommand.srv
+srv/UserStringCommand_Request.msg
+srv/UserStringCommand_Response.msg
 srv/UserTwistCommand.idl
 srv/UserTwistCommand.srv
 srv/UserTwistCommand_Request.msg

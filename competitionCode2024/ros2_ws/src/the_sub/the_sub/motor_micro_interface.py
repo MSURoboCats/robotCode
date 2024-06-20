@@ -68,34 +68,40 @@ class MotorArduino:
         @return Tuple holding the motor/ESC mappings (first) and the motor directions (second)
         """
 
-        self.__print_current_assignments__()
-        esc = int(input("Enter esc to test (1-8) or -1 to save and quit: "))
-        while esc != -1:
-            while esc not in range(1, 9):
-                esc = int(input("Enter esc to test (1-8): "))
+        while True:
+            self.__print_current_assignments__()
+            esc = int(input("Enter esc to test (1-8) or -1 to save and quit: "))
+
+            while esc not in range(1, 9) and esc != -1:
+                esc = int(input("Enter esc to test (1-8) or -1 to save and quit: "))
+
+            if esc == -1:
+                break
+
             self.__test_esc__(esc)
 
-            motor = int(input("Assign to motor (1-8): "))
-            while motor not in range(1, 9):
-                motor = int(input("Assign to motor (1-8): "))
+            motor = int(input("Assign to motor (1-8) OR -1 to leave unchanged: "))
+            while motor not in range(1,9) and motor != -1:
+                motor = int(input("Assign to motor (1-8) OR -1 to leave unchanged: "))
+
+            if motor == -1:
+                continue
+
             self.motor2esc_mapping[motor] = esc
 
             reverse = int(input("Direction reverse? (0 for False or 1 for True): "))
             while reverse not in [0, 1]:
                 reverse = int(input("Direction reverse? (0 for False or 1 for True): "))
             self.esc_reverse_mapping[motor] = reverse
-
-            self.__print_current_assignments__()
-            esc = int(input("Enter esc to test (1-8) or -1 to save and quit: "))
+            
+            message = "<S".encode("utf-8")
+            for i in range(1, 9):
+                message += ((self.motor2esc_mapping[i] << 4) | self.esc_reverse_mapping[i]).to_bytes(1, "big")
+            message += ">".encode("utf-8")
+            self.port.write(message)
 
         print("Saved assignments:")
         self.__print_current_assignments__()
-
-        message = "<S".encode("utf-8")
-        for i in range(1, 9):
-            message += ((self.motor2esc_mapping[i] << 4) | self.esc_reverse_mapping[i]).to_bytes(1, "big")
-        message += ">".encode("utf-8")
-        self.port.write(message)
 
         return (self.motor2esc_mapping[1:], self.esc_reverse_mapping[1:])
 
