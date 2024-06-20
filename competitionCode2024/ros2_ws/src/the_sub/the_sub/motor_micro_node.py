@@ -45,7 +45,8 @@ class MotorMicroNode(Node):
             self.get_parameter('motor_mappings').get_parameter_value().integer_array_value,
             self.get_parameter('motor_directions').get_parameter_value().integer_array_value
         )
-        self.get_logger().info('Motor mappings and directions updated')
+
+        self.get_logger().info('Motor microcontroller initialized')
 
     def motor_powers_callback(self, request, response):
         # send motor powers to the arduino
@@ -57,7 +58,7 @@ class MotorMicroNode(Node):
                                      request.motor6,
                                      request.motor7,
                                      request.motor8])
-        self.get_logger().info('Sending motor power values to arduino')
+        self.get_logger().debug('Sending motor power values to microcontroller')
         return response
     
     def motor_mappings_callback(self, request, response):
@@ -96,7 +97,8 @@ class MotorMicroNode(Node):
         cur_health = BatteryState()
         cur_health.voltage = self.motor_micro.get_voltage()
         self.pub_voltage.publish(cur_health)
-        self.get_logger().info('Publishing battery health: %.2fV' % cur_health.voltage)
+
+        self.get_logger().debug('Publishing voltage: %.2f' % cur_health.voltage)
 
 def main(args=None):
     rclpy.init(args=args)

@@ -11,7 +11,7 @@ def generate_launch_description():
     config = os.path.join(
         get_package_share_directory('the_sub'),
         'config',
-        'params.yaml'
+        'params.yaml',
     )
 
     # create node for sensor microcontroller

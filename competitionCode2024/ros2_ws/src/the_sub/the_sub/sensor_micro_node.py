@@ -26,6 +26,8 @@ class SensorMicroNode(Node):
         # initialize microcontroller
         self.sensor_micro = sensor_interface.SensorArduino('/dev/ttyUSB0')
 
+        self.get_logger().info('Sensor microcontroller initialized')
+
     def control_data_callback(self, request, response):
         # get control data and populate response
         data = self.sensor_micro.get_control_data()
@@ -56,7 +58,9 @@ class SensorMicroNode(Node):
         cur_conditions.humidity.relative_humidity = data.get('humidity')
 
         self.pub_hull_data.publish(cur_conditions)
-        self.get_logger().info('Publishing hull data: %.2fdegC' % cur_conditions.temperature.temperature)
+        self.get_logger().debug('Hull data published: %.2fdegC | %.2fhPa | %.2f%%' % (cur_conditions.temperature.temperature,
+                                                                                 cur_conditions.pressure.fluid_pressure,
+                                                                                 cur_conditions.humidity.relative_humidity))
 
 def main(args=None):
     rclpy.init(args=args)

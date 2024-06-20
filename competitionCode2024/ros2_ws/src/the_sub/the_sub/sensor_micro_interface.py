@@ -66,7 +66,7 @@ class SensorArduino:
 
     def get_hull_data(self) -> dict:
         """
-        Get the hull data: temperature, pressure, and humidity
+        Get the hull data: temperature (degC), pressure (hPa), and humidity (%)
 
         @rtype: dict
         @return: dictionary with the hull data

@@ -7,7 +7,9 @@
 # Import the necessary libraries
 import rclpy # Python Client Library for ROS 2
 from rclpy.node import Node # Handles the creation of nodes
+
 from sensor_msgs.msg import Image # Image is the message type
+
 from cv_bridge import CvBridge # Package to convert between ROS and OpenCV Images
 import cv2 # OpenCV library
 import sys
@@ -34,11 +36,12 @@ class ImagePublisher(Node):
     self.timer = self.create_timer(timer_period, self.timer_callback)
          
     # Create a VideoCapture object (loop to find next camera if needed)
-    cam_idx = int(sys.argv[1])
-    self.cap = cv2.VideoCapture(cam_idx)
+    self.cam_idx = int(sys.argv[1])
+    self.cap = cv2.VideoCapture(self.cam_idx)
     while not self.cap.isOpened():
-      cam_idx += 1
-      self.cap = cv2.VideoCapture(cam_idx)
+      self.cam_idx += 1
+      self.cap = cv2.VideoCapture(self.cam_idx)
+    self.get_logger().info('Camera added on port %d' % self.cam_idx)
 
     # Used to convert between ROS and OpenCV images
     self.br = CvBridge()
@@ -58,9 +61,10 @@ class ImagePublisher(Node):
       # The 'cv2_to_imgmsg' method converts an OpenCV
       # image to a ROS 2 image message
       self.publisher_.publish(self.br.cv2_to_imgmsg(frame))
- 
-    # Display the message on the console
-    self.get_logger().info('Publishing video frame')
+      self.get_logger().debug("Frame published by camera on video%d" % self.cam_idx)
+    else:
+      self.get_logger().warning('Camera on video%d failed to capture frame' % self.cam_idx)
+
   
 def main(args=None):
   
