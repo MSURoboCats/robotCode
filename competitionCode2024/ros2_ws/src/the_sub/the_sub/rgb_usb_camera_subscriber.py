@@ -7,9 +7,14 @@
 # Import the necessary libraries
 import rclpy # Python library for ROS 2
 from rclpy.node import Node # Handles the creation of nodes
+
 from sensor_msgs.msg import Image # Image is the message type
 from cv_bridge import CvBridge # Package to convert between ROS and OpenCV Images
+
 import cv2 # OpenCV library
+from ultralytics import YOLO
+import os
+import sys
  
 class ImageSubscriber(Node):
   """
@@ -33,18 +38,32 @@ class ImageSubscriber(Node):
       
     # Used to convert between ROS and OpenCV images
     self.br = CvBridge()
+
+    # create TensorRT model if needed
+    trt_model_path = os.path.join(os.getcwd(), 'models', str(sys.argv[1]) + '.engine')
+    if not os.path.exists(trt_model_path):
+      self.get_logger().info("Creating creating TensorRT model...give it some time")
+      model = YOLO('models/' + (sys.argv[1]) + '.pt')
+      model.export(format='engine', path=trt_model_path)
+
+    # load TensorRT model
+    self.get_logger().info("Loading TensorRT model: %s" % (str(sys.argv[1]) + '.engine'))
+    self.trt_model = YOLO(trt_model_path, task='detect')
+    self.get_logger().info("Model loaded")
    
   def listener_callback(self, data):
     """
     Callback function.
     """
-    self.get_logger().debug("Receiving frame")
+    self.get_logger().info("Receiving frame")
     
     # Convert ROS Image message to OpenCV image
     current_frame = self.br.imgmsg_to_cv2(data)
     
+    results = self.trt_model(current_frame)
+
     # Display image
-    cv2.imshow("camera", current_frame)
+    cv2.imshow("camera", results[0].plot())
     
     cv2.waitKey(1)
   
