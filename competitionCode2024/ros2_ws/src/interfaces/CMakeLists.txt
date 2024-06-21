@@ -12,10 +12,12 @@ find_package(ament_cmake REQUIRED)
 # find_package(<dependency> REQUIRED)
 
 find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/HullData.msg"
+  "msg/Yolov8Detection.msg"
   "srv/MotorPowers.srv"
   "srv/ControlData.srv"
   "srv/UserTwistCommand.srv"

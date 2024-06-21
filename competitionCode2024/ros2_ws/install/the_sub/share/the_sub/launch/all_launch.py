@@ -5,6 +5,12 @@ import launch_ros.actions
 
 def generate_launch_description():
 
+    FORWARD_RGB_CAM_PORT = '1'
+    FORWARD_RGB_DETECTION_MODEL = 'yolov8n'
+    DOWNWARD_RGB_CAM_PORT = '0'
+    FORWARD_RGB_DETECTION_MODEL = 'yolov8n'
+
+
     ld = launch.LaunchDescription()
 
     # get path to load node parameters from
@@ -13,6 +19,10 @@ def generate_launch_description():
         'config',
         'params.yaml',
     )
+
+#---------------------------------------------------------------------------------------------------------------
+# HARDWARE-LEVEL NODES
+#---------------------------------------------------------------------------------------------------------------
 
     # create node for sensor microcontroller
     sensor_micro_node = launch_ros.actions.Node(
@@ -37,7 +47,7 @@ def generate_launch_description():
         package='the_sub',
         executable='rgb_usb_camera_publisher',
         name='downward_rgb_pub_node',
-        arguments=['0'],
+        arguments=[DOWNWARD_RGB_CAM_PORT],
     )
     ld.add_action(downward_rgb_pub_node)
 
@@ -47,16 +57,22 @@ def generate_launch_description():
         package='the_sub',
         executable='rgb_usb_camera_publisher',
         name='forward_rgb_pub_node',
-        arguments=['1'],
+        arguments=[FORWARD_RGB_CAM_PORT],
     )
     ld.add_action(forward_rgb_pub_node)
 
+
+#---------------------------------------------------------------------------------------------------------------
+# COMPUTER VISION NODES
+#---------------------------------------------------------------------------------------------------------------
+    '''
     # create node to subscribe to frames from downward-facing RGB camera
     downward_rgb_sub_node = launch_ros.actions.Node(
+        namespace='downward_rgb_camera',
         package='the_sub',
         executable='rgb_usb_camera_subscriber',
         name='downward_rgb_sub_node',
-        remappings=[('/video_frames', '/downward_rgb_camera/video_frames')],
+        #remappings=[('/video_frames', '/downward_rgb_camera/video_frames')],
     )
     ld.add_action(downward_rgb_sub_node)
 
@@ -68,14 +84,43 @@ def generate_launch_description():
         name='forward_rgb_sub_node',
     )
     ld.add_action(forward_rgb_sub_node)
+    '''
+
+    # create node to detect objects from the forward-facing RGB camera
+    forward_rgb_detection_node = launch_ros.actions.Node(
+        namespace='forward_rgb_camera',
+        package='the_sub',
+        executable='yolov8_detector_node',
+        name='forward_rgb_detection_node',
+        arguments=[FORWARD_RGB_DETECTION_MODEL],
+        remappings=[('/forward_rgb_camera/detections', '/forward_rgb_camera/' + FORWARD_RGB_DETECTION_MODEL)]
+    )
+    ld.add_action(forward_rgb_detection_node)
+
+    # create node to detect objects from the downward-facing RGB camera
+    downward_rgb_detection_node = launch_ros.actions.Node(
+        namespace='downward_rgb_camera',
+        package='the_sub',
+        executable='yolov8_detector_node',
+        name='downward_rgb_detection_node',
+        arguments=[FORWARD_RGB_DETECTION_MODEL],
+        remappings=[('/forward_rgb_camera/detections', '/forward_rgb_camera/' + FORWARD_RGB_DETECTION_MODEL)]
+    )
+    ld.add_action(downward_rgb_detection_node)
+
+
+#---------------------------------------------------------------------------------------------------------------
+# CONTROL NODES
+#---------------------------------------------------------------------------------------------------------------
 
     # create node to translate twist or string commands to motor powers
     twist_transaltor = launch_ros.actions.Node(
         package='the_sub',
-        executable='twist_translator_node',
+        executable='twist2action_node',
         name='twist_command_translator',
     )
     ld.add_action(twist_transaltor)
+
     '''
     # create node for to test with
     tester_node = launch_ros.actions.Node(

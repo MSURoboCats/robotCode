@@ -30,7 +30,7 @@ class ImagePublisher(Node):
     self.publisher_ = self.create_publisher(Image, 'video_frames', 10)
       
     # We will publish a message every 0.1 seconds
-    timer_period = .03  # seconds
+    timer_period = .1  # seconds
       
     # Create the timer
     self.timer = self.create_timer(timer_period, self.timer_callback)
