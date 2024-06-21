@@ -44,7 +44,8 @@ class ImageSubscriber(Node):
     if not os.path.exists(trt_model_path):
       self.get_logger().info("Creating creating TensorRT model...give it some time")
       model = YOLO('models/' + (sys.argv[1]) + '.pt')
-      model.export(format='engine', path=trt_model_path)
+      model.export(format='engine')
+      os.remove(os.path.join(os.getcwd(), 'models', str(sys.argv[1]) + '.onnx'))
 
     # load TensorRT model
     self.get_logger().info("Loading TensorRT model: %s" % (str(sys.argv[1]) + '.engine'))
