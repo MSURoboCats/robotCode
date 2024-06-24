@@ -6,9 +6,9 @@ import launch_ros.actions
 def generate_launch_description():
 
     FORWARD_RGB_CAM_PORT = '1'
-    FORWARD_RGB_DETECTION_MODEL = 'yolov8n'
+    FORWARD_RGB_DETECTION_MODEL = 'pool_tuned_base'
     DOWNWARD_RGB_CAM_PORT = '0'
-    FORWARD_RGB_DETECTION_MODEL = 'yolov8n'
+    DOWNWARD_RGB_DETECTION_MODEL = 'yolov8n'
 
 
     ld = launch.LaunchDescription()
@@ -103,7 +103,7 @@ def generate_launch_description():
         package='the_sub',
         executable='yolov8_detector_node',
         name='downward_rgb_detection_node',
-        arguments=[FORWARD_RGB_DETECTION_MODEL],
+        arguments=[DOWNWARD_RGB_DETECTION_MODEL],
         remappings=[('/forward_rgb_camera/detections', '/forward_rgb_camera/' + FORWARD_RGB_DETECTION_MODEL)]
     )
     ld.add_action(downward_rgb_detection_node)
@@ -113,6 +113,7 @@ def generate_launch_description():
 # CONTROL NODES
 #---------------------------------------------------------------------------------------------------------------
 
+    '''
     # create node to translate twist or string commands to motor powers
     twist_transaltor = launch_ros.actions.Node(
         package='the_sub',
@@ -121,7 +122,7 @@ def generate_launch_description():
     )
     ld.add_action(twist_transaltor)
 
-    '''
+    
     # create node for to test with
     tester_node = launch_ros.actions.Node(
         package='the_sub',

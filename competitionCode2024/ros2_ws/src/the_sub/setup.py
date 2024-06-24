@@ -31,6 +31,7 @@ setup(
             'sensor_micro_node = the_sub.sensor_micro_node:main',
             'twist2action_node = the_sub.twist2action_node:main',
             'yolov8_detector_node = the_sub.yolov8_detector_node:main',
+            'keyboard_controller_node = the_sub.keyboard_controller_node:main',
             'tester_node = the_sub.tester_node:main',
             'set_motor_mappings_node = the_sub.set_motor_mappings_node:main',
             'frame_saver_node = the_sub.frame_saver_node:main'
