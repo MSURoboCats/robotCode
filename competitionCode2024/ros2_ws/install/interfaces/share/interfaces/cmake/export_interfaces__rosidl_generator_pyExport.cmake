@@ -54,7 +54,8 @@ endif()
 add_library(interfaces::interfaces__rosidl_generator_py SHARED IMPORTED)
 
 set_target_properties(interfaces::interfaces__rosidl_generator_py PROPERTIES
-  INTERFACE_LINK_LIBRARIES "interfaces::interfaces__rosidl_generator_c;/usr/lib/aarch64-linux-gnu/libpython3.10.so;interfaces::interfaces__rosidl_typesupport_c;sensor_msgs::sensor_msgs__rosidl_generator_py;builtin_interfaces::builtin_interfaces__rosidl_generator_py;geometry_msgs::geometry_msgs__rosidl_generator_py;std_msgs::std_msgs__rosidl_generator_py"
+  INTERFACE_INCLUDE_DIRECTORIES "/home/robocats/Desktop/developmentEnvironment/robotCode/competitionCode2024/ros2_ws/venv/lib/python3.10/site-packages/numpy/core/include"
+  INTERFACE_LINK_LIBRARIES "interfaces::interfaces__rosidl_generator_c;/home/robocats/Desktop/developmentEnvironment/robotCode/competitionCode2024/ros2_ws/venv/lib/libpython3.10.so;interfaces::interfaces__rosidl_typesupport_c;sensor_msgs::sensor_msgs__rosidl_generator_py;builtin_interfaces::builtin_interfaces__rosidl_generator_py;geometry_msgs::geometry_msgs__rosidl_generator_py;std_msgs::std_msgs__rosidl_generator_py"
 )
 
 if(CMAKE_VERSION VERSION_LESS 2.8.12)

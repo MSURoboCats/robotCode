@@ -15,9 +15,6 @@ class Yolov8Detector(Node):
   Create an Yolov8Detector class, which is a subclass of the Node class.
   """
   def __init__(self):
-    """
-    Class constructor to set up the node
-    """
     super().__init__('yolov8_detector_node')
     
     # subscriber for video feed
