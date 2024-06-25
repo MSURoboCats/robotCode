@@ -23,10 +23,12 @@ class ESCTesterNode(Node):
         # publisher to set motor mapping
         self.mappings_pub = self.create_publisher(Mappings, 'set_mappings', 10)
 
-    def get_motor_mappings(self):
+    def get_motor_mappings(self) -> None:
+        # make a request for motor mappings
         self.get_mappings_future = self.get_mappings_cli.call_async(self.get_mappings_req)
     
-def print_sub():
+def print_sub() -> None:
+    # print the layout of the sub
     print("         1<\n" +
             "  ----------------     * * * * * * *\n" +
             "  |       DOME   |     * FORWARD:  *\n" +
@@ -38,7 +40,8 @@ def print_sub():
             "  ----------------     * * * * * * *\n" +
             "         8>")
 
-def print_mappings(assignments):
+def print_mappings(assignments: Mappings) -> None:
+    # print the current motor mappings/directions
     print("Motor: 1 2 3 4 5 6 7 8\nesc:   %d %d %d %d %d %d %d %d\nFlip:  %d %d %d %d %d %d %d %d" %
               (assignments.motor1.esc,
                assignments.motor2.esc,
@@ -56,14 +59,18 @@ def print_mappings(assignments):
                assignments.motor6.direction,
                assignments.motor7.direction,
                assignments.motor8.direction))
-        
+
 def main(args=None):
+    # initialize the rclpy library
     rclpy.init(args=args)
 
+    # create the node
     tester = ESCTesterNode()
 
+    # var to hold the current mappings
     cur_assignments = Mappings()
 
+    # get the current mappings
     tester.get_motor_mappings()
     while rclpy.ok():
         rclpy.spin_once(tester)
@@ -72,28 +79,44 @@ def main(args=None):
                 cur_assignments = tester.get_mappings_future.result().mappings
             except Exception as e:
                 tester.get_logger().info(
-                    'Service call failed %r' % (e,))
+                    'Service call for motor mappings failed %r' % (e,))
             else:
                 tester.get_logger().info(
                     'Motor mappings read successfully')  # CHANGE
             break
 
+    # run the UI to test/set motor mappings and directions
     while True:
         print_sub()
         print_mappings(cur_assignments)
 
+        # get ESC to test
         esc = int(input("Enter esc to test (1-8) or -1 to save and quit: "))
-
         while esc not in range(1, 9) and esc != -1:
             esc = int(input("Enter esc to test (1-8) or -1 to save and quit: "))
-
-        if esc == -1:
-            break
         
+        # exit if the assignments are good - keep looping if not
+        if esc == -1:
+            if len(set([cur_assignments.motor1.esc,
+                        cur_assignments.motor2.esc,
+                        cur_assignments.motor3.esc,
+                        cur_assignments.motor4.esc,
+                        cur_assignments.motor5.esc,
+                        cur_assignments.motor6.esc,
+                        cur_assignments.motor7.esc,
+                        cur_assignments.motor8.esc,
+                        ])) != 8:
+                print("Invalid assignment: each ESC must map to a single motor. Fix it.")
+                continue
+            else:
+                break
+        
+        # publish ESC number to test
         esc_msg = Int16()
         esc_msg.data = esc
         tester.test_esc.publish(esc_msg)
 
+        # assign to motor or leave unchanged
         motor = int(input("Assign to motor (1-8) OR -1 to leave unchanged: "))
         while motor not in range(1,9) and motor != -1:
             motor = int(input("Assign to motor (1-8) OR -1 to leave unchanged: "))
@@ -101,10 +124,12 @@ def main(args=None):
         if motor == -1:
             continue       
 
+        # assign direction
         reverse = int(input("Direction reverse? (0 for False or 1 for True): "))
         while reverse not in [0, 1]:
             reverse = int(input("Direction reverse? (0 for False or 1 for True): "))
         
+        # only change assignments for the updated motor
         if motor == 1:
             cur_assignments.motor1.esc = esc
             cur_assignments.motor1.direction = reverse
@@ -130,10 +155,15 @@ def main(args=None):
             cur_assignments.motor8.esc = esc
             cur_assignments.motor8.direction = reverse
         
+        # publish new assignments
         tester.mappings_pub.publish(cur_assignments)
 
+    # destroy the node explicitly
+    # (optional - otherwise it will be done automatically
+    # when the garbage collector destroys the node object)
     tester.destroy_node()
 
+    # shutdown the ROS client library for Python
     rclpy.shutdown()
 
 

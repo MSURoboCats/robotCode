@@ -1,6 +1,5 @@
 import serial
 
-
 class MotorArduino:
     """
     This class provides methods to interface with the Teensy 4.1 that is used to drive the ESCs. Prior to use,
@@ -35,7 +34,7 @@ class MotorArduino:
 
         return voltage
 
-    def get_assignments(self) -> tuple:
+    def get_assignments(self) -> tuple[list[int], list[int]]:
         """
         Get the current motor/ESC mappings and directions from the sub,
         saving, printing, and returning the results
@@ -58,7 +57,7 @@ class MotorArduino:
 
         return (self.motor2esc_mapping[1:], self.esc_reverse_mapping[1:])
 
-    def set_assignments(self) -> tuple:
+    def set_assignments(self) -> tuple[list[int], list[int]]:
         """
         Run through basic console interface to test and assign motors
         to their corresponding ESCs and reverse directions as needed,
@@ -105,7 +104,7 @@ class MotorArduino:
 
         return (self.motor2esc_mapping[1:], self.esc_reverse_mapping[1:])
 
-    def load_assignments(self, mappings: list, directions: list) -> tuple:
+    def load_assignments(self, mappings: list[int], directions: list[int]) -> tuple[list[int], list[int]]:
         """
         Load preset motor/ESC mappings and motor directions, returning the updated values
 
@@ -125,7 +124,7 @@ class MotorArduino:
 
         return (self.motor2esc_mapping[1:], self.esc_reverse_mapping[1:])
 
-    def run_motors(self, motor_powers: list):
+    def run_motors(self, motor_powers: list[float]) -> None:
         """
         Set PWM values for all motors on the sub with 7-bit resolution in each direction
 
@@ -145,7 +144,7 @@ class MotorArduino:
         motor_message += ">".encode("utf-8")
         self.port.write(motor_message)
 
-    def kill_motors(self):
+    def kill_motors(self) -> None:
         """
         Stop all motors
         """
@@ -194,7 +193,7 @@ class MotorArduino:
                self.esc_reverse_mapping[7],
                self.esc_reverse_mapping[8]))
 
-    def __clear_buffer__(self):
+    def __clear_buffer__(self) -> None:
         """
         Clear the write buffer by reading all bytes currently in it
         """

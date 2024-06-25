@@ -1,8 +1,9 @@
 import rclpy
 from rclpy.node import Node
 
-from sensor_msgs.msg import Image
 from interfaces.msg import Yolov8Detection
+
+from sensor_msgs.msg import Image
 
 from cv_bridge import CvBridge
 import cv2
@@ -11,9 +12,7 @@ import os
 import sys
  
 class Yolov8Detector(Node):
-  """
-  Create an Yolov8Detector class, which is a subclass of the Node class.
-  """
+
   def __init__(self):
     super().__init__('yolov8_detector_node')
     
@@ -27,7 +26,7 @@ class Yolov8Detector(Node):
     # publisher for detected objects
     self.detector = self.create_publisher(Yolov8Detection, 'yolov8_detections', 10)
 
-    # convert between ROS2 and OpenCV image types
+    # convert ROS Image message <-> OpenCV image
     self.br = CvBridge()
 
     # create TensorRT model if needed
@@ -43,7 +42,7 @@ class Yolov8Detector(Node):
     self.trt_model = YOLO(trt_model_path, task='detect')
     self.get_logger().info("Model loaded")
    
-  def listener_callback(self, data):
+  def listener_callback(self, data: Image) -> None:
     self.get_logger().info("Receiving frame")
     
     # convert ROS Image message to OpenCV image
@@ -69,28 +68,28 @@ class Yolov8Detector(Node):
         # draw circle for object center
         current_frame = cv2.circle(current_frame, (int(detection.center.x), int(detection.center.y)), color=(0,0,255), radius=5, thickness=-1)
 
-    # Display annotated image
+    # show annotated image
     cv2.imshow("detections", results.plot())
     
     cv2.waitKey(1)
   
 def main(args=None):
   
-  # Initialize the rclpy library
+  # initialize the rclpy library
   rclpy.init(args=args)
   
-  # Create the node
+  # create the node
   detector = Yolov8Detector()
   
-  # Spin the node so the callback function is called.
+  # spin the node so the callback function is called.
   rclpy.spin(detector)
   
-  # Destroy the node explicitly
+  # destroy the node explicitly
   # (optional - otherwise it will be done automatically
   # when the garbage collector destroys the node object)
   detector.destroy_node()
   
-  # Shutdown the ROS client library for Python
+  # shutdown the ROS client library for Python
   rclpy.shutdown()
   
 if __name__ == '__main__':

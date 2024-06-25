@@ -1,7 +1,6 @@
 import serial
 import time
 
-
 class SensorArduino:
     """
     This class provides methods to interface with the Metro Mini v2 that is used to run a variety of sensors.
@@ -38,6 +37,7 @@ class SensorArduino:
         self.pressure = 0
         self.humidity = 0
 
+        # allow time for microcontroller to initialize
         time.sleep(5)
 
         # get initial values (read hull twice since first reading is bad)
@@ -45,7 +45,7 @@ class SensorArduino:
         self.get_hull_data()
         self.get_hull_data()
 
-    def get_control_data(self) -> dict:
+    def get_control_data(self) -> dict[str: float]:
         """
         Get the control data: orientation, gyroscope, accelerometer, depth
 
@@ -64,7 +64,7 @@ class SensorArduino:
 
         return out
 
-    def get_hull_data(self) -> dict:
+    def get_hull_data(self) -> dict[str: float]:
         """
         Get the hull data: temperature (degC), pressure (hPa), and humidity (%)
 
@@ -144,7 +144,7 @@ class SensorArduino:
         else:
             pass
 
-    def __clear_buffer__(self):
+    def __clear_buffer__(self) -> None:
         """
         Clear the write buffer by reading all bytes currently in it
         """

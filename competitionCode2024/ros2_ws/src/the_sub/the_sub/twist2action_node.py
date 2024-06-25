@@ -1,22 +1,22 @@
 import rclpy               
 from rclpy.node import Node
 
-from geometry_msgs.msg import Twist
-
 from interfaces.msg import MotorPowers
+
+from geometry_msgs.msg import Twist
 
 class Twist2Action(Node):
 
     def __init__(self):
         super().__init__('twist2action')
 
-        # create subscriber to receive twist that should be translated to motor powers
+        # subscriber to receive twist to be translated to motor powers
         self.twist_command_srv = self.create_subscription(Twist, 'control_twist', self.twist_command_callback, 10)
 
-        # create publisher for motor powers
+        # publisher for motor powers
         self.motor_powers_pub = self.create_publisher(MotorPowers, 'motor_powers', 10)
 
-        # create message to keep track of motor powers
+        # message to keep track of motor powers
         self.motor_powers = MotorPowers()
 
         # map standard commands to motor powers based on the motor configuration (see Notion for documentation)
@@ -30,7 +30,8 @@ class Twist2Action(Node):
         self.POS_ROTATE = [1, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 1.0]
         self.NEG_ROTATE = [-1, 0.0, 0.0, -1.0, 1.0, 0.0, 0.0, -1.0]
 
-    def twist_command_callback(self, data):
+    def twist_command_callback(self, data: Twist) -> None:
+        # translate twist to basic control
         # coordinate system looking at front: x to the right, y up, z out of the page
         if data.linear.z == 1:
             self.set_motors([x*.12 for x in self.FORWARD])
@@ -60,7 +61,8 @@ class Twist2Action(Node):
             self.set_motors(self.STOP)
             self.get_logger().info('Stopping...')
 
-    def set_motors(self, values):
+    def set_motors(self, values: MotorPowers) -> None:
+        # populate and publish motor powers
         self.motor_powers.motor1 = values[0]
         self.motor_powers.motor2 = values[1]
         self.motor_powers.motor3 = values[2]
@@ -73,12 +75,21 @@ class Twist2Action(Node):
         self.motor_powers_pub.publish(self.motor_powers)
 
 def main(args=None):
+    # initialize the rclpy library
     rclpy.init(args=args)
 
+    # create the node
     twister = Twist2Action()
 
+    # spin the node so callback function is called
     rclpy.spin(twister)
 
+    # destroy the node explicitly
+    # (optional - otherwise it will be done automatically
+    # when the garbage collector destroys the node object)
+    twister.destroy_node()
+
+    # shutdown the ROS client library for Python
     rclpy.shutdown()
 
 if __name__ == '__main__':

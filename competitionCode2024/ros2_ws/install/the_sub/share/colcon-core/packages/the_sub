@@ -1,1 +1,1 @@
-cv_bridge:geometry_msgs:image_transport:pygame:python3-opencv:rclpy:sensor_msgs:std_msgs
+cv_bridge:geometry_msgs:image_transport:numpy:os:pygame:pyserial:python3-opencv:rclpy:sensor_msgs:std_msgs:sys:ultralytics:yaml

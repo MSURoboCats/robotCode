@@ -25,17 +25,19 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'rgb_usb_camera_publisher = the_sub.rgb_usb_camera_publisher:main',
-            'rgb_usb_camera_subscriber = the_sub.rgb_usb_camera_subscriber:main',
+            # hardware interface
             'motor_micro_node = the_sub.motor_micro_node:main',
             'sensor_micro_node = the_sub.sensor_micro_node:main',
-            'twist2action_node = the_sub.twist2action_node:main',
+            'rgb_usb_camera_publisher = the_sub.rgb_usb_camera_publisher:main',
+            # computer vision
+            'rgb_usb_camera_subscriber = the_sub.rgb_usb_camera_subscriber:main',
             'yolov8_detector_node = the_sub.yolov8_detector_node:main',
-            'keyboard_controller_node = the_sub.keyboard_controller_node:main',
-            'tester_node = the_sub.tester_node:main',
-            'set_motor_mappings_node = the_sub.set_motor_mappings_node:main',
             'frame_saver_node = the_sub.frame_saver_node:main',
-            'esc_tester_node = the_sub.esc_tester_node:main',
+            # control
+            'twist2action_node = the_sub.twist2action_node:main',
+            'keyboard_controller_node = the_sub.keyboard_controller_node:main',
+            # setup
+            'map_motors_node = the_sub.map_motors_node:main',
         ],
     },
 )

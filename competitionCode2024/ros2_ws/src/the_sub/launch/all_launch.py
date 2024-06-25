@@ -6,7 +6,7 @@ import launch_ros.actions
 def generate_launch_description():
 
     FORWARD_RGB_CAM_PORT = '1'
-    FORWARD_RGB_DETECTION_MODEL = 'pool_tuned_base'
+    FORWARD_RGB_DETECTION_MODEL = 'yolov8n'
     DOWNWARD_RGB_CAM_PORT = '0'
     DOWNWARD_RGB_DETECTION_MODEL = 'yolov8n'
 
@@ -113,23 +113,23 @@ def generate_launch_description():
 # CONTROL NODES
 #---------------------------------------------------------------------------------------------------------------
 
-    '''
     # create node to translate twist or string commands to motor powers
-    twist_transaltor = launch_ros.actions.Node(
+    twist2action_node = launch_ros.actions.Node(
         package='the_sub',
         executable='twist2action_node',
-        name='twist_command_translator',
+        name='twist2action_node',
     )
-    ld.add_action(twist_transaltor)
+    ld.add_action(twist2action_node)
 
-    
-    # create node for to test with
-    tester_node = launch_ros.actions.Node(
+    '''
+    # create node to publish twist messages from the keyboard
+    keyboard_controller_node = launch_ros.actions.Node(
         package='the_sub',
-        executable='tester_node',
-        name='tester_node',
+        executable='keyboard_controller_node',
+        name='keyboard_controller_node',
+        remappings=[('/keyboard_control_twist', '/control_twist')],
     )
-    ld.add_action(tester_node)
+    ld.add_action(keyboard_controller_node)
     '''
 
     return ld

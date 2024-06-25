@@ -55,7 +55,7 @@ class MotorMicroNode(Node):
 
         self.get_logger().info('Motor microcontroller initialized')
 
-    def motor_powers_callback(self, motor_powers):
+    def motor_powers_callback(self, motor_powers: list[float]) -> None:
         # send motor powers to the arduino
         self.motor_micro.run_motors([motor_powers.motor1,
                                      motor_powers.motor2,
@@ -67,14 +67,16 @@ class MotorMicroNode(Node):
                                      motor_powers.motor8])
         self.get_logger().debug('Sending motor power values to microcontroller')
 
-    def test_esc_callback(self, esc):
+    def test_esc_callback(self, esc: Int16) -> None:
         # test ESC
         self.motor_micro.test_esc(esc.data)
     
-    def get_mappings_callback(self, request, response):
+    def get_mappings_callback(self, request, response: Mappings) -> Mappings:
+        # get current mapping/direction values
         motor_mappings = self.get_parameter('motor_mappings').value
         directions = self.get_parameter('motor_directions').value
 
+        # populate response
         response.mappings.motor1.esc = motor_mappings[0]
         response.mappings.motor1.direction = directions[0]
         response.mappings.motor2.esc = motor_mappings[1]
@@ -94,7 +96,7 @@ class MotorMicroNode(Node):
 
         return response
 
-    def set_mappings_callback(self, motor_mappings):
+    def set_mappings_callback(self, motor_mappings: Mappings) -> None:
         mappings = [motor_mappings.motor1.esc,
                     motor_mappings.motor2.esc,
                     motor_mappings.motor3.esc,
@@ -130,7 +132,7 @@ class MotorMicroNode(Node):
         )
         self.set_parameters([updated_mappings, updated_directions])
 
-        # dump new parameters
+        # dump new parameters to /ros2_ws/src/the_sub/config/params.yaml
         yaml_path = os.path.join(os.getcwd(), 'src', 'the_sub', 'config', 'params.yaml')
         params = self.get_parameters(['motor_mappings', 'motor_directions'])
         params_dict = {'motor_micro_node': {'ros__parameters' : {param.name : param.value for param in params}}}
@@ -143,7 +145,7 @@ class MotorMicroNode(Node):
 
         self.get_logger().info('Motor mappings and directions updated and dumped')
     
-    def pub_voltage_callback(self):
+    def pub_voltage_callback(self) -> None:
         # get and publish battery voltage
         cur_health = BatteryState()
         cur_health.voltage = self.motor_micro.get_voltage()
@@ -152,12 +154,21 @@ class MotorMicroNode(Node):
         self.get_logger().debug('Publishing voltage: %.2f' % cur_health.voltage)
 
 def main(args=None):
+    # initialize the rclpy library
     rclpy.init(args=args)
 
+    # create the node
     arduino = MotorMicroNode()
 
+    # spin the node so callback function is called
     rclpy.spin(arduino)
 
+    # destroy the node explicitly
+    # (optional - otherwise it will be done automatically
+    # when the garbage collector destroys the node object)
+    arduino.destroy_node()
+
+    # shutdown the ROS client library for Python
     rclpy.shutdown()
 
 if __name__ == '__main__':
