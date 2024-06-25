@@ -3,7 +3,6 @@ from rclpy.node import Node
 from rcl_interfaces.msg import ParameterDescriptor
 
 import rclpy.parameter
-from sensor_msgs.msg import Imu
 
 from interfaces.srv import ControlData
 from interfaces.msg import HullData

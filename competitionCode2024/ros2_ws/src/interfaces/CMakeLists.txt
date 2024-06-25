@@ -17,11 +17,12 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/HullData.msg"
+  "msg/Mappings.msg"
+  "msg/Motor.msg"
+  "msg/MotorPowers.msg"
   "msg/Yolov8Detection.msg"
-  "srv/MotorPowers.srv"
   "srv/ControlData.srv"
-  "srv/UserTwistCommand.srv"
-  "srv/UserStringCommand.srv"
+  "srv/GetMappings.srv"
   DEPENDENCIES sensor_msgs geometry_msgs # Add packages that above messages depend on
 )
 

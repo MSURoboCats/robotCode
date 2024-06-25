@@ -78,7 +78,7 @@ class MotorArduino:
             if esc == -1:
                 break
 
-            self.__test_esc__(esc)
+            self.test_esc(esc)
 
             motor = int(input("Assign to motor (1-8) OR -1 to leave unchanged: "))
             while motor not in range(1,9) and motor != -1:
@@ -151,6 +151,15 @@ class MotorArduino:
         """
         message = "<K>".encode("utf-8")
         self.port.write(message)
+    
+    def test_esc(self, esc: int) -> None:
+        """
+        Test an ESC at low RPM for out-of-water direction/motor testing
+
+        @param esc: esc number to test (1-8)
+        """
+        message = "<" + str(esc) + ">"
+        self.port.write(bytes(message, "utf-8"))
 
     def __print_current_assignments__(self) -> None:
         """
@@ -184,15 +193,6 @@ class MotorArduino:
                self.esc_reverse_mapping[6],
                self.esc_reverse_mapping[7],
                self.esc_reverse_mapping[8]))
-
-    def __test_esc__(self, esc: int) -> None:
-        """
-        Test an ESC at low RPM for out-of-water direction/motor testing
-
-        @param esc: esc number to test (1-8)
-        """
-        message = "<" + str(esc) + ">"
-        self.port.write(bytes(message, "utf-8"))
 
     def __clear_buffer__(self):
         """

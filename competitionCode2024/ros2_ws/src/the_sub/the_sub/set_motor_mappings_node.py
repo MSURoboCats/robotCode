@@ -3,20 +3,20 @@ from rclpy.node import Node
 
 from sensor_msgs.msg import BatteryState
 
-from interfaces.srv import MotorPowers, ControlData
 from std_srvs.srv import Empty
+from std_msgs.msg import Int16
 
-import time
-
-class TotalTester(Node):
+class ESCTesterNode(Node):
 
     def __init__(self):
-        super().__init__('tester')
+        super().__init__('esc_tester_node')
         
         self.motor_mappings_cli = self.create_client(Empty, 'motor_mappings')       # CHANGE
         while not self.motor_mappings_cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...')
         self.motor_mappings_req = Empty.Request()
+
+        self.test_esc = self.create_publisher(Int16, 'test_esc', 10)
 
     def set_motor_mappings(self):
         self.mappings_future = self.motor_mappings_cli.call_async(self.motor_mappings_req)
@@ -24,8 +24,9 @@ class TotalTester(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    tester = TotalTester()
-
+    tester = ESCTesterNode()
+    rclpy.spin(tester)
+    
     tester.set_motor_mappings()
 
     while rclpy.ok():

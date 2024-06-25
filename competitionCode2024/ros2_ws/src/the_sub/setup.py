@@ -34,7 +34,8 @@ setup(
             'keyboard_controller_node = the_sub.keyboard_controller_node:main',
             'tester_node = the_sub.tester_node:main',
             'set_motor_mappings_node = the_sub.set_motor_mappings_node:main',
-            'frame_saver_node = the_sub.frame_saver_node:main'
+            'frame_saver_node = the_sub.frame_saver_node:main',
+            'esc_tester_node = the_sub.esc_tester_node:main',
         ],
     },
 )

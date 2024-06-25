@@ -3,7 +3,7 @@ from rclpy.node import Node
 
 from sensor_msgs.msg import BatteryState
 
-from interfaces.srv import MotorPowers, ControlData
+from interfaces.srv import ControlData
 from std_srvs.srv import Empty
 
 import time
@@ -12,11 +12,6 @@ class TotalTester(Node):
 
     def __init__(self):
         super().__init__('tester')
-
-        self.motor_cli = self.create_client(MotorPowers, 'motor_powers')       # CHANGE
-        while not self.motor_cli.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('service not available, waiting again...')
-        self.motor_req = MotorPowers.Request() 
         
         self.motor_mappings_cli = self.create_client(Empty, 'motor_mappings')       # CHANGE
         while not self.motor_mappings_cli.wait_for_service(timeout_sec=1.0):
