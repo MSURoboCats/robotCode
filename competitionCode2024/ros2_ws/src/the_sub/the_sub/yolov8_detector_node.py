@@ -49,27 +49,35 @@ class Yolov8Detector(Node):
     current_frame = self.br.imgmsg_to_cv2(data)
     
     # get detection results
-    results = self.trt_model(current_frame)[0]
+    results = self.trt_model.track(current_frame)[0]
     
     # publish each detection
     for r in results:
       for box in r.boxes:
-        detection = Yolov8Detection()
-        detection.name = self.trt_model.names[int(box.cls)]
-        if r.boxes.is_track:
-          detection.tracking_id = int(box.id)
-        detection.confidence = float(box.conf)
-        detection.center.x = float(box.xywh[0][0])
-        detection.center.y = float(box.xywh[0][1])
-        detection.dimensions.x = float(box.xywh[0][2])
-        detection.dimensions.y = float(box.xywh[0][3])
-        self.detector.publish(detection)
-        
-        # draw circle for object center
-        current_frame = cv2.circle(current_frame, (int(detection.center.x), int(detection.center.y)), color=(0,0,255), radius=5, thickness=-1)
-
+        if float(box.conf) > .7:
+          detection = Yolov8Detection()
+          detection.name = self.trt_model.names[int(box.cls)]
+          if r.boxes.is_track:
+            detection.tracking_id = int(box.id)
+          detection.confidence = float(box.conf)
+          detection.center.x = float(box.xywh[0][0])
+          detection.center.y = float(box.xywh[0][1])
+          detection.dimensions.x = float(box.xywh[0][2])
+          detection.dimensions.y = float(box.xywh[0][3])
+          self.detector.publish(detection)
+          
+          # draw circle for object center and add tracking ID
+          current_frame = cv2.circle(current_frame, (int(detection.center.x), int(detection.center.y)), color=(0,0,255), radius=5, thickness=-1)
+          current_frame = cv2.putText(current_frame,
+                                      self.trt_model.names[int(box.cls)] + ': ' + str(int(box.id)),
+                                      (int(detection.center.x), int(detection.center.y)),
+                                      cv2.FONT_HERSHEY_SIMPLEX,
+                                      1,
+                                      (255, 255, 0),
+                                      2, 
+                                      cv2.LINE_AA)
     # show annotated image
-    cv2.imshow("detections", results.plot())
+    cv2.imshow("detections", current_frame)
     
     cv2.waitKey(1)
   
