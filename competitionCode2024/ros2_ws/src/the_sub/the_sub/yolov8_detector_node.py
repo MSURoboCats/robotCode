@@ -49,7 +49,7 @@ class Yolov8Detector(Node):
     current_frame = self.br.imgmsg_to_cv2(data)
     
     # get detection results
-    results = self.trt_model.track(current_frame)[0]
+    results = self.trt_model.track(current_frame, persist=True)[0]
     
     # publish each detection
     for r in results:
@@ -69,7 +69,7 @@ class Yolov8Detector(Node):
           # draw circle for object center and add tracking ID
           current_frame = cv2.circle(current_frame, (int(detection.center.x), int(detection.center.y)), color=(0,0,255), radius=5, thickness=-1)
           current_frame = cv2.putText(current_frame,
-                                      self.trt_model.names[int(box.cls)] + ': ' + str(int(box.id)),
+                                      self.trt_model.names[int(box.cls)] + ': ' + str(detection.tracking_id) + '(' + str(detection.confidence) + ')',
                                       (int(detection.center.x), int(detection.center.y)),
                                       cv2.FONT_HERSHEY_SIMPLEX,
                                       1,

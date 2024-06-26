@@ -6,7 +6,7 @@ class MotorArduino:
     the motor/ESC mappings and directions must be set. The board voltage is also measured by the Teensy 4.1
     """
 
-    def __init__(self, com_port: str, br: int = 115200, timeout: int = 5):
+    def __init__(self, com_port: str, br: int = 115200, timeout: int = .2):
         """
         Initialize the Teensy 4.1 controlling the ESCs on the sub
 

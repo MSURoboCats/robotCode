@@ -3,8 +3,7 @@ from rclpy.node import Node
 from rcl_interfaces.msg import ParameterDescriptor
 import rclpy.parameter
 
-from interfaces.srv import ControlData
-from interfaces.msg import HullData
+from interfaces.msg import ControlData, HullData
 
 import the_sub.sensor_micro_interface as sensor_interface
 
@@ -13,55 +12,55 @@ class SensorMicroNode(Node):
     def __init__(self):
         super().__init__('sensor_micro_node')
 
-        # service for getting control data
-        self.get_control_data = self.create_service(ControlData, 'control_data', self.control_data_callback)
-        
-        # publisher for hull data every second
+        # publisher for control data
+        self.pub_control_data = self.create_publisher(ControlData, 'control_data', 10) 
+
+        # publisher for hull data
         self.pub_hull_data = self.create_publisher(HullData, 'hull_data', 10)
-        timer_period = 1
-        self.time = self.create_timer(timer_period, self.pub_hull_data_callback)
+
+        # callback for publishing at 5 Hz
+        period = .2
+        self.time = self.create_timer(period, self.publish_all_data)
 
         # initialize microcontroller
         self.sensor_micro = sensor_interface.SensorArduino('/dev/ttyUSB0')
         self.get_logger().info('Sensor microcontroller initialized')
 
-    def control_data_callback(self, request, response: ControlData) -> ControlData:
+    def publish_all_data(self) -> None:
         # get control data
         data = self.sensor_micro.get_control_data()
 
-        # populate response
-        response.imu_data.orientation.x = data.get('orientation').get('x')
-        response.imu_data.orientation.y = data.get('orientation').get('y')
-        response.imu_data.orientation.y = data.get('orientation').get('z')
-        response.imu_data.orientation.w = data.get('orientation').get('w')
-        response.imu_data.angular_velocity.x = data.get('angular_velocity').get('x')
-        response.imu_data.angular_velocity.y = data.get('angular_velocity').get('y')
-        response.imu_data.angular_velocity.z = data.get('angular_velocity').get('z')
-        response.imu_data.linear_acceleration.x = data.get('linear_acceleration').get('x')
-        response.imu_data.linear_acceleration.y = data.get('linear_acceleration').get('y')
-        response.imu_data.linear_acceleration.z = data.get('linear_acceleration').get('z')
-        response.depth = data.get('depth')
+        # populate message
+        cur_data = ControlData()
+        cur_data.imu_data.orientation.x = data.get('orientation').get('x')
+        cur_data.imu_data.orientation.y = data.get('orientation').get('y')
+        cur_data.imu_data.orientation.y = data.get('orientation').get('z')
+        cur_data.imu_data.orientation.w = data.get('orientation').get('w')
+        cur_data.imu_data.angular_velocity.x = data.get('angular_velocity').get('x')
+        cur_data.imu_data.angular_velocity.y = data.get('angular_velocity').get('y')
+        cur_data.imu_data.angular_velocity.z = data.get('angular_velocity').get('z')
+        cur_data.imu_data.linear_acceleration.x = data.get('linear_acceleration').get('x')
+        cur_data.imu_data.linear_acceleration.y = data.get('linear_acceleration').get('y')
+        cur_data.imu_data.linear_acceleration.z = data.get('linear_acceleration').get('z')
+        cur_data.depth = data.get('depth')
 
-        self.get_logger().info('Sending control data: depth %.2fm\n' % response.depth)
-
-        return response
-    
-    def pub_hull_data_callback(self) -> None:
+        # publish message
+        self.pub_control_data.publish(cur_data)
+        self.get_logger().debug('Control data published')
+        
         # get hull data 
         data = self.sensor_micro.get_hull_data()
 
         # populate message
         cur_conditions = HullData()
-        cur_conditions.temperature.temperature = data.get('temperature')
-        cur_conditions.pressure.fluid_pressure = data.get('pressure')
-        cur_conditions.humidity.relative_humidity = data.get('humidity')
+        cur_conditions.temperature.temperature = float(data.get('temperature'))
+        cur_conditions.pressure.fluid_pressure = float(data.get('pressure'))
+        cur_conditions.humidity.relative_humidity = float(data.get('humidity'))
 
         # publish message
         self.pub_hull_data.publish(cur_conditions)
-        self.get_logger().debug('Hull data published: %.2fdegC | %.2fhPa | %.2f%%' % (cur_conditions.temperature.temperature,
-                                                                                 cur_conditions.pressure.fluid_pressure,
-                                                                                 cur_conditions.humidity.relative_humidity))
-
+        self.get_logger().debug('Hull data published')
+        
 def main(args=None):
     # initialize the rclpy library
     rclpy.init(args=args)

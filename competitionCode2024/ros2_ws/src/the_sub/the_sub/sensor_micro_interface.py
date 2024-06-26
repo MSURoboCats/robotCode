@@ -8,7 +8,7 @@ class SensorArduino:
     hull (temp/pressure/humidity).
     """
 
-    def __init__(self, com_port: str, br: int = 115200, timeout: int = 5):
+    def __init__(self, com_port: str, br: int = 115200, timeout: int = .2):
         """
         Initialize the Metro Mini v2 that is connected to a suite of sensors. Takes ~5s for sensors to get set up
 
@@ -22,6 +22,7 @@ class SensorArduino:
         self.orientation_x = 0
         self.orientation_y = 0
         self.orientation_z = 0
+        self.orientation_w = 0
 
         self.gyro_x = 0
         self.gyro_y = 0
@@ -113,7 +114,8 @@ class SensorArduino:
 
     def __read_message__(self) -> None:
 
-        line = self.port.readline().decode("utf-8").removesuffix("\n").split(" ")
+        raw_line = self.port.readline().decode("utf-8")
+        line = raw_line.removesuffix("\n").split(" ")
 
         # error message
         if line[0] == "!":
@@ -142,6 +144,7 @@ class SensorArduino:
             self.humidity = values[2]
 
         else:
+            print("Whacky message: <%s>" % raw_line)
             pass
 
     def __clear_buffer__(self) -> None:

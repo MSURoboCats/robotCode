@@ -245,6 +245,7 @@ void writehullData() {
         // send string over serial with error info
         // error flag is "!"
         // message would look like: "! <error info here>\n"
+        Serial.print("!BMP388\n")
         return;
   }
   //SHT45

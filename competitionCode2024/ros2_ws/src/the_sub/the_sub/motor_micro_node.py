@@ -31,9 +31,9 @@ class MotorMicroNode(Node):
         # subscriber for setting motor mappings
         self.set_mappings = self.create_subscription(Mappings, "set_mappings", self.set_mappings_callback, 10)
 
-        # publisher for board voltage every second
+        # publisher for board voltage at 5 Hz
         self.pub_voltage = self.create_publisher(BatteryState, 'battery_health', 10)
-        timer_period = 1
+        timer_period = .2
         self.time = self.create_timer(timer_period, self.pub_voltage_callback)
 
         # intialize the microcontroller
@@ -151,7 +151,7 @@ class MotorMicroNode(Node):
         cur_health.voltage = self.motor_micro.get_voltage()
         self.pub_voltage.publish(cur_health)
 
-        self.get_logger().debug('Publishing voltage: %.2f' % cur_health.voltage)
+        self.get_logger().info('Publishing voltage: %.2f' % cur_health.voltage)
 
 def main(args=None):
     # initialize the rclpy library
