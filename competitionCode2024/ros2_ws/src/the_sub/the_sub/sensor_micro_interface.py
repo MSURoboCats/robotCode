@@ -17,7 +17,6 @@ class SensorArduino:
         """
 
         self.port = serial.Serial(com_port, baudrate=br, timeout=timeout)
-        self.__clear_buffer__()
 
         self.orientation_x = 0
         self.orientation_y = 0
@@ -42,112 +41,50 @@ class SensorArduino:
         time.sleep(5)
 
         # get initial values (read hull twice since first reading is bad)
-        self.get_control_data()
-        self.get_hull_data()
-        self.get_hull_data()
+        self.get_data()
+        self.get_data()
 
-    def get_control_data(self) -> dict[str: float]:
+    def get_data(self) -> dict[str: float]:
         """
-        Get the control data: orientation, gyroscope, accelerometer, depth
+        Get all data: orientation, gyroscope, accelerometer, depth, temperature (degC), pressure (hPa), and humidity (%)
 
         @rtype: dict
-        @return: dictionary with the control data
+        @return: dictionary with all the data
         """
 
         self.__clear_buffer__()
-        self.port.write("<C>".encode("utf-8"))
         self.__read_message__()
 
         out = {"orientation": {"x": self.orientation_x, "y": self.orientation_y, "z": self.orientation_z, "w": self.orientation_w},
                "angular_velocity": {"x": self.gyro_x, "y": self.gyro_y, "z": self.gyro_z},
                "linear_acceleration": {"x": self.accelerometer_x, "y": self.accelerometer_y, "z": self.accelerometer_z},
-               "depth": self.depth}
-
-        return out
-
-    def get_hull_data(self) -> dict[str: float]:
-        """
-        Get the hull data: temperature (degC), pressure (hPa), and humidity (%)
-
-        @rtype: dict
-        @return: dictionary with the hull data
-        """
-
-        self.__clear_buffer__()
-        self.port.write("<H>".encode("utf-8"))
-        self.__read_message__()
-
-        out = {"temperature": self.temp,
+               "depth": self.depth,
+               "temperature": self.temp,
                "pressure": self.pressure,
                "humidity": self.humidity}
 
         return out
 
-    def print_control_data(self) -> None:
-        """
-        Print out the current control data
-        """
-
-        print("Value\t\tx\ty\tz\nOrientation\t%.2f\t%.2f\t%.2f\t%.2f\n(deg)\nGyroscope\t%.2f\t%.2f\t%.2f\n(rad/s)\nAccel.\t\t%.2f\t%.2f\t%.2f\n(m/s^2)\n\nDepth: %.2f m" %
-              (self.orientation_x,
-               self.orientation_y,
-               self.orientation_z,
-               self.orientation_w,
-               self.gyro_x,
-               self.gyro_y,
-               self.gyro_z,
-               self.accelerometer_x,
-               self.accelerometer_y,
-               self.accelerometer_z,
-               self.depth))
-        return
-
-    def print_hull_data(self) -> None:
-        """
-        Print out the current hull data
-        """
-        print("Temp:\t\t%.2f C\nPressure:\t%.2f hPa\nHumidity:\t%.2f%%\n" %
-              (self.temp,
-               self.pressure,
-               self.humidity))
-        return
-
     def __read_message__(self) -> None:
 
-        message_type = self.port.read(1).decode("utf-8")
 
-        # error message
-        if message_type == "!":
-            print("Error!")
+        line = self.port.read(154).decode("utf-8").split(" ")
+        values = [float(x) for x in line[1:] if x != '']
 
-        # control message
-        elif message_type == "C":
-            line = self.port.read(121).decode("utf-8").split(" ")
-            values = [float(x) for x in line[1:] if x != '']
-
-            self.orientation_x = values[0]
-            self.orientation_y = values[1]
-            self.orientation_z = values[2]
-            self.orientation_w = values[3]
-            self.gyro_x = values[4]
-            self.gyro_y = values[5]
-            self.gyro_z = values[6]
-            self.accelerometer_x = values[7]
-            self.accelerometer_y = values[8]
-            self.accelerometer_z = values[9]
-            self.depth = values[10]
-        
-        # hull message
-        elif message_type == "H":
-            line = self.port.read(33).decode("utf-8").split(" ")
-            values = [float(x) for x in line[1:] if x != '']
-
-            self.temp = values[0]
-            self.pressure = values[1]
-            self.humidity = values[2]
-
-        else:
-            print("Whacky message: <%s>" % message_type)
+        self.orientation_x = values[0]
+        self.orientation_y = values[1]
+        self.orientation_z = values[2]
+        self.orientation_w = values[3]
+        self.gyro_x = values[4]
+        self.gyro_y = values[5]
+        self.gyro_z = values[6]
+        self.accelerometer_x = values[7]
+        self.accelerometer_y = values[8]
+        self.accelerometer_z = values[9]
+        self.depth = values[10]
+        self.temp = values[11]
+        self.pressure = values[12]
+        self.humidity = values[13]
 
     def __clear_buffer__(self) -> None:
         """

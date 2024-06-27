@@ -18,8 +18,8 @@ class SensorMicroNode(Node):
         # publisher for hull data
         self.pub_hull_data = self.create_publisher(HullData, 'hull_data', 10)
 
-        # callback for publishing at 5 Hz
-        period = .2
+        # callback for publishing at 16 Hz
+        period = .0625
         self.time = self.create_timer(period, self.publish_all_data)
 
         # initialize microcontroller
@@ -28,8 +28,9 @@ class SensorMicroNode(Node):
 
     def publish_all_data(self) -> None:
         # get control data
-        data = self.sensor_micro.get_control_data()
-        
+        #data = self.sensor_micro.get_control_data()
+        data = self.sensor_micro.get_data()
+
         # populate message
         cur_data = ControlData()
         cur_data.imu_data.orientation.x = data.get('orientation').get('x')
@@ -49,13 +50,15 @@ class SensorMicroNode(Node):
         self.get_logger().info('Control data published')
         
         # get hull data 
-        data = self.sensor_micro.get_hull_data()
+        #data = self.sensor_micro.get_hull_data()
 
         # populate message
+        
         cur_conditions = HullData()
-        cur_conditions.temperature.temperature = float(data.get('temperature'))
-        cur_conditions.pressure.fluid_pressure = float(data.get('pressure'))
-        cur_conditions.humidity.relative_humidity = float(data.get('humidity'))
+        cur_conditions.temperature.temperature = data.get('temperature')
+        cur_conditions.pressure.fluid_pressure = data.get('pressure')
+        cur_conditions.humidity.relative_humidity = data.get('humidity')
+        
 
         # publish message
         self.pub_hull_data.publish(cur_conditions)
