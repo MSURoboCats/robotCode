@@ -65,6 +65,8 @@ Adafruit_BNO055 bno = Adafruit_BNO055(55, BNO055_I2C_ADDR, &Wire);
 Adafruit_BMP3XX bmp;
 Adafruit_SHT4x sht4 = Adafruit_SHT4x();
 MS5837 sensor;
+sensors_event_t humid, temp;
+uint8_t n = 0; // counter for sending hull data only every 16 iterations
 
 //-------------------------------------------------------------------------------
 
@@ -121,80 +123,17 @@ void setup() {
 
 void loop() {
 
-  // read standard message from serial to read buffer
-  receiveMessage();
+  writeData();
 
-  // if a full message has been received, reset and act on message
-  if (new_data == true) {
-    new_data = false;
-
-    // determine action based off task_byte (char):
-    //  C: get control data (gyro/acc/orientation)
-    //  E: get hull data (temp, pressure, humidity)
-    switch (read_buff[0]) {
-      
-      case 'C': // send data used for controls (oreintation, gyro, acc)
-        writeControlData();
-        break;
-
-      case 'H':
-        writehullData();
-        break;
-
-      default: // explanation
-        break;
-      }
-  }
-  delay(5);
 }
 
 /**
- * Reads message from serial following format of read_buff.
- * R/W to global variables:
- *  read_buff[]
- *  new_data
- *  start_marker
- *  end_marker
+ * Print orientation x/y/z, angular velocity x/y/z, and acceleration x/y/z, depth,
+ * temperature, pressure, and humidity values over Serial on a single line in that order.
  * 
  * @return void
  */
-void receiveMessage() {
-
-  char recv;                      // received byte
-  uint8_t idx = 0;                // current index of message
-  bool recv_in_progress = false;  // mid-receive
-
-  // while bytes in receive buffer and the full message has not been received,
-  // read the byte: if start or stop marker, discard and start/end message
-  //                else, store in message and continue receiving
-  while(Serial.available() > 0 && new_data == false) {
-    recv = Serial.read();
-
-    if (recv_in_progress == true) {
-      if (recv != end_marker) {
-        read_buff[idx] = recv;
-        idx ++;
-      }
-      else {
-        recv_in_progress = false;
-        idx = 0;
-        new_data = true;
-      }
-    }
-
-    else if (recv == start_marker) {
-      recv_in_progress = true;
-    }
-  }
-}
-
-/**
- * Print orientation x/y/z, angular velocity x/y/z, and acceleration x/y/z, and depth values
- * over Serial on a single line in that order. Message flag sent first: "C"
- * 
- * @return void
- */
-void writeControlData() {
+void writeData() {
   // read data from the BNO055
   sensors_event_t angVelocityData , linearAccelData;
   imu::Quaternion orientationData = bno.getQuat();
@@ -203,11 +142,24 @@ void writeControlData() {
 
   // read data from the BAR02
   sensor.read();
+  
+  // every 16 loops, read hull data
+  if(n%16 == 0) {
+    n = 1;
+    //BMP388
+    if (!bmp.performReading()) {
+          // send string over serial with error info
+          // error flag is "!"
+          // message would look like: "! <error info here>\n"
+          return;
+    }
 
-  Serial.write('C');
+    //SHT45
+    sht4.getEvent(&humid, &temp);
+  }
 
   // write each number into 10 chars with a single space (11 total per)
-  // 121 bytes total
+  // 154 bytes total
   char float_buff[10];
 
   dtostrf(orientationData.x(), 10, 4, float_buff);
@@ -254,38 +206,6 @@ void writeControlData() {
   Serial.write(float_buff);
   Serial.write(' ');
 
-  return;
-}
-
-/**
- * Print temperature, pressure, altitude, and huididty values over Serial on a single line in that order.
- * Message flag sent first: "E" 
- *
- * @return void
- */
-
-void writehullData() {
-  // read data from the sensors
-  //BMP388
-  if (!bmp.performReading()) {
-        // send string over serial with error info
-        // error flag is "!"
-        // message would look like: "! <error info here>\n"
-        Serial.print("!BMP388\n");
-        return;
-  }
-  //SHT45
-  sensors_event_t humid, temp;
-  sht4.getEvent(&humid, &temp);
-  // BAR02
-  sensor.read();
-
-  Serial.write('H');
-
-  // write each number into 10 chars with a single space (11 total per)
-  // 33 bytes total
-  char float_buff[10];
-
   dtostrf(temp.temperature, 10, 4, float_buff);
   Serial.write(float_buff);
   Serial.write(' ');
@@ -296,7 +216,9 @@ void writehullData() {
 
   dtostrf(humid.relative_humidity, 10, 4, float_buff);
   Serial.write(float_buff);
-  Serial.write(' ');
+  Serial.write('\n');
+
+  n++;
 
   return;
 }
