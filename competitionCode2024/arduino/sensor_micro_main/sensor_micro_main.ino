@@ -204,29 +204,55 @@ void writeControlData() {
   // read data from the BAR02
   sensor.read();
 
-  Serial.print("C ");
-  Serial.print(orientationData.x(), 4);
-  Serial.print(" ");
-  Serial.print(orientationData.y(), 4);
-  Serial.print(" ");
-  Serial.print(orientationData.z(), 4);
-  Serial.print(" ");
-  Serial.print(orientationData.w(), 4);
-  Serial.print(" ");
-  Serial.print(angVelocityData.gyro.x);
-  Serial.print(" ");
-  Serial.print(angVelocityData.gyro.y);
-  Serial.print(" ");
-  Serial.print(angVelocityData.gyro.z);
-  Serial.print(" ");
-  Serial.print(linearAccelData.acceleration.x);
-  Serial.print(" ");
-  Serial.print(linearAccelData.acceleration.y);
-  Serial.print(" ");
-  Serial.print(linearAccelData.acceleration.z);
-  Serial.print(" ");
-  Serial.print(sensor.depth());
-  Serial.print("\n");
+  Serial.write('C');
+
+  // write each number into 10 chars with a single space (11 total per)
+  // 121 bytes total
+  char float_buff[10];
+
+  dtostrf(orientationData.x(), 10, 4, float_buff);
+  Serial.write(float_buff);
+  Serial.write(' ');
+
+  dtostrf(orientationData.y(), 10, 4, float_buff);
+  Serial.write(float_buff);
+  Serial.write(' ');
+
+  dtostrf(orientationData.z(), 10, 4, float_buff);
+  Serial.write(float_buff);
+  Serial.write(' ');
+
+  dtostrf(orientationData.w(), 10, 4, float_buff);
+  Serial.write(float_buff);
+  Serial.write(' ');
+
+  dtostrf(angVelocityData.gyro.x, 10, 4, float_buff);
+  Serial.write(float_buff);
+  Serial.write(' ');
+
+  dtostrf(angVelocityData.gyro.y, 10, 4, float_buff);
+  Serial.write(float_buff);
+  Serial.write(' ');
+
+  dtostrf(angVelocityData.gyro.z, 10, 4, float_buff);
+  Serial.write(float_buff);
+  Serial.write(' ');
+
+  dtostrf(linearAccelData.acceleration.x, 10, 4, float_buff);
+  Serial.write(float_buff);
+  Serial.write(' ');
+
+  dtostrf(linearAccelData.acceleration.y, 10, 4, float_buff);
+  Serial.write(float_buff);
+  Serial.write(' ');
+
+  dtostrf(linearAccelData.acceleration.z, 10, 4, float_buff);
+  Serial.write(float_buff);
+  Serial.write(' ');
+
+  dtostrf(sensor.depth(), 10, 4, float_buff);
+  Serial.write(float_buff);
+  Serial.write(' ');
 
   return;
 }
@@ -245,7 +271,7 @@ void writehullData() {
         // send string over serial with error info
         // error flag is "!"
         // message would look like: "! <error info here>\n"
-        Serial.print("!BMP388\n")
+        Serial.print("!BMP388\n");
         return;
   }
   //SHT45
@@ -254,13 +280,23 @@ void writehullData() {
   // BAR02
   sensor.read();
 
-  Serial.print("H ");
-  Serial.print(temp.temperature);
-  Serial.print(" ");
-  Serial.print(bmp.pressure/100.0);
-  Serial.print(" ");
-  Serial.print(humid.relative_humidity);
-  Serial.print("\n");
+  Serial.write('H');
+
+  // write each number into 10 chars with a single space (11 total per)
+  // 33 bytes total
+  char float_buff[10];
+
+  dtostrf(temp.temperature, 10, 4, float_buff);
+  Serial.write(float_buff);
+  Serial.write(' ');
+
+  dtostrf(bmp.pressure/100.0, 10, 4, float_buff);
+  Serial.write(float_buff);
+  Serial.write(' ');
+
+  dtostrf(humid.relative_humidity, 10, 4, float_buff);
+  Serial.write(float_buff);
+  Serial.write(' ');
 
   return;
 }
