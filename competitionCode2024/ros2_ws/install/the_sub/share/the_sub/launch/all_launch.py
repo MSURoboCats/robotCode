@@ -6,9 +6,9 @@ import launch_ros.actions
 def generate_launch_description():
 
     FORWARD_RGB_CAM_PORT = '1'
-    FORWARD_RGB_DETECTION_MODEL = 'yolov8n'
+    FORWARD_RGB_DETECTION_MODEL = 'dry_buoy'
     DOWNWARD_RGB_CAM_PORT = '0'
-    DOWNWARD_RGB_DETECTION_MODEL = 'yolov8n'
+    DOWNWARD_RGB_DETECTION_MODEL = 'dry_buoy'
 
 
     ld = launch.LaunchDescription()

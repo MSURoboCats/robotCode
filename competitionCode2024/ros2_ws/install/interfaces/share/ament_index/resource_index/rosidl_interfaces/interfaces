@@ -8,6 +8,8 @@ msg/Motor.idl
 msg/Motor.msg
 msg/MotorPowers.idl
 msg/MotorPowers.msg
+msg/OrientedDetection.idl
+msg/OrientedDetection.msg
 msg/Yolov8Detection.idl
 msg/Yolov8Detection.msg
 srv/GetMappings.idl

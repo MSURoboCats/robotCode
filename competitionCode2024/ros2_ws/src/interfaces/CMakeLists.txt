@@ -22,6 +22,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Motor.msg"
   "msg/MotorPowers.msg"
   "msg/Yolov8Detection.msg"
+  "msg/OrientedDetection.msg"
   "srv/GetMappings.srv"
   DEPENDENCIES sensor_msgs geometry_msgs # Add packages that above messages depend on
 )

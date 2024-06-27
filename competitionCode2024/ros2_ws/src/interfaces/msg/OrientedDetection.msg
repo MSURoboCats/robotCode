@@ -1,0 +1,2 @@
+Yolov8Detection detection
+geometry_msgs/Quaternion orientation
