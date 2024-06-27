@@ -29,7 +29,7 @@ class SensorMicroNode(Node):
     def publish_all_data(self) -> None:
         # get control data
         data = self.sensor_micro.get_control_data()
-
+        
         # populate message
         cur_data = ControlData()
         cur_data.imu_data.orientation.x = data.get('orientation').get('x')
@@ -46,7 +46,7 @@ class SensorMicroNode(Node):
 
         # publish message
         self.pub_control_data.publish(cur_data)
-        self.get_logger().debug('Control data published')
+        self.get_logger().info('Control data published')
         
         # get hull data 
         data = self.sensor_micro.get_hull_data()
@@ -59,7 +59,8 @@ class SensorMicroNode(Node):
 
         # publish message
         self.pub_hull_data.publish(cur_conditions)
-        self.get_logger().debug('Hull data published')
+        self.get_logger().info('Hull data published')
+        
         
 def main(args=None):
     # initialize the rclpy library

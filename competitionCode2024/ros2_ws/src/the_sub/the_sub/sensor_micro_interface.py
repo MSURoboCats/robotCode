@@ -114,16 +114,17 @@ class SensorArduino:
 
     def __read_message__(self) -> None:
 
-        raw_line = self.port.readline().decode("utf-8")
-        line = raw_line.removesuffix("\n").split(" ")
+        message_type = self.port.read(1).decode("utf-8")
 
         # error message
-        if line[0] == "!":
+        if message_type == "!":
             print("Error!")
 
         # control message
-        elif line[0] == "C":
-            values = [float(x) for x in line[1:]]
+        elif message_type == "C":
+            line = self.port.read(121).decode("utf-8").split(" ")
+            values = [float(x) for x in line[1:] if x != '']
+
             self.orientation_x = values[0]
             self.orientation_y = values[1]
             self.orientation_z = values[2]
@@ -135,17 +136,18 @@ class SensorArduino:
             self.accelerometer_y = values[8]
             self.accelerometer_z = values[9]
             self.depth = values[10]
-
+        
         # hull message
-        elif line[0] == "H":
-            values = [float(x) for x in line[1:]]
+        elif message_type == "H":
+            line = self.port.read(33).decode("utf-8").split(" ")
+            values = [float(x) for x in line[1:] if x != '']
+
             self.temp = values[0]
             self.pressure = values[1]
             self.humidity = values[2]
 
         else:
-            print("Whacky message: <%s>" % raw_line)
-            pass
+            print("Whacky message: <%s>" % message_type)
 
     def __clear_buffer__(self) -> None:
         """
