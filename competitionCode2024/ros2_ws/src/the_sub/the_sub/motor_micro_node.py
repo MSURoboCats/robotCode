@@ -65,7 +65,7 @@ class MotorMicroNode(Node):
                                      motor_powers.motor6,
                                      motor_powers.motor7,
                                      motor_powers.motor8])
-        self.get_logger().debug('Sending motor power values to microcontroller')
+        self.get_logger().info('Sending motor power values to microcontroller')
 
     def test_esc_callback(self, esc: Int16) -> None:
         # test ESC

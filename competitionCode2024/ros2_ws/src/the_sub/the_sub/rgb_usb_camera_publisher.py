@@ -21,7 +21,7 @@ class ImagePublisher(Node):
     self.publisher_ = self.create_publisher(Image, 'video_frames', 10)
       
     # publishing interval in seconds
-    timer_period = .05
+    timer_period = .0625
       
     # timer for callback function
     self.timer = self.create_timer(timer_period, self.timer_callback)

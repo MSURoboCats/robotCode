@@ -13,6 +13,10 @@ class Twist2Action(Node):
         # subscriber to receive twist to be translated to motor powers
         self.twist_command_srv = self.create_subscription(Twist, 'control_twist', self.twist_command_callback, 10)
 
+        # subscriber to receive twist to be translated to motor powers for linear motion in along the y-axis
+        # (depth control)
+        self.twist_command_srv = self.create_subscription(Twist, 'control_y_twist', self.twist_y_command_callback, 10)
+
         # publisher for motor powers
         self.motor_powers_pub = self.create_publisher(MotorPowers, 'motor_powers', 10)
 
@@ -60,6 +64,21 @@ class Twist2Action(Node):
         else:
             self.set_motors(self.STOP)
             self.get_logger().info('Stopping...')
+
+    def twist_y_command_callback(self, data: Twist) -> None:
+        
+        # clamp power to [-1,1]
+        power = max(-1, min(data.linear.y, 1))
+
+        # only updated motors that control depth
+        self.motor_powers.motor2 = power
+        self.motor_powers.motor3 = power
+        self.motor_powers.motor6 = power
+        self.motor_powers.motor7 = power
+
+        # publish motor values
+        self.motor_powers_pub.publish(self.motor_powers)
+        self.get_logger().info("Depth goal powers updated")
 
     def set_motors(self, values: MotorPowers) -> None:
         # populate and publish motor powers

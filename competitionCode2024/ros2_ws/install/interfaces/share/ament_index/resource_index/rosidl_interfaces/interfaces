@@ -1,5 +1,7 @@
 msg/ControlData.idl
 msg/ControlData.msg
+msg/DepthGoal.idl
+msg/DepthGoal.msg
 msg/HullData.idl
 msg/HullData.msg
 msg/Mappings.idl

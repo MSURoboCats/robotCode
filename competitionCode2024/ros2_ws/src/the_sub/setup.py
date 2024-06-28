@@ -37,6 +37,7 @@ setup(
             # control
             'twist2action_node = the_sub.twist2action_node:main',
             'keyboard_controller_node = the_sub.keyboard_controller_node:main',
+            'depth_controller_node = the_sub.depth_controller_node:main',
             # setup
             'map_motors_node = the_sub.map_motors_node:main',
         ],
