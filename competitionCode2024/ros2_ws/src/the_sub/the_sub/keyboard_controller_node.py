@@ -11,7 +11,7 @@ class KeyboardController(Node):
         super().__init__("KeuboardController")
 
         # publisher for twists to control the sub
-        self.keyboard_twist_pub = self.create_publisher(Twist, "keyboard_control_twist", 10)
+        self.twist_pub = self.create_publisher(Twist, "control_twist", 10)
         
         # pygame setup
         pygame.init()
@@ -63,7 +63,7 @@ class KeyboardController(Node):
             
             # only publish and upadate previous command when keyboard input changes
             if move_vec != pre_move or rot_vec != pre_rot:
-                self.keyboard_twist_pub.publish(keyboard_twist)
+                self.twist_pub.publish(keyboard_twist)
                 pre_move = move_vec
                 pre_rot = rot_vec
 

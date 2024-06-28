@@ -33,6 +33,7 @@ setup(
             'rgb_usb_camera_subscriber = the_sub.rgb_usb_camera_subscriber:main',
             'yolov8_detector_node = the_sub.yolov8_detector_node:main',
             'frame_saver_node = the_sub.frame_saver_node:main',
+            'center_detection_node = the_sub.center_detection_node:main',
             # control
             'twist2action_node = the_sub.twist2action_node:main',
             'keyboard_controller_node = the_sub.keyboard_controller_node:main',
