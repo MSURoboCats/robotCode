@@ -147,12 +147,13 @@ class MotorMicroNode(Node):
     
     def pub_voltage_callback(self) -> None:
         # get and publish battery voltage
-        cur_health = BatteryState()
-        cur_health.voltage = self.motor_micro.get_voltage()
-        self.pub_voltage.publish(cur_health)
+        #cur_health = BatteryState()
+        #cur_health.voltage = self.motor_micro.get_voltage()
+        #self.pub_voltage.publish(cur_health)
 
-        self.get_logger().info('Publishing voltage: %.2f' % cur_health.voltage)
-
+        #self.get_logger().info('Publishing voltage: %.2f' % cur_health.voltage)
+        pass
+    
 def main(args=None):
     # initialize the rclpy library
     rclpy.init(args=args)

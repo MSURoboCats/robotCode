@@ -132,10 +132,15 @@ class MotorArduino:
                              for each of the 8 motors
         """
 
-        # artificial cap on motors for keeping them slow out of water
-        if any([val > .15 or val < -.15 for val in motor_powers]):
-            print("Looks like some of those motor values were too high!")
-            return
+        # artificial cap on motors for keeping them slow
+        cap = .4
+        for i in range(len(motor_powers)):
+            if motor_powers[i] > cap:
+                motor_powers[i] = cap
+                print("Looks like some of those motor values were too high!")
+            if motor_powers[i] < -cap:
+                motor_powers[i] = -cap
+                print("Looks like some of those motor values were too high!")
 
         # build message with motor values
         motor_message = "<C".encode("utf-8")

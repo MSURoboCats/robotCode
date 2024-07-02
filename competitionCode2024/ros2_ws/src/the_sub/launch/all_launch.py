@@ -6,7 +6,7 @@ import launch_ros.actions
 def generate_launch_description():
 
     FORWARD_RGB_CAM_PORT = '1'
-    FORWARD_RGB_DETECTION_MODEL = 'dry_buoy'
+    FORWARD_RGB_DETECTION_MODEL = 'pool_tuned_base'
     DOWNWARD_RGB_CAM_PORT = '0'
     DOWNWARD_RGB_DETECTION_MODEL = 'dry_buoy'
 
@@ -40,7 +40,8 @@ def generate_launch_description():
         parameters=[config],
     )
     ld.add_action(motor_micro_node)
-
+    
+    '''
     # create node to publish frames from downward-facing RGB camera (pass 0 for camera index)
     downward_rgb_pub_node = launch_ros.actions.Node(
         namespace='downward_rgb_camera',
@@ -50,6 +51,7 @@ def generate_launch_description():
         arguments=[DOWNWARD_RGB_CAM_PORT],
     )
     ld.add_action(downward_rgb_pub_node)
+    '''
 
     # create node to publish frames from forward-facing RGB camera (pass 1 for camera index)
     forward_rgb_pub_node = launch_ros.actions.Node(
@@ -97,6 +99,7 @@ def generate_launch_description():
     )
     ld.add_action(forward_rgb_detection_node)
 
+    '''
     # create node to detect objects from the downward-facing RGB camera
     downward_rgb_detection_node = launch_ros.actions.Node(
         namespace='downward_rgb_camera',
@@ -107,7 +110,7 @@ def generate_launch_description():
         remappings=[('/forward_rgb_camera/detections', '/forward_rgb_camera/' + FORWARD_RGB_DETECTION_MODEL)]
     )
     ld.add_action(downward_rgb_detection_node)
-
+    '''
 
 #---------------------------------------------------------------------------------------------------------------
 # CONTROL NODES
