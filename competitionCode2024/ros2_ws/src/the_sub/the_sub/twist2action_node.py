@@ -25,42 +25,26 @@ class Twist2Action(Node):
 
         # map standard commands to motor powers based on the motor configuration (see Notion for documentation)
         self.STOP = [0.0]*8
-        self.FORWARD = [0.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0]
-        self.BACKWARD = [0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0]
-        self.UP = [0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0]
-        self.DOWN = [0.0, -1.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0]
-        self.left = [1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0]
-        self.RIGHT = [-1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
-        self.POS_ROTATE = [1, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 1.0]
-        self.NEG_ROTATE = [-1, 0.0, 0.0, -1.0, 1.0, 0.0, 0.0, -1.0]
+        self.ZAXIS = [0.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.0]
+        self.YAXIS = [0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0]
+        self.XAXIS = [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+        self.YAXIS_ROT = [1.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 1.0]
 
     def twist_command_callback(self, data: Twist) -> None:
-        # translate twist to basic control
-        # coordinate system looking at front: x to the right, y up, z out of the page
-        if data.linear.z == 1:
-            self.set_motors([x*.12 for x in self.FORWARD])
-            self.get_logger().info('Going forward...')
-        elif data.linear.z == -1:
-            self.set_motors([x*.12 for x in self.BACKWARD])
-            self.get_logger().info('Going backward...')
-        elif data.linear.y == 1:
-            self.set_motors([x*.12 for x in self.UP])
-            self.get_logger().info('Going up...')
-        elif data.linear.y == -1:
-            self.set_motors([x*.12 for x in self.DOWN])
-            self.get_logger().info('Going down...')
-        elif data.linear.x == 1:
-            self.set_motors([x*.12 for x in self.left])
-            self.get_logger().info('Going left...')
-        elif data.linear.x == -1:
-            self.set_motors([x*.12 for x in self.RIGHT])
-            self.get_logger().info('Going right...')
-        elif data.angular.y == 1:
-            self.set_motors([x*.12 for x in self.POS_ROTATE])
-            self.get_logger().info('Rotating positvely...')
-        elif data.angular.y == -1:
-            self.set_motors([x*.12 for x in self.NEG_ROTATE])
-            self.get_logger().info('Rotating negatively...')
+        # translate twist to basic control (clamp to [-1, 1])
+        # coordinate system looking out the front: x to the right, y up, z forward
+        if data.linear.z != 0:
+            self.set_motors([max(-1, min(x*data.linear.z, 1)) for x in self.ZAXIS])
+            self.get_logger().info('Going forward or backward (z-axis)...')
+        elif data.linear.y != 0:
+            self.set_motors([max(-1, min(x*data.linear.y, 1)) for x in self.YAXIS])
+            self.get_logger().info('Going up or down (y-axis)...')
+        elif data.linear.x != 0:
+            self.set_motors([max(-1, min(x*data.linear.x, 1)) for x in self.XAXIS])
+            self.get_logger().info('Going left or right (x-axis)...')
+        elif data.angular.y != 0:
+            self.set_motors([max(-1, min(x*data.angular.y, 1)) for x in self.YAXIS_ROT])
+            self.get_logger().info('Rotating around the y-axis...')
         else:
             self.set_motors(self.STOP)
             self.get_logger().info('Stopping...')
