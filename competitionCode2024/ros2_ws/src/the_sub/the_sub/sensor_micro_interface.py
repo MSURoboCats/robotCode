@@ -70,21 +70,23 @@ class SensorArduino:
 
         line = self.port.read(154).decode("utf-8").split(" ")
         values = [float(x) for x in line[1:] if x != '']
-
-        self.orientation_x = values[0]
-        self.orientation_y = values[1]
-        self.orientation_z = values[2]
-        self.orientation_w = values[3]
-        self.gyro_x = values[4]
-        self.gyro_y = values[5]
-        self.gyro_z = values[6]
-        self.accelerometer_x = values[7]
-        self.accelerometer_y = values[8]
-        self.accelerometer_z = values[9]
-        self.depth = values[10]
-        self.temp = values[11]
-        self.pressure = values[12]
-        self.humidity = values[13]
+        try:
+            self.orientation_x = values[0]
+            self.orientation_y = values[1]
+            self.orientation_z = values[2]
+            self.orientation_w = values[3]
+            self.gyro_x = values[4]
+            self.gyro_y = values[5]
+            self.gyro_z = values[6]
+            self.accelerometer_x = values[7]
+            self.accelerometer_y = values[8]
+            self.accelerometer_z = values[9]
+            self.depth = values[10]
+            self.temp = values[11]
+            self.pressure = values[12]
+            self.humidity = values[13]
+        except:
+            print("Message read error! Not enough data")
 
     def __clear_buffer__(self) -> None:
         """
