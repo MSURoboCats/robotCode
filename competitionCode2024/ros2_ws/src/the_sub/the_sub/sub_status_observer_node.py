@@ -90,6 +90,7 @@ class StatusObserver(Node):
         self.ax = data.imu_data.linear_acceleration.x
         self.ay = data.imu_data.linear_acceleration.y
         self.az = data.imu_data.linear_acceleration.z
+        self.depth = data.depth
         
         self.print_sub()
     
@@ -108,33 +109,42 @@ class StatusObserver(Node):
     def print_sub(self) -> None:
         os.system("clear")
         # print the layout of the sub
-        print("""---------------------------------------------------------
---------------------------------------------------------- 
-                        SUB STATUS
-                    o: %-6.2f     
-            ---------------------
-            |                   | 
-            |                   |                               
-   o: %-6.2f|                   |o: %-6.2f  
-            |                   |                        x       y       z       w
-            |   Vsys: %-6.2fV   |           Orientation  %-6.2f  %-6.2f  %-6.2f  %-6.2f
-   v: %-6.2f|   Temp: %-6.2fC   |v: %-6.2f      Rot Vel  %-6.2f  %-6.2f  %-6.2f
-            |   Pres: %-6.2fmPa |               Lin Acc  %-6.2f  %-6.2f  %-6.2f
-            |   Hmid: %-6.2f%%   |                 Depth  %-6.2f
-   o: %-6.2f|                   |o: %-6.2f
-            |                   |
-            |                   |
-            ---------------------
-                    o: %-6.2f
----------------------------------------------------------
----------------------------------------------------------""" % (self.motor1,
+        print("""----------------------------------------
+               SUB STATUS
+                 <: %-6.2f
+         ---------------------
+         |     FRONT RGB     |
+         |                   |
+o: %-6.2f|                   |o: %-6.2f
+         |                   |
+         |   Vsys: %-6.2fV   |
+v: %-6.2f|   Temp: %-6.2fC   |v: %-6.2f
+         |   Pres: %-6.2fmPa |
+         |   Hmid: %-6.2f%%   |
+o: %-6.2f|                   |o: %-6.2f
+         |                   |
+         |                   |
+         ---------------------
+                 >: %-6.2f
+              
+            x       y       z       w
+Orientation %-6.2f  %-6.2f  %-6.2f  %-4.2f
+   Rot Velo %-6.2f  %-6.2f  %-6.2f
+    Lin Acc %-6.2f  %-6.2f  %-6.2f
+      Depth %-6.2f
+----------------------------------------""" % (self.motor1,
                                                                 self.motor2, self.motor3,
-                                                                self.volt, self.x, self.y, self.z, self.w,
-                                                                self.motor4, self.temp, self.motor5, self.wx, self.wy, self.wz,
-                                                                self.pressure, self.ax, self.ay, self.az,
-                                                                self.humidity, self.depth,
+                                                                self.volt,
+                                                                self.motor4, self.temp, self.motor5,
+                                                                self.pressure,
+                                                                self.humidity,
                                                                 self.motor6, self.motor7, 
-                                                                self.motor8))
+                                                                self.motor8,
+                                                                self.x, self.y, self.z, self.w,
+                                                                self.wx, self.wy, self.wz,
+                                                                self.ax, self.ay, self.az,
+                                                                self.depth,
+                                                                ))
         
 def main(args=None):
     # initialize the rclpy library
