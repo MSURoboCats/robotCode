@@ -3,80 +3,78 @@ from rclpy.node import Node
 
 from geometry_msgs.msg import Twist
 
-import pygame
+from sshkeyboard import listen_keyboard
 
 class KeyboardController(Node):
 
     def __init__(self):
-        super().__init__("KeuboardController")
+        super().__init__("KeyboardController")
 
         # publisher for twists to control the sub
-        self.twist_pub = self.create_publisher(Twist, "control_twist", 10)
-        
-        # pygame setup
-        pygame.init()
-        window = pygame.display.set_mode((300, 300))
-        clock = pygame.time.Clock()
-        rect = pygame.Rect(0, 0, 20, 20)
-        rect.center = window.get_rect().center
-        keyboard_twist = 5
-        run = True
+        self.pub_twist = self.create_publisher(Twist, "control_twist", 10)
 
-        # keep track of last command
-        pre_move = [0,0,0]
-        pre_rot = [0,0]
-        keyboard_twist = Twist()
+        # keep track of the twist
+        self.keyboard_twist = Twist()
 
-        while run:
-            clock.tick(15)#fps
+        # scaler to adjust motor power
+        self.power_scaler = .5
 
-            for event in pygame.event.get():
-                # close window
-                if event.type == pygame.QUIT:
-                    run = False
+    def press(self, key) -> None:
+        '''
+        Handle keystrokes for control
+        '''
+        # calculate movement vectors:
+            #   l/r arrows for x (left/right)
+            #   up/down arrows for z (forward/backward)
+            #   w/s keys for y (up/down)
+            #   a/d keys for rotation about y (rotate left/right)
+        # update max power
+            #   1-10 for .1 to 1 motor power
+        # anything else to stop
+        if key == 'up':
+            self.keyboard_twist.linear.z = 1 * self.power_scaler
+        elif key == 'down':
+            self.keyboard_twist.linear.z = -1 * self.power_scaler
+        elif key == 'left':
+            self.keyboard_twist.linear.x = -1 * self.power_scaler
+        elif key == 'right':
+            self.keyboard_twist.linear.x = 1 * self.power_scaler
+        elif key == 'w':
+            self.keyboard_twist.linear.y = 1 * self.power_scaler
+        elif key == 's':
+            self.keyboard_twist.linear.y = -1 * self.power_scaler
+        elif key == 'a':
+            self.keyboard_twist.angular.y = 1 * self.power_scaler
+        elif key == 'd':
+            self.keyboard_twist.angular.y = -1 * self.power_scaler
+        elif key in [str(num) for num in range(1, 11)]:
+            self.power_scaler = float(key) / 10.0
+            self.get_logger().info("Power updated to %.1f" % self.power_scaler)
+            return
+        else:
+            self.keyboard_twist = Twist()
 
-            keys = pygame.key.get_pressed()
-            
-            # calculate movement vectors:
-            #   l/r arrows for x
-            #   up/down arrows for z
-            #   w/s keys for y
-            #   a/d keys for rotation about y
-            move_vec = [keys[pygame.K_RIGHT] - keys[pygame.K_LEFT],
-                        keys[pygame.K_w] - keys[pygame.K_s],
-                        keys[pygame.K_UP] - keys[pygame.K_DOWN],
-                        ]
-            rot_vec = [0,
-                       keys[pygame.K_a] - keys[pygame.K_d],
-                       0,
-                       ]
-            keyboard_twist.linear.x = float(move_vec[0])
-            keyboard_twist.linear.y = float(move_vec[1])
-            keyboard_twist.linear.z = float(move_vec[2])
-            keyboard_twist.angular.x = float(rot_vec[0])
-            keyboard_twist.angular.y = float(rot_vec[1])
-            keyboard_twist.angular.z = float(rot_vec[2])
+        self.pub_twist.publish(self.keyboard_twist)
+        self.get_logger().info('Non-zero twist published')
 
-            # update square location
-            rect.x += move_vec[0] * keyboard_twist
-            rect.y += move_vec[1] * -keyboard_twist
-            
-            # only publish and upadate previous command when keyboard input changes
-            if move_vec != pre_move or rot_vec != pre_rot:
-                self.twist_pub.publish(keyboard_twist)
-                pre_move = move_vec
-                pre_rot = rot_vec
+    def release(self, key) -> None:
+        '''
+        Handle keyreleases, publishing a twist with all zeros
+        '''
+        self.keyboard_twist = Twist()
+        self.pub_twist.publish(self.keyboard_twist)
+        self.get_logger().info('Reset twist published')
 
-            # update window
-            rect.centerx = rect.centerx % window.get_width()
-            rect.centery = rect.centery % window.get_height()
-            window.fill(0)
-            pygame.draw.rect(window, (255, 0, 0), rect)
-            pygame.display.flip()
-
-        pygame.quit()
-
-        exit()
+    def listen(self) -> None:
+        '''
+        Listen for keystrokes
+        '''
+        self.get_logger().info("Keyboard control intitiated...")
+        print("Arrow keys for forard/backwad/left/right\nw/s/a/d for up/down/rotate left/rotate right\n1-10 to adjust power\nEscape to exit")
+        listen_keyboard(on_press=self.press, on_release=self.release)
+        self.get_logger().info("Motors killed and keyboard control relinquished!")
+        self.keyboard_twist = Twist()
+        self.pub_twist.publish(self.keyboard_twist)
 
 def main(args = None):
 
@@ -86,8 +84,8 @@ def main(args = None):
     # create the node
     node = KeyboardController()
 
-    # spin the node so the callback function is called
-    rclpy.spin(node)
+    # listen for keystrokes
+    node.listen()
 
     # destroy the node explicitly
     # (optional - otherwise it will be done automatically
