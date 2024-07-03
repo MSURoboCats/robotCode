@@ -32,29 +32,29 @@ class DepthController(Node):
         self.prev_depth = 0.0       # rolling average one time step behind cur_depth
         self.initialized = False    # depth values not initialized
 
-        self.Kp = 1 / 3  # full motor power if more than 3m away from goal 
-        self.Kd = -.2        # complete guess
+        self.Kp = 1.5  # full motor power if more than 3m away from goal 
+        self.Kd = -.5        # complete guess
     
     def control_data_callback(self, data: ControlData) -> None:
         # if it is the first reading, intialize depth variables
         if not self.initialized:
             if data.depth == 0:
                 return
-            self.cur_depth = -data.depth
-            self.prev_depth = -data.depth
-            self.goal_depth = -data.depth
+            self.cur_depth = data.depth
+            self.prev_depth = data.depth
+            self.goal_depth = data.depth
             self.initialized = True
 
         # if it is a bad sensor reading, skip the iteration
-        if abs(-data.depth - self.cur_depth) > .2:
+        if abs(data.depth - self.cur_depth) > .2:
             print(data.depth, self.cur_depth, abs(data.depth - self.cur_depth))
             return
         
+        # calculate error and derivative
         self.prev_depth = self.cur_depth
-        self.cur_depth = (-data.depth + 4*self.cur_depth) / 5
+        self.cur_depth = (data.depth + 4*self.cur_depth) / 5
         e = self.goal_depth - self.cur_depth
         delta_depth = self.cur_depth - self.prev_depth
-        print(self.Kd*delta_depth / .0625)
 
         # PD controller with time step of .0625 / 16HZ (what control data is published at)
         power_out = self.Kp*e + self.Kd*delta_depth / .0625
@@ -63,10 +63,11 @@ class DepthController(Node):
         depth_twist = Twist()
         depth_twist.linear.y = power_out
         self.pub_twist.publish(depth_twist)
-        self.get_logger().info('Depth motor powers updated: %f' % power_out)
+        self.get_logger().info('Current: %.2f | Goal: %.2f | Motors: %.2f' % (self.cur_depth, self.goal_depth, power_out))
 
     def depth_goal_callback(self, data: DepthGoal) -> None:
         self.goal_depth = data.depth
+        self.get_logger().info('Depth goal set to %.2f' % self.goal_depth)
 
 def main(args = None):
 
