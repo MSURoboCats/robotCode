@@ -6,6 +6,8 @@ from interfaces.srv import GetMappings
 
 from std_msgs.msg import Int16
 
+import os
+
 class ESCTesterNode(Node):
 
     def __init__(self):
@@ -29,7 +31,7 @@ class ESCTesterNode(Node):
     
     def print_sub(self) -> None:
         # print the layout of the sub
-        self.get_logger().info("         1<\n" +
+        print("         1<\n" +
                 "  ----------------     * * * * * * *\n" +
                 "  |       DOME   |     * FORWARD:  *\n" +
                 "2o|              |3o   * o - up    *\n" +
@@ -42,7 +44,7 @@ class ESCTesterNode(Node):
 
     def print_mappings(self, assignments: Mappings) -> None:
         # print the current motor mappings/directions
-        self.get_logger().info("Motor: 1 2 3 4 5 6 7 8\nesc:   %d %d %d %d %d %d %d %d\nFlip:  %d %d %d %d %d %d %d %d" %
+        print("Motor: 1 2 3 4 5 6 7 8\nesc:   %d %d %d %d %d %d %d %d\nFlip:  %d %d %d %d %d %d %d %d" %
                 (assignments.motor1.esc,
                 assignments.motor2.esc,
                 assignments.motor3.esc,
@@ -61,6 +63,8 @@ class ESCTesterNode(Node):
                 assignments.motor8.direction))
 
 def main(args=None):
+    os.system("clear")
+    
     # initialize the rclpy library
     rclpy.init(args=args)
 
@@ -82,7 +86,7 @@ def main(args=None):
                     'Service call for motor mappings failed %r' % (e,))
             else:
                 tester.get_logger().info(
-                    'Motor mappings read successfully')  # CHANGE
+                    'Motor mappings read successfully')
             break
 
     # run the UI to test/set motor mappings and directions
@@ -106,6 +110,7 @@ def main(args=None):
                         cur_assignments.motor7.esc,
                         cur_assignments.motor8.esc,
                         ])) != 8:
+                os.system("clear")
                 print("Invalid assignment: each ESC must map to a single motor. Fix it.")
                 continue
             else:
@@ -122,6 +127,7 @@ def main(args=None):
             motor = int(input("Assign to motor (1-8) OR -1 to leave unchanged: "))
 
         if motor == -1:
+            os.system("clear")
             continue       
 
         # assign direction
@@ -154,7 +160,8 @@ def main(args=None):
         elif motor == 8:
             cur_assignments.motor8.esc = esc
             cur_assignments.motor8.direction = reverse
-        
+        os.system("clear")
+
         # publish new assignments
         tester.mappings_pub.publish(cur_assignments)
 

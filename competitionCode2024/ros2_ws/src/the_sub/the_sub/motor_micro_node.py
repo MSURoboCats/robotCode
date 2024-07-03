@@ -37,9 +37,12 @@ class MotorMicroNode(Node):
         timer_period = .2
         try:
             if sys.argv[1] == 'voltage_off':
-                self.get_logger().info("\n\nNode initialized in setup mode: open a new terminal,\nsource the environment, and run the following command:\nros2 run the_sub map_motors_node\n")
+                self.get_logger().info("\n\nNode initialized in setup mode: open a new terminal, source the environment, and run the following command: ros2 run the_sub map_motors_node\n")
+            else:
+                self.time = self.create_timer(timer_period, self.pub_voltage_callback)
         except:
-            self.time = self.create_timer(timer_period, self.pub_voltage_callback)
+            pass
+
 
         # intialize the microcontroller
         self.motor_micro = motor_interface.MotorArduino('/dev/ttyACM0')
