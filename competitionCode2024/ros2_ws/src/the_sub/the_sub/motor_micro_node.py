@@ -13,6 +13,7 @@ import the_sub.motor_micro_interface as motor_interface
 
 import yaml
 import os
+import sys
 
 class MotorMicroNode(Node):
 
@@ -31,10 +32,14 @@ class MotorMicroNode(Node):
         # subscriber for setting motor mappings
         self.set_mappings = self.create_subscription(Mappings, "set_mappings", self.set_mappings_callback, 10)
 
-        # publisher for board voltage at 5 Hz
+        # publisher for board voltage at 5 Hz (unless 'voltage_off' is passed when the node is run)
         self.pub_voltage = self.create_publisher(BatteryState, 'battery_health', 10)
         timer_period = .2
-        self.time = self.create_timer(timer_period, self.pub_voltage_callback)
+        try:
+            if sys.argv[1] == 'voltage_off':
+                self.get_logger().info("\n\nNode initialized in setup mode: open a new terminal,\nsource the environment, and run the following command:\nros2 run the_sub map_motors_node\n")
+        except:
+            self.time = self.create_timer(timer_period, self.pub_voltage_callback)
 
         # intialize the microcontroller
         self.motor_micro = motor_interface.MotorArduino('/dev/ttyACM0')
@@ -147,13 +152,12 @@ class MotorMicroNode(Node):
     
     def pub_voltage_callback(self) -> None:
         # get and publish battery voltage
-        #cur_health = BatteryState()
-        #cur_health.voltage = self.motor_micro.get_voltage()
-        #self.pub_voltage.publish(cur_health)
+        cur_health = BatteryState()
+        cur_health.voltage = self.motor_micro.get_voltage()
+        self.pub_voltage.publish(cur_health)
 
-        #self.get_logger().info('Publishing voltage: %.2f' % cur_health.voltage)
-        pass
-    
+        self.get_logger().info('Publishing voltage: %.2f' % cur_health.voltage)
+        
 def main(args=None):
     # initialize the rclpy library
     rclpy.init(args=args)

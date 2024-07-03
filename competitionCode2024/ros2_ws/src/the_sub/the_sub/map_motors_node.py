@@ -27,38 +27,38 @@ class ESCTesterNode(Node):
         # make a request for motor mappings
         self.get_mappings_future = self.get_mappings_cli.call_async(self.get_mappings_req)
     
-def print_sub() -> None:
-    # print the layout of the sub
-    print("         1<\n" +
-            "  ----------------     * * * * * * *\n" +
-            "  |       DOME   |     * FORWARD:  *\n" +
-            "2o|              |3o   * o - up    *\n" +
-            "  |              |     * < - left  *\n" +
-            "4v|   SUB (TOP)  |5v   * > - right *\n" +
-            "  |              |     * v - down  *\n" +
-            "6o|         PORTS|7o   * o - up    *\n" +
-            "  ----------------     * * * * * * *\n" +
-            "         8>")
+    def print_sub(self) -> None:
+        # print the layout of the sub
+        self.get_logger().info("         1<\n" +
+                "  ----------------     * * * * * * *\n" +
+                "  |       DOME   |     * FORWARD:  *\n" +
+                "2o|              |3o   * o - up    *\n" +
+                "  |              |     * < - left  *\n" +
+                "4v|   SUB (TOP)  |5v   * > - right *\n" +
+                "  |              |     * v - down  *\n" +
+                "6o|         PORTS|7o   * o - up    *\n" +
+                "  ----------------     * * * * * * *\n" +
+                "         8>")
 
-def print_mappings(assignments: Mappings) -> None:
-    # print the current motor mappings/directions
-    print("Motor: 1 2 3 4 5 6 7 8\nesc:   %d %d %d %d %d %d %d %d\nFlip:  %d %d %d %d %d %d %d %d" %
-              (assignments.motor1.esc,
-               assignments.motor2.esc,
-               assignments.motor3.esc,
-               assignments.motor4.esc,
-               assignments.motor5.esc,
-               assignments.motor6.esc,
-               assignments.motor7.esc,
-               assignments.motor8.esc,
-               assignments.motor1.direction,
-               assignments.motor2.direction,
-               assignments.motor3.direction,
-               assignments.motor4.direction,
-               assignments.motor5.direction,
-               assignments.motor6.direction,
-               assignments.motor7.direction,
-               assignments.motor8.direction))
+    def print_mappings(self, assignments: Mappings) -> None:
+        # print the current motor mappings/directions
+        self.get_logger().info("Motor: 1 2 3 4 5 6 7 8\nesc:   %d %d %d %d %d %d %d %d\nFlip:  %d %d %d %d %d %d %d %d" %
+                (assignments.motor1.esc,
+                assignments.motor2.esc,
+                assignments.motor3.esc,
+                assignments.motor4.esc,
+                assignments.motor5.esc,
+                assignments.motor6.esc,
+                assignments.motor7.esc,
+                assignments.motor8.esc,
+                assignments.motor1.direction,
+                assignments.motor2.direction,
+                assignments.motor3.direction,
+                assignments.motor4.direction,
+                assignments.motor5.direction,
+                assignments.motor6.direction,
+                assignments.motor7.direction,
+                assignments.motor8.direction))
 
 def main(args=None):
     # initialize the rclpy library
@@ -87,8 +87,8 @@ def main(args=None):
 
     # run the UI to test/set motor mappings and directions
     while True:
-        print_sub()
-        print_mappings(cur_assignments)
+        tester.print_sub()
+        tester.print_mappings(cur_assignments)
 
         # get ESC to test
         esc = int(input("Enter esc to test (1-8) or -1 to save and quit: "))
