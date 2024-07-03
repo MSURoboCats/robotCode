@@ -24,6 +24,7 @@ class KeyboardController(Node):
         Handle keystrokes for control
         '''
         # calculate movement vectors:
+        # (coordinate system looking out the front: x to the right, y up, z forward)
             #   l/r arrows for x (left/right)
             #   up/down arrows for z (forward/backward)
             #   w/s keys for y (up/down)
