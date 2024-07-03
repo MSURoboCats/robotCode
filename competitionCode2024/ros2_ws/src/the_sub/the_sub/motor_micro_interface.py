@@ -30,7 +30,11 @@ class MotorArduino:
         self.__clear_buffer__()
         self.port.write("<V>".encode("utf-8"))
         line = self.port.read(4)
-        voltage = ((line[1] << 8) | line[2]) / 1000  # shift decimal to the left three places to get real value
+        
+        try:
+            voltage = ((line[1] << 8) | line[2]) / 1000  # shift decimal to the left three places to get real value
+        except:
+            voltage = -1.0
 
         return voltage
 
