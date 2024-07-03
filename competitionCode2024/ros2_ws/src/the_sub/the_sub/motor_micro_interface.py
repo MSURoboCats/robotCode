@@ -29,7 +29,7 @@ class MotorArduino:
 
         self.__clear_buffer__()
         self.port.write("<V>".encode("utf-8"))
-        line = self.port.read(6)
+        line = self.port.read(4)
         voltage = ((line[1] << 8) | line[2]) / 1000  # shift decimal to the left three places to get real value
 
         return voltage
@@ -128,7 +128,7 @@ class MotorArduino:
         """
         Set PWM values for all motors on the sub with 7-bit resolution in each direction
 
-        @param motor_powers: list of 8 values between -1 and 1 (clamped to .15 for out-of-water testing)
+        @param motor_powers: list of 8 values between -1 and 1 (clamped to .4 for out-of-water testing)
                              for each of the 8 motors
         """
 

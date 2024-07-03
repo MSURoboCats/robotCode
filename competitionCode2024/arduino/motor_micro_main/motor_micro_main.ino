@@ -50,7 +50,7 @@ char mappings_buff[MAPPINGS_BUFF_SIZE];
 // voltage message setup
 // has format: "< voltage_byte1 voltage_byte2 >"
 // representing voltage reading 0x<byte1><byte2> * 10^-3 (value*10^-3)
-const int VOLTAGE_BUFF_SIZE = 4;
+const int VOLTAGE_BUFF_SIZE = 2;
 char voltage_buff[VOLTAGE_BUFF_SIZE];
 
 //-------------------------------------------------------------------------------
