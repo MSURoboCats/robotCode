@@ -10,7 +10,7 @@ import os
 class StatusObserver(Node):
 
     def __init__(self):
-        super().__init__('esc_tester_node')
+        super().__init__('status_observer_node')
 
         # subscriber for voltage
         self.voltage = self.create_subscription(
