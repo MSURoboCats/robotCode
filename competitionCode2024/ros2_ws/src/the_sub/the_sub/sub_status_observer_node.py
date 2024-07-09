@@ -116,7 +116,7 @@ class StatusObserver(Node):
 o: %-6.2f|                   |o: %-6.2f
          |                   |
          |   Vsys: %-6.2fV   |
-v: %-6.2f|   Temp: %-6.2fC   |v: %-6.2f
+v: %-6.2f|   Temp: %-6.2fF   |v: %-6.2f
          |   Pres: %-6.2fmPa |
          |   Hmid: %-6.2f%%   |
 o: %-6.2f|                   |o: %-6.2f
@@ -133,7 +133,7 @@ Orientation %-6.2f  %-6.2f  %-6.2f  %-4.2f
 ----------------------------------------""" % (self.motor1,
                                                                 self.motor2, self.motor3,
                                                                 self.volt,
-                                                                self.motor4, self.temp, self.motor5,
+                                                                self.motor4, 9.0/5.0*self.temp+32, self.motor5,
                                                                 self.pressure,
                                                                 self.humidity,
                                                                 self.motor6, self.motor7, 
