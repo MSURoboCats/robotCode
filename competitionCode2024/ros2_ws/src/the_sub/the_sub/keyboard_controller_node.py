@@ -17,7 +17,7 @@ class KeyboardController(Node):
         self.keyboard_twist = Twist()
 
         # scaler to adjust motor power
-        self.power_scaler = .5
+        self.power_scaler = .1
 
     def press(self, key) -> None:
         '''
