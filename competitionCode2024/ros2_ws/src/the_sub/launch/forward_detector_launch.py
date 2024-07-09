@@ -49,7 +49,7 @@ def generate_launch_description():
         executable='center_detection_node',
         name='center_detection_node',
         remappings=[('/forward_rgb_camera/yolov8_detections', '/forward_rgb_camera/' + FORWARD_RGB_DETECTION_MODEL),
-                    ('/forward_rgb_camera/control_data', 'control_data')],
+                    ('/forward_rgb_camera/control_data', '/control_data')],
     )
     ld.add_action(center_detection_node)
 
