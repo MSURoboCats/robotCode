@@ -4,7 +4,11 @@ import launch
 import launch_ros.actions
 
 def generate_launch_description():
-
+    '''
+    Launch forward facing camera with '/forward_rgb_camera' namespace with
+    detection model and centered detector publishing in the same namespace
+    '''
+    
     FORWARD_RGB_CAM_PORT = '1'
     FORWARD_RGB_DETECTION_MODEL = 'pool_tuned_base'
 
