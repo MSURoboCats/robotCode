@@ -5,8 +5,9 @@ import launch_ros.actions
 
 def generate_launch_description():
     '''
-    Launch file for motor and sensor microcontrollers and twist->motor powers translator
+    Launch file for motor and sensor microcontrollers and twist to motor powers translator
     '''
+
     ld = launch.LaunchDescription()
 
     # get path to load node parameters from
