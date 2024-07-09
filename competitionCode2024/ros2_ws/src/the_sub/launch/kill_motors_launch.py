@@ -7,6 +7,7 @@ def generate_launch_description():
     '''
     Launch file to kill all motors
     '''
+    
     ld = launch.LaunchDescription()
 
     # get path to load node parameters from
