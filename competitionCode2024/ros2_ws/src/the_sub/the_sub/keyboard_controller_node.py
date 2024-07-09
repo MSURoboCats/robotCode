@@ -56,7 +56,7 @@ class KeyboardController(Node):
             self.keyboard_twist = Twist()
 
         self.pub_twist.publish(self.keyboard_twist)
-        self.get_logger().info('Non-zero twist published')
+        #self.get_logger().info('Non-zero twist published')
 
     def release(self, key) -> None:
         '''
@@ -64,7 +64,7 @@ class KeyboardController(Node):
         '''
         self.keyboard_twist = Twist()
         self.pub_twist.publish(self.keyboard_twist)
-        self.get_logger().info('Reset twist published')
+        #self.get_logger().info('Reset twist published')
 
     def listen(self) -> None:
         '''
