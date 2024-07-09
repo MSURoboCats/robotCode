@@ -7,6 +7,7 @@ def generate_launch_description():
     '''
     Launch file to go through motor mapping interface and save results
     '''
+
     ld = launch.LaunchDescription()
 
     # get path to load node parameters from
