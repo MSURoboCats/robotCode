@@ -12,6 +12,9 @@ class StatusObserver(Node):
     def __init__(self):
         super().__init__('status_observer_node')
 
+        # timer for screen refresh at 20Hz
+        self.refresh = self.create_timer(.05, self.refresh_callback)
+
         # subscriber for voltage
         self.voltage = self.create_subscription(
             BatteryState,
@@ -69,16 +72,12 @@ class StatusObserver(Node):
 
     def voltage_callback(self, data: BatteryState) -> None:
         self.volt = data.voltage
-        
-        self.print_sub()
-    
+            
     def hull_callback(self, data: HullData) -> None:
         self.temp = data.temperature.temperature
         self.pressure = data.pressure.fluid_pressure
         self.humidity = data.humidity.relative_humidity
-        
-        self.print_sub()
-    
+            
     def control_callback(self, data: ControlData) -> None:
         self.x = data.imu_data.orientation.x
         self.y = data.imu_data.orientation.y
@@ -91,9 +90,7 @@ class StatusObserver(Node):
         self.ay = data.imu_data.linear_acceleration.y
         self.az = data.imu_data.linear_acceleration.z
         self.depth = data.depth
-        
-        self.print_sub()
-    
+            
     def motor_callback(self, data: MotorPowers) -> None:
         self.motor1 = data.motor1
         self.motor2 = data.motor2
@@ -104,6 +101,7 @@ class StatusObserver(Node):
         self.motor7 = data.motor7
         self.motor8 = data.motor8
         
+    def refresh_callback(self) -> None:
         self.print_sub()
 
     def print_sub(self) -> None:

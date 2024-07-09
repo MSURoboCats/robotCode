@@ -32,12 +32,13 @@ class DepthController(Node):
         self.prev_depth = 0.0       # rolling average one time step behind cur_depth
         self.initialized = False    # depth values not initialized
 
-        self.Kp = 1.5  # full motor power if more than 3m away from goal 
+        self.Kp = 1.5       # full motor power if more than 2/3m away from goal 
         self.Kd = -.5        # complete guess
     
     def control_data_callback(self, data: ControlData) -> None:
         # if it is the first reading, intialize depth variables
         if not self.initialized:
+            # don't initialize on a bad sensor reading
             if data.depth == 0:
                 return
             self.cur_depth = data.depth
@@ -47,7 +48,7 @@ class DepthController(Node):
 
         # if it is a bad sensor reading, skip the iteration
         if abs(data.depth - self.cur_depth) > .2:
-            print(data.depth, self.cur_depth, abs(data.depth - self.cur_depth))
+            self.get_logger().warn('New value unreasonable | Current: %.2f | New: %.2f' % (self.cur_depth, data.depth))
             return
         
         # calculate error and derivative
@@ -66,6 +67,7 @@ class DepthController(Node):
         self.get_logger().info('Current: %.2f | Goal: %.2f | Motors: %.2f' % (self.cur_depth, self.goal_depth, power_out))
 
     def depth_goal_callback(self, data: DepthGoal) -> None:
+        # set depth goal
         self.goal_depth = data.depth
         self.get_logger().info('Depth goal set to %.2f' % self.goal_depth)
 

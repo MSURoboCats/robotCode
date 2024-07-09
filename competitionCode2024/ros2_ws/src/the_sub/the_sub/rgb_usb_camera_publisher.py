@@ -26,7 +26,7 @@ class ImagePublisher(Node):
     # timer for callback function
     self.timer = self.create_timer(timer_period, self.timer_callback)
          
-    # create VideoCapture object, looping through ports as needed
+    # create VideoCapture object, looping through ports as needed (capped at video20)
     self.cam_idx = int(sys.argv[1])
     self.cap = cv2.VideoCapture(self.cam_idx)
     while not self.cap.isOpened():
