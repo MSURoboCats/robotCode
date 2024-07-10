@@ -2,14 +2,29 @@ import rclpy
 from rclpy.node import Node
 
 from geometry_msgs.msg import Twist
+from sensor_msgs.msg import BatteryState
+
+from interfaces.msg import ControlData, HullData
 
 import pygame
 import tkinter as tk
 from tkinter import ttk, filedialog
 from PIL import ImageTk, Image
+from multiprocessing import Process
 
 global vel
 vel = 1.0
+
+global global_root; global_root = tk.Tk()
+#sub status vars
+global battery_level; battery_level = tk.StringVar()
+global temp; temp = tk.StringVar()
+global pressure; pressure = tk.StringVar()
+global humidity; humidity = tk.StringVar()
+global depth; depth = tk.StringVar()
+global rot; rot = tk.StringVar()
+global rot_vel; rot_vel = tk.StringVar()
+global lin_acc; lin_acc= tk.StringVar()
 
 def EX_button_on():
     print("ON")
@@ -89,8 +104,10 @@ class button():
 class GUI():
     def __init__(self):
         #makes tabs and sets up titles
+        print("initializing GUI")
+        global global_root
         self.paddings = {'padx': 5, 'pady': 5}
-        self.root = tk.Tk()
+        self.root = global_root
         self.savePath = tk.StringVar()
         self.root.geometry("1000x1000")
         self.root.title("ROBOCATS SUB CONTROL NODE")
@@ -150,12 +167,10 @@ class GUI():
         drop_cam.grid(column = 1, row=5); drop_mod.grid(column = 2, row =5)
         Live_btn = button(Options,"Launch live", {'row':5,'column':3}, EX_button_off,EX_button_on,"grey","grey")
        
-        #sub status vars
-        self.battery_level = tk.StringVar(); self.temp = tk.StringVar(); self.pressure = tk.StringVar(); self.humidity = tk.StringVar()
-        self.depth = tk.StringVar(); self.rot = tk.StringVar(); self.vel = tk.StringVar(); self.ang_acc = tk.StringVar()
-        self.vel.set(str(1.5))
+
         #how you can set variables ex) self.battery_level.set(str(90)))
         #this just shows the status
+        global battery_level, temp, pressure, humidity, depth, rot, rot_vel, lin_acc
         ttk.Label(Options, text ="Sub status: ").grid(column = 0, row = 6,  **self.paddings)
         ttk.Label(Options, text = "Battery Level:").grid(column = 1, row = 7,  **self.paddings);ttk.Label(Options, textvariable = self.battery_level).grid(column = 2, row = 7,  **self.paddings)
         ttk.Label(Options, text = "Tempature:").grid(column = 3, row = 7,  **self.paddings);ttk.Label(Options, textvariable = self.temp).grid(column = 4, row = 7,  **self.paddings)
@@ -163,8 +178,8 @@ class GUI():
         ttk.Label(Options, text = "Humidity:").grid(column = 3, row = 8,  **self.paddings);ttk.Label(Options, textvariable = self.humidity).grid(column = 4, row = 8,  **self.paddings)
         ttk.Label(Options, text = "Depth:").grid(column = 1, row = 9,  **self.paddings);ttk.Label(Options, textvariable = self.depth).grid(column = 2, row = 9,  **self.paddings)
         ttk.Label(Options, text = "Rot:").grid(column = 3, row = 9,  **self.paddings);ttk.Label(Options, textvariable = self.rot).grid(column = 4, row = 9,  **self.paddings)
-        ttk.Label(Options, text = "Velocity:").grid(column = 1, row = 10,  **self.paddings);ttk.Label(Options, textvariable = self.vel).grid(column = 2, row = 10,  **self.paddings)
-        ttk.Label(Options, text = "Angular Acceleration:").grid(column = 3, row = 10,  **self.paddings);ttk.Label(Options, textvariable = self.ang_acc).grid(column = 4, row = 10,  **self.paddings)
+        ttk.Label(Options, text = "Angular Velocity:").grid(column = 1, row = 10,  **self.paddings);ttk.Label(Options, textvariable = self.rot_vel).grid(column = 2, row = 10,  **self.paddings)
+        ttk.Label(Options, text = "Linear Acceleration:").grid(column = 3, row = 10,  **self.paddings);ttk.Label(Options, textvariable = self.lin_acc).grid(column = 4, row = 10,  **self.paddings)
        
         #sub controller
         slider_label = ttk.Label(Options,text='Motor Controler:')
@@ -189,10 +204,7 @@ class GUI():
         global vel
         val = self.current_value.get()
         vel = val / 100.0
-        print(val, vel)
         return('{: .2f}'.format(val))
-    
-
 
     def slider_changed(self,event):
         global vel
@@ -204,6 +216,9 @@ class GUI():
         filename =filedialog.askdirectory()
         self.path_entry.insert(tk.END, filename) # add this
 
+def GUI_launch():
+    global gui
+    gui = GUI()
 
 class KeyboardController(Node):
 
@@ -211,20 +226,36 @@ class KeyboardController(Node):
         super().__init__("KeuboardController")
 
         # publisher for twists to control the sub
-        self.twist_pub = self.create_publisher(Twist, "control_twist", 10)
+        #self.twist_pub = self.create_publisher(Twist, "control_twist", 10)
 
         # subscriber for control data
+        self.sub_control_data = self.create_subscription(ControlData, '/control_data', self.control_data_callback, 10)
 
         # subscriber for hull data
+        self.sub_control_data = self.create_subscription(HullData, '/hull_data', self.hull_data_callback, 10)
+
+        # subscriber for voltage
+        self.voltage = self.create_subscription(BatteryState, "battery_health", self.voltage_callback, 10)
 
         # subscriber for forward camera
 
         # subscriber for downward camera
+    
+    def control_data_callback(self, data: ControlData) -> None:
+        global depth, rot, rot_vel, lin_acc
+        depth.set(str(data.depth))
+    
+    def hull_data_callback(self, data: HullData) -> None:
+        global tryemp, pressure, humidity
+        temp.set(str(data.temperature.temperature))
+        pressure.set(str(data.pressure.fluid_pressure))
+        humidity.set(str(data.humidity.relative_humidity))
+    
+    def voltage_callback(self, data: BatteryState) -> None:
+        global battery_level
+        battery_level.set(str(data.voltage))
 
 
-        
-        # GUI
-        gui = GUI()
 
 def main(args = None):
 
@@ -233,11 +264,9 @@ def main(args = None):
 
     # create the node
     node = KeyboardController()
-    print("Post creation, pre spin")
 
     # spin the node so the callback function is called
     rclpy.spin(node)
-    print("post spin, pre exit")
 
     # destroy the node explicitly
     # (optional - otherwise it will be done automatically
@@ -247,5 +276,9 @@ def main(args = None):
     # shutdown the ROS client library for Python
     rclpy.shutdown()
 
-if __name__ == '__main__':
-  main()
+print("made it here")
+p = Process(target=GUI_launch)
+p.start()
+print("made it here")
+main()
+print("made it here")
