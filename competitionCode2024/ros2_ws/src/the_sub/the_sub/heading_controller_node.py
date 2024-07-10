@@ -44,13 +44,15 @@ class HeadingController(Node):
             10,
         )
 
+        self.max_power = .5     # max motor power
+
         self.goal_heading = np.quaternion(1,0,0,0)      # goal heading
         self.cur_heading = np.quaternion(1,0,0,0)       # current heading read from sensor
         self.cur_heading_der = np.quaternion(1,0,0,0)   # current derivative read from sensor
         self.initialized = False                        # heading values not initialized
 
-        self.Kp = .5     # guess
-        self.Kd = -.05     # guess
+        self.Kp = 1         # guess
+        self.Kd = -.01       # guess
 
 
     def control_data_callback(self, data: ControlData) -> None:
@@ -78,38 +80,42 @@ class HeadingController(Node):
         
         # calculate rolling average for sensor values
         self.cur_heading = np.quaternion(
-                (self.cur_heading.w*4 + data.imu_data.orientation.w)/5,
-                (self.cur_heading.x*4 + data.imu_data.orientation.x)/5,
-                (self.cur_heading.y*4 + data.imu_data.orientation.y)/5,
-                (self.cur_heading.z*4 + data.imu_data.orientation.z)/5,
+                (15 * self.cur_heading.w + data.imu_data.orientation.w)/16,
+                (15 * self.cur_heading.x + data.imu_data.orientation.x)/16,
+                (15 * self.cur_heading.y + data.imu_data.orientation.y)/16,
+                (15 * self.cur_heading.z + data.imu_data.orientation.z)/16,
             )
+        if data.imu_data.angular_velocity.z > 6:
+            self.get_logger().warn('Unreasonable rot vel z: %.2f' % data.imu_data.angular_velocity.z)
+            return
+        
         self.cur_heading_der = 1/2 * np.quaternion(
                 0,
-                (4* self.cur_heading_der.x + data.imu_data.angular_velocity.x)/5,
-                (4* self.cur_heading_der.y + data.imu_data.angular_velocity.y)/5,
-                (4* self.cur_heading_der.z + data.imu_data.angular_velocity.z)/5,
+                (15 * self.cur_heading_der.x + data.imu_data.angular_velocity.x)/16,
+                (15 * self.cur_heading_der.y + data.imu_data.angular_velocity.y)/16,
+                (15 * self.cur_heading_der.z + data.imu_data.angular_velocity.z)/16,
             )
         
         # calculate error around the y-axis
         e = self.goal_heading * np.conjugate(self.cur_heading)
         e_y = e.y
 
-        # get the derivative around the y-axis
-        delta_y = self.cur_heading_der.y
+        # get the derivative around the z-axis
+        delta_z = self.cur_heading_der.z
 
         # PD controller with time step of .0625 / 16HZ (what control data is published at)
-        power_out = self.Kp*e_y + self.Kd*delta_y / .0625
+        power_out = self.Kp*e_y + self.Kd*delta_z / .0625
 
         # publish motor values
-        rot_twist = Twist()
-        rot_twist.angular.y = power_out
-        self.pub_twist.publish(rot_twist)
+        #rot_twist = Twist()
+        #rot_twist.angular.y = max(-self.max_power, min(power_out, self.max_power))
+        #self.pub_twist.publish(rot_twist)
 
-        self.get_logger().info('Current: %s | Goal: %s | Error: %s | Der: %s | Power: %.2f' % (self.cur_heading.y,
+        self.get_logger().info('Current: %.4f | Goal: %.4f | Error: %.4f | Der: %.4f | Power: %.2f' % (self.cur_heading.y,
                                                                                                self.goal_heading.y,
                                                                                                e.y,
-                                                                                               self.cur_heading_der.y,
-                                                                                               power_out,
+                                                                                               self.cur_heading_der.z,
+                                                                                               max(-self.max_power, min(power_out, self.max_power)),
                                                                                                ))
 
     def heading_goal_callback(self, data: HeadingGoal) -> None:
