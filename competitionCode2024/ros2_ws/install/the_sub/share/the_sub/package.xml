@@ -19,10 +19,12 @@
   <depend>sys</depend>
   <depend>os</depend>  
   <depend>numpy</depend>
+  <depend>quaternion</depend>
   <depend>yaml</depend>
   <depend>ultralytics</depend>
   <depend>tkinter</depend>
   <depend>PIL</depend>
+  <depend>multiprocessing</depend>
   <depend>sshkeyboard</depend>
 
   <test_depend>ament_copyright</test_depend>

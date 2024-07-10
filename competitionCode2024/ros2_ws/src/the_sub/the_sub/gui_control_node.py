@@ -10,21 +10,11 @@ import pygame
 import tkinter as tk
 from tkinter import ttk, filedialog
 from PIL import ImageTk, Image
-from multiprocessing import Process
+from threading import Thread
 
+gui = None
 global vel
 vel = 1.0
-
-global global_root; global_root = tk.Tk()
-#sub status vars
-global battery_level; battery_level = tk.StringVar()
-global temp; temp = tk.StringVar()
-global pressure; pressure = tk.StringVar()
-global humidity; humidity = tk.StringVar()
-global depth; depth = tk.StringVar()
-global rot; rot = tk.StringVar()
-global rot_vel; rot_vel = tk.StringVar()
-global lin_acc; lin_acc= tk.StringVar()
 
 def EX_button_on():
     print("ON")
@@ -105,9 +95,8 @@ class GUI():
     def __init__(self):
         #makes tabs and sets up titles
         print("initializing GUI")
-        global global_root
         self.paddings = {'padx': 5, 'pady': 5}
-        self.root = global_root
+        self.root = tk.Tk()
         self.savePath = tk.StringVar()
         self.root.geometry("1000x1000")
         self.root.title("ROBOCATS SUB CONTROL NODE")
@@ -167,10 +156,16 @@ class GUI():
         drop_cam.grid(column = 1, row=5); drop_mod.grid(column = 2, row =5)
         Live_btn = button(Options,"Launch live", {'row':5,'column':3}, EX_button_off,EX_button_on,"grey","grey")
        
-
+        self.battery_level = tk.StringVar()
+        self.temp = tk.StringVar()
+        self.pressure = tk.StringVar()
+        self.humidity = tk.StringVar()
+        self.depth = tk.StringVar()
+        self.rot = tk.StringVar()
+        self.rot_vel = tk.StringVar()
+        self.lin_acc= tk.StringVar()
         #how you can set variables ex) self.battery_level.set(str(90)))
         #this just shows the status
-        global battery_level, temp, pressure, humidity, depth, rot, rot_vel, lin_acc
         ttk.Label(Options, text ="Sub status: ").grid(column = 0, row = 6,  **self.paddings)
         ttk.Label(Options, text = "Battery Level:").grid(column = 1, row = 7,  **self.paddings);ttk.Label(Options, textvariable = self.battery_level).grid(column = 2, row = 7,  **self.paddings)
         ttk.Label(Options, text = "Tempature:").grid(column = 3, row = 7,  **self.paddings);ttk.Label(Options, textvariable = self.temp).grid(column = 4, row = 7,  **self.paddings)
@@ -242,18 +237,18 @@ class KeyboardController(Node):
         # subscriber for downward camera
     
     def control_data_callback(self, data: ControlData) -> None:
-        global depth, rot, rot_vel, lin_acc
-        depth.set(str(data.depth))
+        global gui
+        gui.depth.set(str(data.depth))
     
     def hull_data_callback(self, data: HullData) -> None:
-        global tryemp, pressure, humidity
-        temp.set(str(data.temperature.temperature))
-        pressure.set(str(data.pressure.fluid_pressure))
-        humidity.set(str(data.humidity.relative_humidity))
+        global gui
+        gui.temp.set(str(data.temperature.temperature))
+        gui.pressure.set(str(data.pressure.fluid_pressure))
+        gui.humidity.set(str(data.humidity.relative_humidity))
     
     def voltage_callback(self, data: BatteryState) -> None:
-        global battery_level
-        battery_level.set(str(data.voltage))
+        global gui
+        gui.battery_level.set(str(data.voltage))
 
 
 
@@ -277,7 +272,7 @@ def main(args = None):
     rclpy.shutdown()
 
 print("made it here")
-p = Process(target=GUI_launch)
+p = Thread(target=GUI_launch)
 p.start()
 print("made it here")
 main()
