@@ -11,8 +11,8 @@ import tkinter as tk
 from tkinter import ttk, filedialog
 from PIL import ImageTk, Image
 from threading import Thread
+import time
 
-gui = None
 global vel
 vel = 1.0
 
@@ -104,10 +104,11 @@ class GUI():
         self.motorMappings()
         self.options()
 
-           
         self.SubControlNode.pack(expand = 1, fill ="both")
+    
+    def start(self):
         self.root.mainloop()
-       
+
     def motorMappings(self):
         #still having a little trouble with the image so this is incomplete for right now
         MM = ttk.Frame(self.SubControlNode)
@@ -214,6 +215,7 @@ class GUI():
 def GUI_launch():
     global gui
     gui = GUI()
+    gui.start()
 
 class KeyboardController(Node):
 
@@ -237,22 +239,19 @@ class KeyboardController(Node):
         # subscriber for downward camera
     
     def control_data_callback(self, data: ControlData) -> None:
-        global gui
         gui.depth.set(str(data.depth))
     
     def hull_data_callback(self, data: HullData) -> None:
-        global gui
         gui.temp.set(str(data.temperature.temperature))
         gui.pressure.set(str(data.pressure.fluid_pressure))
         gui.humidity.set(str(data.humidity.relative_humidity))
     
     def voltage_callback(self, data: BatteryState) -> None:
-        global gui
         gui.battery_level.set(str(data.voltage))
 
 
 
-def main(args = None):
+def spin_listener(args = None):
 
     # initialize the rclpy library
     rclpy.init(args=args)
@@ -271,9 +270,12 @@ def main(args = None):
     # shutdown the ROS client library for Python
     rclpy.shutdown()
 
-print("made it here")
-p = Thread(target=GUI_launch)
-p.start()
-print("made it here")
-main()
-print("made it here")
+def main(args=None):
+    p = Thread(target=GUI_launch)
+    p.start()
+    print("got here")
+    time.sleep(10)
+    spin_listener()
+
+if __name__ == "__main__":
+    main()
