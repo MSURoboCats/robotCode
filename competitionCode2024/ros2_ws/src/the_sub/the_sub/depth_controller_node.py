@@ -4,6 +4,7 @@ from rclpy.node import Node
 from interfaces.msg import ControlData, DepthGoal
 
 from geometry_msgs.msg import Twist
+from std_msgs.msg import String
 
 class DepthController(Node):
 
@@ -11,19 +12,30 @@ class DepthController(Node):
         super().__init__('depth_controller_node')
 
         # publisher for twists to control the sub linearly along the y-axis only
-        self.pub_twist = self.create_publisher(Twist, "control_y_twist", 10)
+        self.pub_twist = self.create_publisher(
+            Twist,
+            "/control_y_twist",
+            10,
+        )
+
+        # publisher for when the goal is reached
+        self.pub_powers = self.create_publisher(
+            String,
+            '/depth_goal_status',
+            10,
+        )
 
         # subscriber for control data
         self.sub_control_data = self.create_subscription(
             ControlData, 
-            'control_data', 
+            '/control_data', 
             self.control_data_callback, 
             10)
         
-        # subscriber for depth setting command
+        # subscriber for depth goal command
         self.sub_depth_goal = self.create_subscription(
             DepthGoal, 
-            'depth_goal', 
+            '/depth_goal', 
             self.depth_goal_callback, 
             10)
         
