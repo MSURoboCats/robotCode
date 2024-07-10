@@ -6,9 +6,9 @@ import launch_ros.actions
 def generate_launch_description():
     '''
     Launch motor and sensor micro controller nodes, forward rgb camera with
-    detection model and center detector, and twist to motor powers translator
+    detection model and center detector, and twist to motor powers translator.
     '''
-    
+
     FORWARD_RGB_CAM_PORT = '1'
     FORWARD_RGB_DETECTION_MODEL = 'pool_tuned_base'
     DOWNWARD_RGB_CAM_PORT = '0'
@@ -123,7 +123,7 @@ def generate_launch_description():
         executable='center_detection_node',
         name='center_detection_node',
         remappings=[('/forward_rgb_camera/yolov8_detections', '/forward_rgb_camera/' + FORWARD_RGB_DETECTION_MODEL),
-                    ('/forward_rgb_camera/control_data', 'control_data')],
+                    ('/forward_rgb_camera/control_data', '/control_data')],
     )
     ld.add_action(center_detection_node)
 
