@@ -1,2 +1,1 @@
-string goal_id
 geometry_msgs/Quaternion orientation
