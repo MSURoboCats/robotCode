@@ -11,6 +11,7 @@ import quaternion
 
 
 class HeadingController(Node):
+
     def __init__(self):
         super().__init__('heading_controller_node')
 
@@ -22,7 +23,7 @@ class HeadingController(Node):
         )
 
         # publisher for when the goal is reached
-        self.pub_powers = self.create_publisher(
+        self.pub_goal_reached = self.create_publisher(
             String,
             '/heading_goal_status',
             10,
@@ -44,16 +45,27 @@ class HeadingController(Node):
             10,
         )
 
-        self.max_power = .5     # max motor power
-
         self.goal_heading = np.quaternion(1,0,0,0)      # goal heading
         self.cur_heading = np.quaternion(1,0,0,0)       # current heading read from sensor
         self.cur_heading_der = np.quaternion(1,0,0,0)   # current derivative read from sensor
-        self.initialized = False                        # heading values not initialized
+        
+        self.initialized = False    # heading values not initialized
+        self.goal_reached = True    # send success messages when goal_reached=False and cur_depth=goal_depth
 
-        self.Kp = 1         # guess
-        self.Kd = -.01       # guess
+        # PD controller values
+        self.Kp = 1
+        self.Kd = -.01
 
+        # the minimum value of for the rotational velocity for
+        # the reading to be discarded and control loop skipped
+        self.ROT_VEL_SENSOR_ERROR = 6
+
+        # number of samples to use in the rolling average of the sensor value
+        self.ROLLING_AVE = 5
+
+        # the minimum difference between the orientation sensor reading
+        #  and the current orientation for the goal reached message to be published
+        self.MIN_ERROR = .05
 
     def control_data_callback(self, data: ControlData) -> None:
         # if it is the first reading, intialize heading variables
@@ -80,20 +92,20 @@ class HeadingController(Node):
         
         # calculate rolling average for sensor values
         self.cur_heading = np.quaternion(
-                (15 * self.cur_heading.w + data.imu_data.orientation.w)/16,
-                (15 * self.cur_heading.x + data.imu_data.orientation.x)/16,
-                (15 * self.cur_heading.y + data.imu_data.orientation.y)/16,
-                (15 * self.cur_heading.z + data.imu_data.orientation.z)/16,
+                ((self.ROLLING_AVE - 1) * self.cur_heading.w + data.imu_data.orientation.w)/self.ROLLING_AVE,
+                ((self.ROLLING_AVE - 1) * self.cur_heading.x + data.imu_data.orientation.x)/self.ROLLING_AVE,
+                ((self.ROLLING_AVE - 1) * self.cur_heading.y + data.imu_data.orientation.y)/self.ROLLING_AVE,
+                ((self.ROLLING_AVE - 1) * self.cur_heading.z + data.imu_data.orientation.z)/self.ROLLING_AVE,
             )
-        if data.imu_data.angular_velocity.z > 6:
+        if data.imu_data.angular_velocity.z > self.ROT_VEL_SENSOR_ERROR:
             self.get_logger().warn('Unreasonable rot vel z: %.2f' % data.imu_data.angular_velocity.z)
             return
         
         self.cur_heading_der = 1/2 * np.quaternion(
                 0,
-                (15 * self.cur_heading_der.x + data.imu_data.angular_velocity.x)/16,
-                (15 * self.cur_heading_der.y + data.imu_data.angular_velocity.y)/16,
-                (15 * self.cur_heading_der.z + data.imu_data.angular_velocity.z)/16,
+                ((self.ROLLING_AVE - 1) * self.cur_heading_der.x + data.imu_data.angular_velocity.x)/self.ROLLING_AVE,
+                ((self.ROLLING_AVE - 1) * self.cur_heading_der.y + data.imu_data.angular_velocity.y)/self.ROLLING_AVE,
+                ((self.ROLLING_AVE - 1) * self.cur_heading_der.z + data.imu_data.angular_velocity.z)/self.ROLLING_AVE,
             )
         
         # calculate error around the y-axis
@@ -107,16 +119,22 @@ class HeadingController(Node):
         power_out = self.Kp*e_y + self.Kd*delta_z / .0625
 
         # publish motor values
-        #rot_twist = Twist()
-        #rot_twist.angular.y = max(-self.max_power, min(power_out, self.max_power))
-        #self.pub_twist.publish(rot_twist)
-
-        self.get_logger().info('Current: %.4f | Goal: %.4f | Error: %.4f | Der: %.4f | Power: %.2f' % (self.cur_heading.y,
+        rot_twist = Twist()
+        rot_twist.angular.y = max(-self.max_power, min(power_out, self.max_power))
+        self.pub_twist.publish(rot_twist)
+        self.get_logger().info('Current: %.4f | Goal: %.4f | Der: %.4f | Power: %.2f' % (self.cur_heading.y,
                                                                                                self.goal_heading.y,
                                                                                                e.y,
                                                                                                self.cur_heading_der.z,
                                                                                                max(-self.max_power, min(power_out, self.max_power)),
                                                                                                ))
+
+        # check for goal reached condition
+        if not self.goal_reached and abs(self.cur_heading.y - self.goal_heading.y) < self.MIN_ERROR:
+            self.goal_reached = True
+            message = String()
+            message.data = "Goal heading reached: %.2f" % self.cur_heading.y
+            self.pub_goal_reached(message)
 
     def heading_goal_callback(self, data: HeadingGoal) -> None:
         # set heading goal
@@ -126,7 +144,8 @@ class HeadingController(Node):
                 data.orientation.y,
                 data.orientation.z,
             )
-        self.get_logger().info('Heading goal set to %.2f %.2fi %.2fj %.2fk' % (self.goal_heading.w,
+        self.goal_reached = False
+        self.get_logger().info('Goal heading set to %.2f %.2fi %.2fj %.2fk' % (self.goal_heading.w,
                                                                                self.goal_heading.x,
                                                                                self.goal_heading.y,
                                                                                self.goal_heading.z,

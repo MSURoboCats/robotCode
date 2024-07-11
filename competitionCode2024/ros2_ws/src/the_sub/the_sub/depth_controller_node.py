@@ -19,7 +19,7 @@ class DepthController(Node):
         )
 
         # publisher for when the goal is reached
-        self.pub_powers = self.create_publisher(
+        self.pub_goal_reached = self.create_publisher(
             String,
             '/depth_goal_status',
             10,
@@ -42,10 +42,24 @@ class DepthController(Node):
         self.goal_depth = 0.0       # float
         self.cur_depth = 0.0        # rolling average of most recent 5 samples
         self.prev_depth = 0.0       # rolling average one time step behind cur_depth
-        self.initialized = False    # depth values not initialized
 
-        self.Kp = 1.5       # full motor power if more than 2/3m away from goal 
-        self.Kd = -.5        # complete guess
+        self.initialized = False    # depth values not initialized
+        self.goal_reached = True    # send success messages when goal_reached=False and cur_depth=goal_depth
+
+        # PD controller values
+        self.Kp = 1.5
+        self.Kd = -.5
+
+        # the minimum difference between the sensor reading and the current depth for
+        # the reading to be discarded and control loop skipped
+        self.SENSOR_ERROR = .2
+
+        # number of samples to use in the rolling average of the sensor value
+        self.ROLLING_AVE = 5
+
+        # the minimum difference between the sensor reading and the current depth for
+        # the goal reached message to be published
+        self.MIN_ERROR = .1
     
     def control_data_callback(self, data: ControlData) -> None:
         # if it is the first reading, intialize depth variables
@@ -59,13 +73,13 @@ class DepthController(Node):
             self.initialized = True
 
         # if it is a bad sensor reading, skip the iteration
-        if abs(data.depth - self.cur_depth) > .2:
+        if abs(data.depth - self.cur_depth) > self.SENSOR_ERROR:
             self.get_logger().warn('New value unreasonable | Current: %.2f | New: %.2f' % (self.cur_depth, data.depth))
             return
         
         # calculate error and derivative
         self.prev_depth = self.cur_depth
-        self.cur_depth = (data.depth + 4*self.cur_depth) / 5
+        self.cur_depth = (data.depth + (self.ROLLING_AVE-1)*self.cur_depth) / self.ROLLING_AVE
         e = self.goal_depth - self.cur_depth
         delta_depth = self.cur_depth - self.prev_depth
 
@@ -78,9 +92,17 @@ class DepthController(Node):
         self.pub_twist.publish(depth_twist)
         self.get_logger().info('Current: %.2f | Goal: %.2f | Motors: %.2f' % (self.cur_depth, self.goal_depth, power_out))
 
+        # check for goal reached condition
+        if not self.goal_reached and abs(self.cur_depth - self.goal_depth) < self.MIN_ERROR:
+            self.goal_reached = True
+            message = String()
+            message.data = "Goal depth reached: %.2f" % self.cur_depth
+            self.pub_goal_reached(message)
+
     def depth_goal_callback(self, data: DepthGoal) -> None:
         # set depth goal
         self.goal_depth = data.depth
+        self.goal_reached = False
         self.get_logger().info('Depth goal set to %.2f' % self.goal_depth)
 
 def main(args = None):
