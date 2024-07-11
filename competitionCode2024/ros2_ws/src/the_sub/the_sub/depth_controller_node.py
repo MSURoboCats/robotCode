@@ -97,7 +97,7 @@ class DepthController(Node):
             self.goal_reached = True
             message = String()
             message.data = "Goal depth reached: %.2f" % self.cur_depth
-            self.pub_goal_reached(message)
+            self.pub_goal_reached.publish(message)
 
     def depth_goal_callback(self, data: DepthGoal) -> None:
         # set depth goal

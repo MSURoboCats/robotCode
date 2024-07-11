@@ -134,7 +134,7 @@ class HeadingController(Node):
             self.goal_reached = True
             message = String()
             message.data = "Goal heading reached: %.2f" % self.cur_heading.y
-            self.pub_goal_reached(message)
+            self.pub_goal_reached.publish(message)
 
     def heading_goal_callback(self, data: HeadingGoal) -> None:
         # set heading goal
