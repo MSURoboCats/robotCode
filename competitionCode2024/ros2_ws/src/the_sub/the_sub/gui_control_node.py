@@ -5,71 +5,25 @@ from interfaces.msg import ControlData, HullData
 
 from std_msgs.msg import String
 from geometry_msgs.msg import Twist
-from sensor_msgs.msg import BatteryState
+from sensor_msgs.msg import BatteryState, Image
 
 import pygame
 import tkinter as tk
 from tkinter import ttk, filedialog
-from PIL import ImageTk, Image
+from PIL import ImageTk
+from PIL import Image as PILImage
 from threading import Thread
 import time
 
 from cv_bridge import CvBridge
 import cv2
 
-global vel
-vel = 1.0
 
-def EX_button_on():
-    print("ON")
+def EX_button_on(num):
+    print("ON %f" % num)
 
-def EX_button_off():
-    print("OFF")
-
-
-class controler():
-    def __init__(self):
-        global vel
-        pre_move = [0,0,0]
-        pre_rot = [0,0]
-        pygame.init()
-        window = pygame.display.set_mode((300, 300))
-        clock = pygame.time.Clock()
-
-        rect = pygame.Rect(0, 0, 20, 20)
-        rect.center = window.get_rect().center
-       
-
-        run = True
-        while run:
-            clock.tick(15)#fps
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    run = False
-               
-
-            keys = pygame.key.get_pressed()
-           
-           
-            move_vec = [vel * val for val in [keys[pygame.K_RIGHT] - keys[pygame.K_LEFT],keys[pygame.K_UP] - keys[pygame.K_DOWN],keys[pygame.K_o]-keys[pygame.K_l]]]
-            rot_vec = [vel * val for val in [keys[pygame.K_d] - keys[pygame.K_a],keys[pygame.K_w] - keys[pygame.K_s]]]
-
-            rect.x += move_vec[0]
-            rect.y += move_vec[1]
-           
-            if move_vec != pre_move or rot_vec != pre_rot:
-                print("move vector:",move_vec)
-                print("rotation vector:", rot_vec)
-
-            pre_move = move_vec; pre_rot = rot_vec
-            rect.centerx = rect.centerx % window.get_width()
-            rect.centery = rect.centery % window.get_height()
-
-            window.fill(0)
-            pygame.draw.rect(window, (255, 0, 0), rect)
-            pygame.display.flip()
-
-        pygame.quit()
+def EX_button_off(num):
+    print("OFF %f" % num)
 
 #this is just to save space with all of the buttons I was making
 # it makes a on/off button if you dont want this just set the off and on backgrounds and funcs to the same things
@@ -120,6 +74,9 @@ class GUI():
         self.options()
 
         self.SubControlNode.pack(expand = 1, fill ="both")
+
+        rclpy.init()
+        self.ros_node = AllKnowingNode(self)
     
     def start(self):
         self.root.mainloop()
@@ -132,7 +89,7 @@ class GUI():
         ttk.Label(MM, text ="Motor Mappings: ", font = "Helvetica 12 bold").grid(column = 0, row = 0,  **self.paddings)
 
         #image showing
-        image = Image.open("SUB-PICTURE.png")
+        image = PILImage.open("SUB-PICTURE.png")
         canvas_for_image = tk.Canvas(MM, bg='green', height=348, width=438, borderwidth=0, highlightthickness=0)
         canvas_for_image.grid(row=1, column=0, sticky='nesw', padx=0, pady=0,rowspan = 16)
         canvas_for_image.image = ImageTk.PhotoImage(image.resize((438, 348)))
@@ -148,9 +105,9 @@ class GUI():
         self.M8 = MotorChooser(MM,8,15,1)
        
         ttk.Label(MM, text ="Test ESC: ").grid(column = 2, row = 17,  **self.paddings)
-        ESCs = ["1", "2", "3","4","5","6","7","8"]; ESC = tk.StringVar(MM);ESC.set("Choose ESC");
-        drop_ESC = tk.OptionMenu(MM ,ESC , *ESCs );drop_ESC.grid(column = 3, row=17)
-        button(MM,"Test", {'row':17,'column':4}, EX_button_off,EX_button_on,"grey","green")
+        ESCs = [1,2,3,4,5,6,7,8]; ESC = tk.IntVar(MM); ESC.set(1);
+        drop_ESC = tk.OptionMenu(MM ,ESC , *ESCs, );drop_ESC.grid(column = 3, row=17)
+        button(MM,"Test", {'row':17,'column':4}, lambda *args: self.ros_node.get_logger().info(str(ESC.get())), lambda *args: self.ros_node.get_logger().info(str(ESC.get())),"grey","grey")
    
     #all of the options
     def options(self):
@@ -161,8 +118,8 @@ class GUI():
        
         #image collection buttons
         ttk.Label(Options, text ="Cameras: ").grid(column = 1, row = 1,  **self.paddings)
-        down = button(Options,"DOWN", {'row':1,'column':2}, EX_button_off,EX_button_on,"grey","green")
-        forward = button(Options,"FORWARD", {'row':1,'column':3}, EX_button_off,EX_button_on,"grey","green")
+        forward = button(Options,"FORWARD", {'row':1,'column':2}, lambda: setattr(self.ros_node, 'forward_feed', False), lambda: setattr(self.ros_node, 'forward_feed', True),"grey","green")
+        down = button(Options,"DOWN", {'row':1,'column':3}, EX_button_off,EX_button_on,"grey","green")
         #stereo = button(Options,"STEREO", {'row':1,'column':4}, EX_button_off,EX_button_on,"grey","green")
 
        
@@ -235,9 +192,8 @@ class GUI():
         button(Options,"ABORT", {'row':16,'column':0}, EX_button_off,EX_button_off,"red","red")
 
     def open_controller(self):
-       
-        pygame_controller = controler()
-       
+       pass
+
     def get_current_value(self):
         global vel
         val = self.current_value.get()
@@ -253,15 +209,20 @@ class GUI():
     def browsefunc(self):
         filename =filedialog.askdirectory()
         self.path_entry.insert(tk.END, filename) # add this
+    
+    def start_ros(self):
+        rclpy.spin(self.ros_node)
 
 def GUI_launch():
     global gui
     gui = GUI()
+    p = Thread(target=gui.start_ros)
+    p.start()
     gui.start()
 
-class AllKnowingGUI(Node):
+class AllKnowingNode(Node):
 
-    def __init__(self):
+    def __init__(self, gui: GUI):
         super().__init__("all_knowing_gui_node")
 
         # publisher for twists to control the sub
@@ -277,7 +238,6 @@ class AllKnowingGUI(Node):
             "/frame_saver_commands",
             10,
         )
-
 
         # subscriber for control data
         self.sub_control_data = self.create_subscription(
@@ -323,16 +283,18 @@ class AllKnowingGUI(Node):
         self.forward_feed = False
         self.downward_feed = False
 
+        self.gui = gui
+
     def control_data_callback(self, data: ControlData) -> None:
-        gui.depth.set(str(data.depth))
+        self.gui.depth.set(str(data.depth))
     
     def hull_data_callback(self, data: HullData) -> None:
-        gui.temp.set(str(data.temperature.temperature))
-        gui.pressure.set(str(data.pressure.fluid_pressure))
-        gui.humidity.set(str(data.humidity.relative_humidity))
+        self.gui.temp.set(str(data.temperature.temperature))
+        self.gui.pressure.set(str(data.pressure.fluid_pressure))
+        self.gui.humidity.set(str(data.humidity.relative_humidity))
     
     def voltage_callback(self, data: BatteryState) -> None:
-        gui.battery_level.set(str(data.voltage))
+        self.gui.battery_level.set(str(data.voltage))
 
     def sub_forward_rgb_camera_callback(self, data: Image) -> None:
         if self.forward_feed:
@@ -353,7 +315,7 @@ def spin_listener(args = None):
     rclpy.init(args=args)
 
     # create the node
-    node = KeyboardController()
+    node = AllKnowingNode()
 
     # spin the node so the callback function is called
     rclpy.spin(node)
@@ -367,10 +329,7 @@ def spin_listener(args = None):
     rclpy.shutdown()
 
 def main(args=None):
-    p = Thread(target=GUI_launch)
-    p.start()
-    time.sleep(10)
-    spin_listener()
+    GUI_launch()
 
 if __name__ == "__main__":
     main()
