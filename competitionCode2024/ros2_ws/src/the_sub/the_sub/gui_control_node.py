@@ -18,6 +18,8 @@ import time
 from cv_bridge import CvBridge
 import cv2
 
+global vel
+vel = 1
 
 def EX_button_on(num):
     print("ON %f" % num)
@@ -90,10 +92,10 @@ class GUI():
 
         #image showing
         image = PILImage.open("SUB-PICTURE.png")
-        canvas_for_image = tk.Canvas(MM, bg='green', height=348, width=438, borderwidth=0, highlightthickness=0)
-        canvas_for_image.grid(row=1, column=0, sticky='nesw', padx=0, pady=0,rowspan = 16)
-        canvas_for_image.image = ImageTk.PhotoImage(image.resize((438, 348)))
-        canvas_for_image.create_image(0, 0, image=canvas_for_image.image, anchor='nw')
+        canvas_for_motor_mappings = tk.Canvas(MM, bg='green', height=348, width=438, borderwidth=0, highlightthickness=0)
+        canvas_for_motor_mappings.grid(row=1, column=0, sticky='nesw', padx=0, pady=0,rowspan = 16)
+        canvas_for_motor_mappings.image = ImageTk.PhotoImage(image.resize((438, 348)))
+        canvas_for_motor_mappings.create_image(0, 0, image=canvas_for_motor_mappings.image, anchor='nw')
        
         self.M1 = MotorChooser(MM,1,1,1)
         self.M2 = MotorChooser(MM,2,3,1)
@@ -117,42 +119,45 @@ class GUI():
         ttk.Label(Options, text ="Image Collection: ").grid(column = 0, row = 0,  **self.paddings)
        
         #image collection buttons
-        ttk.Label(Options, text ="Cameras: ").grid(column = 1, row = 1,  **self.paddings)
-        forward = button(Options,"FORWARD", {'row':1,'column':2}, lambda: setattr(self.ros_node, 'forward_feed', False), lambda: setattr(self.ros_node, 'forward_feed', True),"grey","green")
-        down = button(Options,"DOWN", {'row':1,'column':3}, EX_button_off,EX_button_on,"grey","green")
+        ttk.Label(Options, text ="Cameras: ").grid(column = 0, row = 1,  **self.paddings)
+        forward = button(Options,"FORWARD", {'row':1,'column':1}, lambda: setattr(self.ros_node, 'forward_feed', False), lambda: setattr(self.ros_node, 'forward_feed', True),"grey","green")
+        down = button(Options,"DOWN", {'row':1,'column':2}, EX_button_off,EX_button_on,"grey","green")
         #stereo = button(Options,"STEREO", {'row':1,'column':4}, EX_button_off,EX_button_on,"grey","green")
 
        
         #image collection file path chooser
-        ttk.Label(Options, text ="Path To Save: ").grid(column = 1, row = 2,  **self.paddings)
+        ttk.Label(Options, text ="Path To Save: ").grid(column = 0, row = 2,  **self.paddings)
         self.path_entry = ttk.Entry(Options, textvariable=self.savePath)
         self.path_entry.insert(0, '/home/robocats/Desktop/developmentEnvironment/robotCode/competitionCode2024/ros2_ws/training_data')
-        self.path_entry.grid(column = 2,row =2, **self.paddings)
-        button(Options,"Search Path", {'row':2,'column':3}, self.browsefunc,self.browsefunc,"grey","grey")
+        self.path_entry.grid(column = 1,row =2, **self.paddings)
+        button(Options,"Search Path", {'row':2,'column':2}, self.browsefunc,self.browsefunc,"grey","grey")
 
         #Image collection folder name
-        ttk.Label(Options, text ="Folder name: ").grid(column = 1, row = 3,  **self.paddings)
+        ttk.Label(Options, text ="Folder name: ").grid(column = 0, row = 3,  **self.paddings)
         self.training_data_folder_name = tk.StringVar()
         intervalTextbox = ttk.Entry(Options, textvariable=self.training_data_folder_name)
         intervalTextbox.insert(0, 'test1')
-        intervalTextbox.grid(column = 2, row = 3, **self.paddings)
+        intervalTextbox.grid(column = 1, row = 3, **self.paddings)
         intervalTextbox.focus()
 
         #Image collection saving interval
-        ttk.Label(Options, text ="Saving Interval (seconds): ").grid(column = 1, row = 4,  **self.paddings)
+        ttk.Label(Options, text ="Saving Interval (seconds): ").grid(column = 0, row = 4,  **self.paddings)
         self.interval = tk.StringVar()
         intervalTextbox = ttk.Entry(Options, textvariable=self.interval)
         intervalTextbox.insert(0, '1')
-        intervalTextbox.grid(column = 2, row = 4, **self.paddings)
+        intervalTextbox.grid(column = 1, row = 4, **self.paddings)
         intervalTextbox.focus()
         
         #live preview has drop down menu and a button to launch it
-        ttk.Label(Options, text ="Live Preview: ").grid(column = 0, row = 5,  **self.paddings)
-        cameras = ["FORWARD", "DOWN", ""]; CVModels = ["pool_tuned_base","dry_buoy"]
+        cameras = ["FORWARD", "", ""]; CVModels = ["pool_tuned_base","dry_buoy"]
         cam = tk.StringVar(Options);cam.set("Choose Camera"); mod = tk.StringVar(Options); mod.set("Choose CV Model")
         drop_cam = tk.OptionMenu( Options ,cam , *cameras ); drop_mod = tk.OptionMenu(Options, mod, *CVModels)
-        drop_cam.grid(column = 1, row=5); drop_mod.grid(column = 2, row =5)
-        Live_btn = button(Options,"Launch live", {'row':5,'column':3}, EX_button_off,EX_button_on,"grey","grey")
+        drop_cam.grid(column = 0, row=5); drop_mod.grid(column = 1, row =5)
+        Live_btn = button(Options,"Launch live", {'row':5,'column':2}, EX_button_off,EX_button_on,"grey","grey")
+
+        # built-in live preview:
+        self.canvas_for_live_preview_1 = tk.Canvas(Options, bg='green', height=348, width=438, borderwidth=0, highlightthickness=0)
+        self.canvas_for_live_preview_1.grid(row=0, column=3, sticky='nesw', padx=0, pady=0,rowspan = 16)
        
         self.battery_level = tk.StringVar()
         self.temp = tk.StringVar()
@@ -165,14 +170,14 @@ class GUI():
         #how you can set variables ex) self.battery_level.set(str(90)))
         #this just shows the status
         ttk.Label(Options, text ="Sub status: ").grid(column = 0, row = 7,  **self.paddings)
-        ttk.Label(Options, text = "Battery Level:").grid(column = 1, row = 8,  **self.paddings);ttk.Label(Options, textvariable = self.battery_level).grid(column = 2, row = 7,  **self.paddings)
-        ttk.Label(Options, text = "Tempature:").grid(column = 3, row = 8,  **self.paddings);ttk.Label(Options, textvariable = self.temp).grid(column = 4, row = 7,  **self.paddings)
-        ttk.Label(Options, text = "Pressure:").grid(column = 1, row = 9,  **self.paddings);ttk.Label(Options, textvariable = self.pressure).grid(column = 2, row = 8,  **self.paddings)
-        ttk.Label(Options, text = "Humidity:").grid(column = 3, row = 9,  **self.paddings);ttk.Label(Options, textvariable = self.humidity).grid(column = 4, row = 8,  **self.paddings)
-        ttk.Label(Options, text = "Depth:").grid(column = 1, row = 10,  **self.paddings);ttk.Label(Options, textvariable = self.depth).grid(column = 2, row = 9,  **self.paddings)
-        ttk.Label(Options, text = "Rot:").grid(column = 3, row = 10,  **self.paddings);ttk.Label(Options, textvariable = self.rot).grid(column = 4, row = 9,  **self.paddings)
-        ttk.Label(Options, text = "Angular Velocity:").grid(column = 1, row = 11,  **self.paddings);ttk.Label(Options, textvariable = self.rot_vel).grid(column = 2, row = 10,  **self.paddings)
-        ttk.Label(Options, text = "Linear Acceleration:").grid(column = 3, row = 11,  **self.paddings);ttk.Label(Options, textvariable = self.lin_acc).grid(column = 4, row = 10,  **self.paddings)
+        ttk.Label(Options, text = "Battery Level:").grid(column = 0, row = 8,  **self.paddings);ttk.Label(Options, textvariable = self.battery_level).grid(column = 1, row = 7,  **self.paddings)
+        ttk.Label(Options, text = "Tempature:").grid(column = 2, row = 8,  **self.paddings);ttk.Label(Options, textvariable = self.temp).grid(column = 3, row = 7,  **self.paddings)
+        ttk.Label(Options, text = "Pressure:").grid(column = 0, row = 9,  **self.paddings);ttk.Label(Options, textvariable = self.pressure).grid(column = 1, row = 8,  **self.paddings)
+        ttk.Label(Options, text = "Humidity:").grid(column = 2, row = 9,  **self.paddings);ttk.Label(Options, textvariable = self.humidity).grid(column = 3, row = 8,  **self.paddings)
+        ttk.Label(Options, text = "Depth:").grid(column = 0, row = 10,  **self.paddings);ttk.Label(Options, textvariable = self.depth).grid(column = 1, row = 9,  **self.paddings)
+        ttk.Label(Options, text = "Rot:").grid(column = 2, row = 10,  **self.paddings);ttk.Label(Options, textvariable = self.rot).grid(column = 3, row = 9,  **self.paddings)
+        ttk.Label(Options, text = "Angular Velocity:").grid(column = 0, row = 11,  **self.paddings);ttk.Label(Options, textvariable = self.rot_vel).grid(column = 1, row = 10,  **self.paddings)
+        ttk.Label(Options, text = "Linear Acceleration:").grid(column = 2, row = 11,  **self.paddings);ttk.Label(Options, textvariable = self.lin_acc).grid(column = 3, row = 10,  **self.paddings)
        
         #sub controller
         slider_label = ttk.Label(Options,text='Motor Controler:')
@@ -279,9 +284,15 @@ class AllKnowingNode(Node):
             10
         )
 
+        # timer for saving images
+        self.save_timer = self.create_timer(10, self.save_callback)
+        self.save_timer.timer_period_ns = 1000000000*self.save_timer_period
+
         self.br = CvBridge()
+
         self.forward_feed = False
         self.downward_feed = False
+        self.save_feed = False
 
         self.gui = gui
 
@@ -300,14 +311,36 @@ class AllKnowingNode(Node):
         if self.forward_feed:
             # convert to cv2 format and display
             current_frame = self.br.imgmsg_to_cv2(data)
-            cv2.imshow("Forward Feed", current_frame)
+            b, g, r = cv2.split(current_frame)
+            adjusted_frame = PILImage.fromarray(cv2.merge((r,g,b)))
+            self.gui.canvas_for_live_preview_1.image = ImageTk.PhotoImage(adjusted_frame)
+            self.gui.canvas_for_live_preview_1.create_image(0, 0, image=self.gui.canvas_for_live_preview_1.image, anchor='nw')
 
     def sub_downward_rgb_camera_callback(self, data: Image) -> None:
         if self.downward_feed:
             # convert to cv2 format and display
+            pass
+            '''
+            need to add into GUI
             current_frame = self.br.imgmsg_to_cv2(data)
-            cv2.imshow("Forward Feed", current_frame)
+            b, g, r = cv2.split(current_frame)
+            adjusted_frame = PILImage.fromarray(cv2.merge((r,g,b)))
+            self.gui.canvas_for_live_preview_2.image = ImageTk.PhotoImage(adjusted_frame)
+            self.gui.canvas_for_live_preview_2.create_image(0, 0, image=self.gui.canvas_for_live_preview_1.image, anchor='nw')
+            '''
 
+    def save_callback(self) -> None:
+        if self.save_feed:
+            print("saved(fake)")
+            '''
+            # ensure that a frame has been received before trying to save images
+            if type(self.frame) == np.ndarray:
+                cv2.imwrite(full_img_path, self.frame)
+                self.get_logger().info("Frame saved: %s" % ('cv_training_data/' + str(sys.argv[1]) + '/' + str(self.counter) + '.jpg'))
+                self.counter += 1
+            else:
+                self.get_logger().info("Frame lock not aquired")
+            '''
 
 def spin_listener(args = None):
 
