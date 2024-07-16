@@ -94,8 +94,8 @@ class CoinFlip(Node):
 
     def oriented_detection_callback(self, data: OrientedDetection) -> None:
         # run second:
-        # only if the goal depth has been reached, a gate has not been detected, and the detected object is a gate 
-        if self.depth_reached and not self.gate_detected and data.detection.name == 'gate':
+        # only if the goal depth has been reached, a gate has not been detected, and the detected object is a gate (with 80% certainty)
+        if self.depth_reached and not self.gate_detected and data.detection.name == 'red_bouy' and data.detection.confidence > .8:
             self.gate_detected = True
             self.get_logger().info('Gate detected at %s' % data.orientation)
 
