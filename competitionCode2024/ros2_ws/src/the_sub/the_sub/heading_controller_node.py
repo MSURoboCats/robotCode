@@ -56,6 +56,9 @@ class HeadingController(Node):
         self.Kp = 1
         self.Kd = -.01
 
+        # maximum rotation speed
+        self.MAX_POWER = .3
+        
         # the minimum value of for the rotational velocity for
         # the reading to be discarded and control loop skipped
         self.ROT_VEL_SENSOR_ERROR = 6
@@ -89,6 +92,12 @@ class HeadingController(Node):
                 data.imu_data.angular_velocity.z,
             )
             self.initialized = True
+            self.get_logger().info('Initialized cur, prev, goal to %s' % data.imu_data.orientation)
+        
+        # skip iteration if the derivative value is unreasonable
+        if data.imu_data.angular_velocity.z > self.ROT_VEL_SENSOR_ERROR:
+            self.get_logger().warn('Unreasonable rot vel z: %.2f' % data.imu_data.angular_velocity.z)
+            return
         
         # calculate rolling average for sensor values
         self.cur_heading = np.quaternion(
@@ -97,10 +106,6 @@ class HeadingController(Node):
                 ((self.ROLLING_AVE - 1) * self.cur_heading.y + data.imu_data.orientation.y)/self.ROLLING_AVE,
                 ((self.ROLLING_AVE - 1) * self.cur_heading.z + data.imu_data.orientation.z)/self.ROLLING_AVE,
             )
-        if data.imu_data.angular_velocity.z > self.ROT_VEL_SENSOR_ERROR:
-            self.get_logger().warn('Unreasonable rot vel z: %.2f' % data.imu_data.angular_velocity.z)
-            return
-        
         self.cur_heading_der = 1/2 * np.quaternion(
                 0,
                 ((self.ROLLING_AVE - 1) * self.cur_heading_der.x + data.imu_data.angular_velocity.x)/self.ROLLING_AVE,
@@ -108,11 +113,11 @@ class HeadingController(Node):
                 ((self.ROLLING_AVE - 1) * self.cur_heading_der.z + data.imu_data.angular_velocity.z)/self.ROLLING_AVE,
             )
         
-        # calculate error around the y-axis
+        # calculate error around the y-axis from quaternion orientation
         e = self.goal_heading * np.conjugate(self.cur_heading)
         e_y = e.y
 
-        # get the derivative around the z-axis
+        # get the derivative around the z-axis from gyroscope
         delta_z = self.cur_heading_der.z
 
         # PD controller with time step of .0625 / 16HZ (what control data is published at)
@@ -120,14 +125,14 @@ class HeadingController(Node):
 
         # publish motor values
         rot_twist = Twist()
-        rot_twist.angular.y = max(-self.max_power, min(power_out, self.max_power))
+        rot_twist.angular.y = max(-self.MAX_POWER, min(power_out, self.MAX_POWER))
         self.pub_twist.publish(rot_twist)
-        self.get_logger().info('Current: %.4f | Goal: %.4f | Der: %.4f | Power: %.2f' % (self.cur_heading.y,
-                                                                                               self.goal_heading.y,
-                                                                                               e.y,
-                                                                                               self.cur_heading_der.z,
-                                                                                               max(-self.max_power, min(power_out, self.max_power)),
-                                                                                               ))
+        self.get_logger().info('Cur: %.2f | Goal: %.2f | Const: %.2f | Der: %.2f | Motors: %.2f' % (self.cur_heading.y,
+                                                                                                    self.goal_heading.y,
+                                                                                                    self.Kp*e_y,
+                                                                                                    self.Kd*delta_z / .0625,
+                                                                                                    max(-self.MAX_POWER, min(power_out, self.MAX_POWER)),
+                                                                                                    ))
 
         # check for goal reached condition
         if not self.goal_reached and abs(self.cur_heading.y - self.goal_heading.y) < self.MIN_ERROR:
