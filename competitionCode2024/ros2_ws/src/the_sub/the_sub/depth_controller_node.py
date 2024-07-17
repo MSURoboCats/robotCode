@@ -47,8 +47,8 @@ class DepthController(Node):
         self.goal_reached = True    # send success messages when goal_reached=False and cur_depth=goal_depth
 
         # PD controller values
-        self.Kp = 1.5
-        self.Kd = -.5
+        self.Kp = -4
+        self.Kd = 2
 
         # the minimum difference between the sensor reading and the current depth for
         # the reading to be discarded and control loop skipped
