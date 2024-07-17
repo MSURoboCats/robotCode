@@ -202,7 +202,7 @@ void writeData() {
   Serial.write(float_buff);
   Serial.write(' ');
 
-  dtostrf(sensor.depth(), 10, 4, float_buff);
+  dtostrf(sensor.pressure(), 10, 4, float_buff);
   Serial.write(float_buff);
   Serial.write(' ');
 

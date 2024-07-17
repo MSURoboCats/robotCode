@@ -24,6 +24,8 @@ class SensorMicroNode(Node):
 
         # initialize microcontroller
         self.sensor_micro = sensor_interface.SensorArduino('/dev/ttyUSB0')
+        self.get_logger().info('Initial data reads complete...getting surface offset')
+        self.OFFSET = self.sensor_micro.get_external_pressure_offsest()
         self.get_logger().info('Sensor microcontroller initialized')
 
     def publish_all_data(self) -> None:
@@ -31,7 +33,7 @@ class SensorMicroNode(Node):
         #data = self.sensor_micro.get_control_data()
         data = self.sensor_micro.get_data()
 
-        # populate message
+        # populate control message
         cur_data = ControlData()
         cur_data.imu_data.orientation.x = data.get('orientation').get('x')
         cur_data.imu_data.orientation.y = data.get('orientation').get('y')
@@ -43,24 +45,20 @@ class SensorMicroNode(Node):
         cur_data.imu_data.linear_acceleration.x = data.get('linear_acceleration').get('x')
         cur_data.imu_data.linear_acceleration.y = data.get('linear_acceleration').get('y')
         cur_data.imu_data.linear_acceleration.z = data.get('linear_acceleration').get('z')
-        cur_data.depth = data.get('depth')
+        cur_data.depth = (data.get('external_pressure') - self.OFFSET) / (9.80665 * 997.0474) # subtract off surface offset and use P = rho * g * h
 
-        # publish message
+        # publish control message
         self.pub_control_data.publish(cur_data)
         self.get_logger().info('Control data published')
         
-        # get hull data 
-        #data = self.sensor_micro.get_hull_data()
-
-        # populate message
-        
+        # populate hull message
         cur_conditions = HullData()
         cur_conditions.temperature.temperature = data.get('temperature')
-        cur_conditions.pressure.fluid_pressure = data.get('pressure')
+        cur_conditions.pressure.fluid_pressure = data.get('hull_pressure')
         cur_conditions.humidity.relative_humidity = data.get('humidity')
         
 
-        # publish message
+        # publish hull message
         self.pub_hull_data.publish(cur_conditions)
         self.get_logger().info('Hull data published')
         

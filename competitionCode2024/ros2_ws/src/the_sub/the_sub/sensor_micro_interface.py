@@ -31,10 +31,10 @@ class SensorArduino:
         self.accelerometer_y = 0
         self.accelerometer_z = 0
 
-        self.depth = 0
+        self.external_pressure = 0
 
         self.temp = 0
-        self.pressure = 0
+        self.hull_pressure = 0
         self.humidity = 0
 
         # allow time for microcontroller to initialize
@@ -58,13 +58,30 @@ class SensorArduino:
         out = {"orientation": {"x": self.orientation_x, "y": self.orientation_y, "z": self.orientation_z, "w": self.orientation_w},
                "angular_velocity": {"x": self.gyro_x, "y": self.gyro_y, "z": self.gyro_z},
                "linear_acceleration": {"x": self.accelerometer_x, "y": self.accelerometer_y, "z": self.accelerometer_z},
-               "depth": self.depth,
+               "external_pressure": self.external_pressure,
                "temperature": self.temp,
-               "pressure": self.pressure,
+               "hull_pressure": self.hull_pressure,
                "humidity": self.humidity}
 
         return out
 
+    def get_external_pressure_offsest(self) -> float:
+        """
+        Average measurements to get the surface pressure to use as the offset for calculating depth.
+        Takes ~4 seconds (.2s * 20 samples).
+
+        @rtype: float
+        @return: the average surface pressure
+        """
+        n_samples = 20
+        offset = 0
+        
+        for i in range(n_samples):
+            offset += 1/n_samples * self.get_data().get("external_pressure")
+            time.sleep(.2)
+
+        return offset
+    
     def __read_message__(self) -> None:
 
 
@@ -81,9 +98,9 @@ class SensorArduino:
             self.accelerometer_x = values[7]
             self.accelerometer_y = values[8]
             self.accelerometer_z = values[9]
-            self.depth = values[10]
+            self.external_pressure = values[10]
             self.temp = values[11]
-            self.pressure = values[12]
+            self.hull_pressure = values[12]
             self.humidity = values[13]
         except:
             print("Message read error! Not enough data")
