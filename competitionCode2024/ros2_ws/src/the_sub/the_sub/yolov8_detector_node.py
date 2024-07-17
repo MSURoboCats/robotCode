@@ -43,7 +43,7 @@ class Yolov8Detector(Node):
     self.get_logger().info("Model loaded")
    
   def listener_callback(self, data: Image) -> None:
-    self.get_logger().info("Receiving frame")
+    self.get_logger().debug("Receiving frame")
     
     # convert ROS Image message to OpenCV image
     current_frame = self.br.imgmsg_to_cv2(data)

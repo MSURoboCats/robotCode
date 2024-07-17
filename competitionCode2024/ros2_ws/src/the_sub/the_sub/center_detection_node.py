@@ -6,6 +6,9 @@ from interfaces.msg import Yolov8Detection, ControlData, OrientedDetection
 
 from geometry_msgs.msg import Quaternion
 
+import numpy as np
+import quaternion
+
 
 class CenterScanner(Node):
     """
@@ -36,18 +39,26 @@ class CenterScanner(Node):
         self.current_quat = Quaternion()
         self.saved_detections = []
 
+        self.QUAT_FOV_LEFT = np.quaternion(.94, 0, .342, 0)
+        self.QUAT_FOV_RIGHT = np.quaternion(.94, 0, -.342, 0)
+
     def detection_callback(self, data: Yolov8Detection) -> None:
         if data.center.x > 300 and data.center.x < 340 and data.tracking_id not in self.saved_detections:
             self.saved_detections.append(data.tracking_id)
             message = OrientedDetection()
             message.detection = data
-            message.orientation = self.current_quat
+            np_quat = quaternion.slerp(self.QUAT_FOV_LEFT, self.QUAT_FOV_RIGHT, 0, 1, data.center.x/640.0)
+            ros_quat = Quaternion()
+            ros_quat.x = np_quat.x
+            ros_quat.y = np_quat.y
+            ros_quat.z = np_quat.z
+            ros_quat.w = np_quat.w
+            message.orientation = ros_quat
             self.pub_centered_detection.publish(message)
             self.get_logger().info("New object in center area detected")
     
     def control_callback(self, data: ControlData) -> None:
         self.current_quat = data.imu_data.orientation
-
 
 def main(args=None):
   

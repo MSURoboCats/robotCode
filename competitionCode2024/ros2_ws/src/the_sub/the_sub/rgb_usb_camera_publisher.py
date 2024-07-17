@@ -47,7 +47,7 @@ class ImagePublisher(Node):
           
     if ret == True:
       self.publisher_.publish(self.br.cv2_to_imgmsg(frame))
-      self.get_logger().info("Frame published by camera on video%d" % self.cam_idx)
+      self.get_logger().debug("Frame published by camera on video%d" % self.cam_idx)
     else:
       self.get_logger().warning('Camera on video%d failed to capture frame' % self.cam_idx)
 
