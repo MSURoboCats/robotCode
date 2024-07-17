@@ -42,7 +42,7 @@ setup(
             'gui_control_node = the_sub.gui_control_node:main',
             'sub_status_observer_node = the_sub.sub_status_observer_node:main',
             # Tasks
-            'coin_flip_node = the_sub.coin_flip_node:main',
+            'buoy_seeking_node = the_sub.buoy_seeking_node:main',
             # setup
             'map_motors_node = the_sub.map_motors_node:main',
         ],
