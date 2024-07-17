@@ -62,7 +62,7 @@ class BuoySeeker(Node):
         self.sub_detection = self.create_subscription(
             Yolov8Detection, 
             '/forward_rgb_camera/oriented_detection', 
-            self.oriented_detection_callback, 
+            self.detection_callback, 
             10,
         )
 
@@ -115,6 +115,10 @@ class BuoySeeker(Node):
             heading = HeadingGoal()
             heading.orientation = data.orientation
             self.pub_heading_goal.publish(heading)
+    
+    def detection_callback(self, data: Yolov8Detection) -> None:
+
+        pass
 
 
 def main(args=None):
