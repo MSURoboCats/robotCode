@@ -70,7 +70,7 @@ class Twist2Action(Node):
     def twist_y_rot_command_callback(self, data: Twist) -> None:
 
         # clamp power to [-1,1]
-        power = max(-1, min(data.linear.y, 1))
+        power = max(-1, min(data.angular.y, 1))
 
         # only updated motors that control rotation
         self.motor_powers.motor1 = power
