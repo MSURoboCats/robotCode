@@ -99,7 +99,6 @@ def generate_launch_description():
         executable='yolov8_detector_node',
         name='forward_rgb_detection_node',
         arguments=[FORWARD_RGB_DETECTION_MODEL],
-        remappings=[('/forward_rgb_camera/detections', '/forward_rgb_camera/' + FORWARD_RGB_DETECTION_MODEL)]
     )
     ld.add_action(forward_rgb_detection_node)
 
@@ -111,7 +110,6 @@ def generate_launch_description():
         executable='yolov8_detector_node',
         name='downward_rgb_detection_node',
         arguments=[DOWNWARD_RGB_DETECTION_MODEL],
-        remappings=[('/forward_rgb_camera/detections', '/forward_rgb_camera/' + FORWARD_RGB_DETECTION_MODEL)]
     )
     ld.add_action(downward_rgb_detection_node)
     '''
@@ -122,8 +120,7 @@ def generate_launch_description():
         package='the_sub',
         executable='center_detection_node',
         name='center_detection_node',
-        remappings=[('/forward_rgb_camera/yolov8_detections', '/forward_rgb_camera/' + FORWARD_RGB_DETECTION_MODEL),
-                    ('/forward_rgb_camera/control_data', '/control_data')],
+        remappings=[('/forward_rgb_camera/control_data', '/control_data')],
     )
     ld.add_action(center_detection_node)
 
