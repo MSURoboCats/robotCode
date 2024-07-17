@@ -68,18 +68,26 @@ class SensorArduino:
     def get_external_pressure_offsest(self) -> float:
         """
         Average measurements to get the surface pressure to use as the offset for calculating depth.
-        Takes ~4 seconds (.2s * 20 samples).
+        Takes ~4 seconds (.1s * 40 samples).
 
         @rtype: float
         @return: the average surface pressure
         """
-        n_samples = 20
+        n_samples = 40
         offset = 0
         
-        for i in range(n_samples):
-            offset += 1/n_samples * self.get_data().get("external_pressure")
-            time.sleep(.2)
-
+        i = 0
+        while i < n_samples:
+            reading = self.get_data().get("external_pressure")
+            # skip bad readings less than 800 mBar
+            if reading < 800:
+                time.sleep(.05)
+                continue
+            offset += 1/n_samples * reading
+            i += 1
+            time.sleep(.1)
+            print(self.external_pressure)
+        print(offset)
         return offset
     
     def __read_message__(self) -> None:

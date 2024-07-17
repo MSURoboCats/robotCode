@@ -14,6 +14,7 @@
 //-----------------------------------------------------
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
+#include <avr/power.h>
 
 // BNO055
 #include <Adafruit_BNO055.h>
@@ -71,8 +72,11 @@ uint8_t n = 0; // counter for sending hull data only every 16 iterations
 //-------------------------------------------------------------------------------
 
 void setup() {
+//-- Set to run at 8MHz since we are running on 3.3V
+  //clock_prescale_set(clock_div_2);
+
 //-- Serial setup
-  Serial.begin(115200);       // baud rate set at 115.2kHz
+  Serial.begin(115200);       // baud rate set at 115.2kHz //(multiply by two because MCU is slowed down by 2)
   while(!Serial);             // wait for serial connection to be established
   Serial.setTimeout(100000);  // serial input timeout after 100 seconds
 
@@ -128,8 +132,8 @@ void loop() {
 }
 
 /**
- * Print orientation x/y/z, angular velocity x/y/z, and acceleration x/y/z, depth,
- * temperature, pressure, and humidity values over Serial on a single line in that order.
+ * Print orientation x/y/z, angular velocity x/y/z, and acceleration x/y/z, external pressure,
+ * temperature, hull pressure, and humidity values over Serial on a single line in that order.
  * 
  * @return void
  */
