@@ -50,14 +50,14 @@ class HeadingController(Node):
         self.cur_heading_der = np.quaternion(1,0,0,0)   # current derivative read from sensor
         
         self.initialized = False    # heading values not initialized
-        self.goal_reached = True    # send success messages when goal_reached=False and cur_depth=goal_depth
+        self.goal_reached = True    # send success messages when goal_reached=False and cur_heading=goal_heading
 
         # PD controller values
-        self.Kp = 1
-        self.Kd = -.01
+        self.Kp = 1.27
+        self.Kd = -.27
 
         # maximum rotation speed
-        self.MAX_POWER = .3
+        self.MAX_POWER = .2
         
         # the minimum value of for the rotational velocity for
         # the reading to be discarded and control loop skipped
