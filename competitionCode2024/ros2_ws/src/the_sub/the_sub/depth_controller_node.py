@@ -64,14 +64,11 @@ class DepthController(Node):
     def control_data_callback(self, data: ControlData) -> None:
         # if it is the first reading, intialize depth variables
         if not self.initialized:
-            # don't initialize on a bad sensor reading
-            if data.depth == 0:
-                return
-            self.cur_depth = data.depth
-            self.prev_depth = data.depth
-            self.goal_depth = data.depth
+            self.cur_depth = 0.0
+            self.prev_depth = 0.0
+            self.goal_depth = 0.0
             self.initialized = True
-            self.get_logger().info('Initialized cur, prev, goal depth to %.2fm' % data.depth)
+            self.get_logger().info('Initialized cur, prev, goal depth to %.2fm' % 0.0)
 
         # if it is a bad sensor reading, skip the iteration
         if abs(data.depth - self.cur_depth) > self.SENSOR_ERROR:
