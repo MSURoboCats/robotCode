@@ -36,7 +36,7 @@ class CenterScanner(Node):
             10,
         )
 
-        self.current_quat = Quaternion()
+        self.current_quat = np.quaternion(1,0,0,0)
         self.saved_detections = []
 
         self.QUAT_FOV_LEFT = np.quaternion(.94, 0, .342, 0)
@@ -47,7 +47,7 @@ class CenterScanner(Node):
             self.saved_detections.append(data.tracking_id)
             message = OrientedDetection()
             message.detection = data
-            np_quat = quaternion.slerp(self.QUAT_FOV_LEFT, self.QUAT_FOV_RIGHT, 0, 1, data.center.x/640.0)
+            np_quat = self.current_quat*quaternion.slerp(self.QUAT_FOV_LEFT, self.QUAT_FOV_RIGHT, 0, 1, data.center.x/640.0)
             ros_quat = Quaternion()
             ros_quat.x = np_quat.x
             ros_quat.y = np_quat.y
@@ -58,8 +58,14 @@ class CenterScanner(Node):
             self.get_logger().info("New object in center area detected")
     
     def control_callback(self, data: ControlData) -> None:
-        self.current_quat = data.imu_data.orientation
-
+        # update current quaternion heading
+        self.current_quat = np.quaternion(
+                data.imu_data.orientation.w,
+                data.imu_data.orientation.x,
+                data.imu_data.orientation.y,
+                data.imu_data.orientation.z,
+            )
+        
 def main(args=None):
   
     # initialize the rclpy library
