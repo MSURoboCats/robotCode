@@ -1,3 +1,8 @@
+'''
+COMMAND LINE ARGS: ros2 run the_sub buoy_seeking_node <depth>
+  depth: depth to perform the task at
+'''
+
 import rclpy
 from rclpy.action import ActionServer
 from rclpy.node import Node
@@ -7,6 +12,7 @@ from geometry_msgs.msg import Quaternion, Twist
 
 from interfaces.msg import DepthGoal, HeadingGoal, OrientedDetection, Yolov8Detection
 
+import sys
 
 class BuoySeeker(Node):
 
@@ -71,12 +77,13 @@ class BuoySeeker(Node):
         self.heading_reached = False
 
         # max power for scannning rotation
-        self.ROT_SPEED = .3
+        self.ROT_SPEED = .15
 
         # begin task be descending to 1.5m
         depth = DepthGoal()
-        depth.depth = 1.5
+        depth.depth = float(sys.argv[1])
         self.pub_depth_goal.publish(depth)
+        self.get_logger().info('Initial depth set to %.2f' % float(sys.argv[1]))
 
     def depth_goal_status_callback(self, data: String) -> None:
         # run first:
