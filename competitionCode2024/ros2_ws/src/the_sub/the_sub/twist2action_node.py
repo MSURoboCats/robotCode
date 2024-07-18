@@ -37,16 +37,16 @@ class Twist2Action(Node):
         # translate twist to basic control (clamp to [-1, 1])
         # coordinate system looking out the front: x to the right, y up, z forward
         if data.linear.z != 0:
-            self.set_motors([max(-1, min(x*data.linear.z, 1)) for x in self.ZAXIS])
+            self.set_motors([max(-1.0, min(x*data.linear.z, 1.0)) for x in self.ZAXIS])
             self.get_logger().info('Going forward or backward (z-axis)...')
         elif data.linear.y != 0:
-            self.set_motors([max(-1, min(x*data.linear.y, 1)) for x in self.YAXIS])
+            self.set_motors([max(-1.0, min(x*data.linear.y, 1.0)) for x in self.YAXIS])
             self.get_logger().info('Going up or down (y-axis)...')
         elif data.linear.x != 0:
-            self.set_motors([max(-1, min(x*data.linear.x, 1)) for x in self.XAXIS])
+            self.set_motors([max(-1.0, min(x*data.linear.x, 1.0)) for x in self.XAXIS])
             self.get_logger().info('Going left or right (x-axis)...')
         elif data.angular.y != 0:
-            self.set_motors([max(-1, min(x*data.angular.y, 1)) for x in self.YAXIS_ROT])
+            self.set_motors([max(-1.0, min(x*data.angular.y, 1.0)) for x in self.YAXIS_ROT])
             self.get_logger().info('Rotating around the y-axis...')
         else:
             self.set_motors(self.STOP)
@@ -55,7 +55,7 @@ class Twist2Action(Node):
     def twist_y_command_callback(self, data: Twist) -> None:
         
         # clamp power to [-1,1]
-        power = float(max(-1, min(data.linear.y, 1)))
+        power = max(-1.0, min(data.linear.y, 1.0))
 
         # only updated motors that control depth
         self.motor_powers.motor2 = power
@@ -70,7 +70,7 @@ class Twist2Action(Node):
     def twist_y_rot_command_callback(self, data: Twist) -> None:
 
         # clamp power to [-1,1]
-        power = max(-1, min(data.angular.y, 1))
+        power = max(-1.0, min(data.angular.y, 1.0))
 
         # only updated motors that control rotation
         self.motor_powers.motor1 = power
