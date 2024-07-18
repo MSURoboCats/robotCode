@@ -53,11 +53,12 @@ class HeadingController(Node):
         self.goal_reached = True    # send success messages when goal_reached=False and cur_heading=goal_heading
 
         # PD controller values
-        self.Kp = 1.27
-        self.Kd = -.27
+        self.Kp = 3
+        self.Kd = -1.27
 
-        # maximum rotation speed
+        # maximum rotation speed with mirrored non-constant for slower rotation commands
         self.MAX_POWER = .2
+        self.cur_max_power = self.MAX_POWER
         
         # the minimum value of for the rotational velocity for
         # the reading to be discarded and control loop skipped
@@ -125,7 +126,7 @@ class HeadingController(Node):
 
         # publish motor values
         rot_twist = Twist()
-        rot_twist.angular.y = max(-self.MAX_POWER, min(power_out, self.MAX_POWER))
+        rot_twist.angular.y = max(-self.cur_max_power, min(power_out, self.cur_max_power))
         self.pub_twist.publish(rot_twist)
         self.get_logger().info('Cur: %.2f | Goal: %.2f | Const: %.2f | Der: %.2f | Motors: %.2f' % (self.cur_heading.y,
                                                                                                     self.goal_heading.y,
@@ -136,7 +137,9 @@ class HeadingController(Node):
 
         # check for goal reached condition
         if not self.goal_reached and abs(self.cur_heading.y - self.goal_heading.y) < self.MIN_ERROR:
-            self.goal_reached = True
+            # only send message once and reset max power
+            self.goal_reached = True    
+            self.cur_max_power = self.MAX_POWER
             message = String()
             message.data = "Goal heading reached: %.2f" % self.cur_heading.y
             self.pub_goal_reached.publish(message)
@@ -149,11 +152,14 @@ class HeadingController(Node):
                 data.orientation.y,
                 data.orientation.z,
             )
+        if data.max_power != 0:
+            self.cur_max_power = data.max_power
         self.goal_reached = False
-        self.get_logger().info('Goal heading set to %.2f %.2fi %.2fj %.2fk' % (self.goal_heading.w,
+        self.get_logger().info('Goal heading set to %.2f %.2fi %.2fj %.2fk at %.2f%% max power' % (self.goal_heading.w,
                                                                                self.goal_heading.x,
                                                                                self.goal_heading.y,
                                                                                self.goal_heading.z,
+                                                                               self.cur_max_power*100,
                                                                                ))
 
 def main(args = None):
