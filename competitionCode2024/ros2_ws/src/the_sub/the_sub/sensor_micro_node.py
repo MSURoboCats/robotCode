@@ -45,7 +45,7 @@ class SensorMicroNode(Node):
         cur_data.imu_data.linear_acceleration.x = data.get('linear_acceleration').get('x')
         cur_data.imu_data.linear_acceleration.y = data.get('linear_acceleration').get('y')
         cur_data.imu_data.linear_acceleration.z = data.get('linear_acceleration').get('z')
-        cur_data.depth = (data.get('external_pressure') - self.OFFSET) / (9.80665 * 997.0474) # subtract off surface offset and use P = rho * g * h
+        cur_data.depth = (data.get('external_pressure') - self.OFFSET)*100 / (9.80665 * 997.0474) # subtract off surface offset and use P = rho * g * h
 
         # publish control message
         self.pub_control_data.publish(cur_data)
