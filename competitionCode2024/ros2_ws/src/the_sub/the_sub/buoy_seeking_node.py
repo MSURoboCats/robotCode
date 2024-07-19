@@ -65,7 +65,7 @@ class BuoySeeker(Node):
                                                 # 3: gate has been detected!
 
         # max power for scannning rotation
-        self.ROT_POWER = .15
+        self.ROT_POWER = .1
 
     def depth_goal_status_callback(self, data: String) -> None:
         # run first:
@@ -129,7 +129,7 @@ class BuoySeeker(Node):
     def oriented_detection_callback(self, data: OrientedDetection) -> None:
         # run second (ish):
         # only if the goal depth has been reached, a gate has not been detected, and the detected object is a gate (with 80% certainty)
-        if self.depth_reached and not self.gate_detected and data.detection.name == 'buoys' and data.detection.confidence > .8:
+        if self.depth_reached and not self.gate_detected and data.detection.name == 'red_bouy' and data.detection.confidence > .8:
             self.gate_detected = True
             self.get_logger().info('Gate detected at %s' % data.orientation)
 
