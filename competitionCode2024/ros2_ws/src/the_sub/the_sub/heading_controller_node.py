@@ -53,8 +53,8 @@ class HeadingController(Node):
         self.goal_reached = True    # send success messages when goal_reached=False and cur_heading=goal_heading
 
         # PD controller values
-        self.Kp = 3
-        self.Kd = -1.27
+        self.Kp = 2
+        self.Kd = -.5
 
         # maximum rotation speed with mirrored non-constant for slower rotation commands
         self.MAX_POWER = .2
