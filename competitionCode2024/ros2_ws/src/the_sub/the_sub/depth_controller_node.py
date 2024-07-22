@@ -66,9 +66,8 @@ class DepthController(Node):
         if not self.initialized:
             self.cur_depth = 0.0
             self.prev_depth = 0.0
-            self.goal_depth = 0.0
             self.initialized = True
-            self.get_logger().info('Initialized cur, prev, goal depth to %.2fm' % 0.0)
+            self.get_logger().info('Initialized cur, prev depth to %.2fm | Goal is %.2f' % (0.0, self.goal_depth))
 
         # if it is a bad sensor reading, skip the iteration
         if abs(data.depth - self.cur_depth) > self.SENSOR_ERROR:
