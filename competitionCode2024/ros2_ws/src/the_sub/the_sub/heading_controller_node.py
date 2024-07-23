@@ -132,7 +132,7 @@ class HeadingController(Node):
                                                                                                     self.goal_heading.y,
                                                                                                     self.Kp*e_y,
                                                                                                     self.Kd*delta_z / .0625,
-                                                                                                    max(-self.MAX_POWER, min(power_out, self.MAX_POWER)),
+                                                                                                    max(-self.cur_max_power, min(power_out, self.cur_max_power)),
                                                                                                     ))
 
         # check for goal reached condition

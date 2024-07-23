@@ -20,6 +20,9 @@ class Twist2Action(Node):
         # subscriber to receive twist to be translated to motor powers for rotation about the y axis
         self.sub_twist_command_y_rot = self.create_subscription(Twist, 'control_y_rot_twist', self.twist_y_rot_command_callback, 10)
 
+        # subscriber to receive twist to be translated to motor powers for rotation about the y axis
+        self.sub_twist_command_drive = self.create_subscription(Twist, 'control_drive_twist', self.twist_drive_command_callback, 10)
+
         # publisher for motor powers
         self.motor_powers_pub = self.create_publisher(MotorPowers, 'motor_powers', 10)
 
@@ -72,15 +75,28 @@ class Twist2Action(Node):
         # clamp power to [-1,1]
         power = max(-1.0, min(data.angular.y, 1.0))
 
-        # only updated motors that control rotation
+        # only updated motors that control rotation not on forward motors
         self.motor_powers.motor1 = power
-        self.motor_powers.motor4 = power
-        self.motor_powers.motor5 = -power
+        #self.motor_powers.motor4 = power
+        #self.motor_powers.motor5 = -power
         self.motor_powers.motor8 = power
 
         # publish motor values
         self.motor_powers_pub.publish(self.motor_powers)
         self.get_logger().info("Rotation powers updated")
+    
+    def twist_drive_command_callback(self, data: Twist) -> None:
+
+        # clamp power to [-1,1]
+        power = max(-1.0, min(data.linear.z, 1.0))
+
+        # only updated motors that control forward motion
+        self.motor_powers.motor4 = -power
+        self.motor_powers.motor5 = -power
+
+        # publish motor values
+        self.motor_powers_pub.publish(self.motor_powers)
+        self.get_logger().info("Drive powers updated")
 
     def set_motors(self, values: MotorPowers) -> None:
         # populate and publish motor powers

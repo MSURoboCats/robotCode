@@ -7,11 +7,13 @@ import rclpy
 import rclpy.logging
 from rclpy.node import Node
 
-from std_msgs.msg import String
+from interfaces.msg import DepthGoal, HeadingGoal, OrientedDetection, Yolov8Detection
 
-from interfaces.msg import DepthGoal, HeadingGoal, OrientedDetection
+from std_msgs.msg import String
+from geometry_msgs.msg import Twist
 
 import sys
+import time
 
 class BuoySeeker(Node):
 
@@ -29,6 +31,13 @@ class BuoySeeker(Node):
         self.pub_heading_goal = self.create_publisher(
             HeadingGoal,
             '/heading_goal',
+            10,
+        )
+
+        # publisher for forward drive power
+        self.pub_drive_twist = self.create_publisher(
+            Twist,
+            '/control_drive_twist',
             10,
         )
 
@@ -56,22 +65,33 @@ class BuoySeeker(Node):
             10,
         )
 
-        # flow control variables
-        self.depth_reached = False
-        self.scan_stage = 0                 # Key: 
-        self.gate_detected = False              # 0: rotating to start at (1,0,0,0)
-        self.gate_heading_reached = False       # 1: rotating 180deg from start to (0,0,1,0)
-                                                # 2: rotating from (0,0,1,0) back to start at (-1,0,0,0)
-                                                # 3: gate has been detected!
+        # subscriber for any detections
+        self.sub_any_detection = self.create_subscription(
+            Yolov8Detection, 
+            '/forward_rgb_camera/yolov8_detections', 
+            self.any_detection_callback, 
+            10,
+        )
 
-        # max power for scannning rotation
-        self.ROT_POWER = .1
+        # flow control variable
+        self.seek_stage = 0     # Key: 
+                                    # 0: descendng to set depth
+                                    # 1: depth reached; rotating to initialial search orientation 
+                                    # 2: initial orientation reached; rotating the first 180deg CCW
+                                    # 3: first 180deg complete; rotating the final 180deg CCW
+                                    # 4: buoy detected; creep and check loop until close
+                                    # 5: bump and surface
+        self.creep = False      # only run CV once it is needed
+        
+        self.DETECTION_NAME = 'buoys'
+        self.ROT_POWER = .1     # max power for scannning rotation
+        self.DRIVE_POWER = .4   # power for driving forward
 
     def depth_goal_status_callback(self, data: String) -> None:
-        # run first:
+        # stage 0 complete:
         # only if the goal depth had not been previously reached
-        if not self.depth_reached:
-            self.depth_reached = True
+        if self.seek_stage == 0:
+            self.seek_stage = 1
             self.get_logger().info(data.data)
 
             # reorient to (1,0,0,0)
@@ -82,23 +102,21 @@ class BuoySeeker(Node):
             heading.orientation.w = 1.0
             heading.max_power = self.ROT_POWER
             self.pub_heading_goal.publish(heading)
-            self.scan_stage = 0
-            self.get_logger().info('Initializing scan at %s' % heading.orientation)
+            self.get_logger().info('Stage 0 complete: depth reached')
+            self.get_logger().info('Stage 1 started: initialize scan at y=%.2f' % heading.orientation.y)
+        
+        elif self.seek_stage == 5:
+            self.get_logger().info('Stage 5 complete: surfaced')
+            raise SystemExit
 
     def heading_goal_status_callback(self, data: String) -> None:
         # run third (ish):
         self.get_logger().info(data.data)
-
-        # only if goal depth has been reached, a gate has been detected, scanning has stopped, and the heading goal had not been previously reached
-        if self.depth_reached and self.gate_detected and self.scan_stage == 3 and not self.gate_heading_reached:
-            self.gate_heading_reached = True
-            self.get_logger().info('Exiting spin...')
-            raise SystemExit
         
-        # initial scan heading reached at (1,0,0,0): stage 0 compete
-        elif self.depth_reached and not self.gate_detected and self.scan_stage == 0:
+        # initial scan heading reached at (1,0,0,0): stage 1 compete
+        if self.seek_stage == 1:
             # reorient to (0,0,1,0): 180deg CCW
-            self.scan_stage = 1
+            self.seek_stage = 2
             heading = HeadingGoal()
             heading.orientation.x = 0.0
             heading.orientation.y = 1.0
@@ -106,12 +124,13 @@ class BuoySeeker(Node):
             heading.orientation.w = 0.0
             heading.max_power = self.ROT_POWER
             self.pub_heading_goal.publish(heading)
-            self.get_logger().info('Rotating 180deg CCW to %s' % heading.orientation)
+            self.get_logger().info('Stage 1 complete: initial orientation reached')
+            self.get_logger().info('Stage 2 started: rotate 180deg CCW to y=%.2f' % heading.orientation.y)
 
-        # first 180deg compete to (0,0,1,0): stage 1 compete
-        elif self.depth_reached and not self.gate_detected and self.scan_stage == 1:
+        # first 180deg compete to (0,0,1,0): stage 2 compete
+        elif self.seek_stage == 2:
             # reorient to (-1,0,0,0): 180deg CCW
-            self.scan_stage = 2
+            self.seek_stage = 3
             heading = HeadingGoal()
             heading.orientation.x = 0.0
             heading.orientation.y = 0.0
@@ -119,30 +138,67 @@ class BuoySeeker(Node):
             heading.orientation.w = -1.0
             heading.max_power = self.ROT_POWER
             self.pub_heading_goal.publish(heading)
-            self.get_logger().info('Rotating 180deg CCW to %s' % heading.orientation)
+            self.get_logger().info('Stage 2 complete: 180deg CCW reached')
+            self.get_logger().info('Stage 3 started: rotate 180deg CCW to y=%.2f' % heading.orientation.y)
         
-        # second 180deg compete to (-1,0,0,0): stage 2 compete
-        elif self.depth_reached and not self.gate_detected and self.scan_stage == 2:
-            self.get_logger().info('No gate detected after a full scan. Exiting spin...')
+        # second 180deg compete to (-1,0,0,0): stage 3 compete
+        elif self.seek_stage == 3:
+            self.get_logger().info('Stage 3 complete: 360deg net CCW reached')
+            self.get_logger().info('No buoy detected after a full scan. Exiting spin...')
             raise SystemExit
+        
+        # buoy heading has been reached, loop creep and check
+        elif self.seek_stage == 4:
+            self.get_logger().info('Stage 4 initiated: buoy heading reached')
+            self.get_logger().info('Stage 4 loop started: creep towards buoy')
+            self.creep = True
 
     def oriented_detection_callback(self, data: OrientedDetection) -> None:
         # run second (ish):
-        # only if the goal depth has been reached, a gate has not been detected, and the detected object is a gate (with 80% certainty)
-        if self.depth_reached and not self.gate_detected and data.detection.name == 'red_bouy' and data.detection.confidence > .8:
-            self.gate_detected = True
-            self.get_logger().info('Gate detected at %s' % data.orientation)
+        # only if the goal depth has been reached, a buoy has not been detected, and the detected object is a buoy (with 80% certainty)
+        if self.seek_stage in [1,2,3] and data.detection.name == self.DETECTION_NAME and data.detection.confidence > .8:
+            self.buoy_detected = True
+            self.get_logger().info('Stage 3 terminated: buoy detected at y=%.2f' % data.orientation.y)
 
-            # rotate to gate
-            self.scan_stage = 3     # gate has been detected, stop 180deg scan loop
+            # rotate to buoy
+            self.seek_stage = 4     # buoy has been detected, stop 180deg scan loop
             heading = HeadingGoal()
             heading.orientation = data.orientation
             self.pub_heading_goal.publish(heading)
-            self.get_logger().info('Scanning stopped. Rotating to gate at %s' % data.orientation)
+            self.get_logger().info('Stage 4 started: rotate to buoy at y=%.2f' % data.orientation.y)
+
+    def any_detection_callback(self, data: Yolov8Detection) -> None:
+        # only if it's time to start creeping toward the buoy
+        if self.creep and data.name == self.DETECTION_NAME:
+            if data.dimensions.x == None:
+                self.seek_stage = 5
+                depth_goal =  DepthGoal()
+                depth_goal.depth = 0.00
+                self.pub_depth_goal.publish(depth_goal)
+                self.get_logger().info('Buoy lost; surfacing...')
+            elif data.dimensions.x < 200:
+                drive_twist = Twist()
+                drive_twist.linear.z = self.DRIVE_POWER
+                self.pub_drive_twist.publish(drive_twist)
+                self.get_logger().info('Stage 4 looped: buoy far, continue creep')
+                time.sleep(2)
+            elif data.dimensions.x >= 200:
+                self.creep = False
+                drive_twist = Twist()
+                drive_twist.linear.z = self.DRIVE_POWER
+                self.pub_drive_twist.publish(drive_twist)
+                self.get_logger().info('Stage 4 loop broken: buoy close, last creep')
+                time.sleep(4)
+                self.seek_stage = 5
+                depth_goal =  DepthGoal()
+                depth_goal.depth = 0.00
+                self.pub_depth_goal.publish(depth_goal)
+                self.get_logger().info('Stage 4 complete: buoy bumped')
+                self.get_logger().info('Stage 5 started: surface')
 
 
 def main(args=None):
-  
+    time.sleep(3)
     # initialize the rclpy library
     rclpy.init(args=args)
 
