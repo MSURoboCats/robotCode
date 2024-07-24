@@ -24,6 +24,6 @@ gnome-terminal \
 
 gnome-terminal \
 	--tab --title="tasks" \
-		-- bash -c 'cd /home/robocats/Desktop/developmentEnvironment/robotCode/competitionCode2024/ros2_ws; source install/setup.bash; ros2 run the_sub buoy_seeking_node 0; ros2 launch the_sub kill_motors_launch.py; bash'
+		-- bash -c 'cd /home/robocats/Desktop/developmentEnvironment/robotCode/competitionCode2024/ros2_ws; source install/setup.bash; ros2 run the_sub buoy_seeking_node .5; ros2 launch the_sub kill_motors_launch.py; bash'
 
 
