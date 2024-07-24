@@ -7,7 +7,7 @@ import rclpy
 import rclpy.logging
 from rclpy.node import Node
 
-from interfaces.msg import DepthGoal, HeadingGoal, OrientedDetection, Yolov8Detection
+from interfaces.msg import DepthGoal, HeadingGoal, OrientedDetection, Yolov8Detection, ControlData
 
 from std_msgs.msg import String
 from geometry_msgs.msg import Twist
@@ -73,6 +73,14 @@ class BuoySeeker(Node):
             10,
         )
 
+        # subscriber for control data
+        self.sub_any_detection = self.create_subscription(
+            ControlData, 
+            '/control_data', 
+            self.control_callback, 
+            10,
+        )
+
         # flow control variable
         self.seek_stage = 0     # Key: 
                                     # 0: descendng to set depth
@@ -81,16 +89,18 @@ class BuoySeeker(Node):
                                     # 3: first 180deg complete; rotating the final 180deg CCW
                                     # 4: buoy detected; creep and check loop until close
                                     # 5: bump and surface
-        self.creep = False      # only run CV once it is needed
         
-        self.DETECTION_NAME = 'buoys'
+        self.creep = False          # only run CV once it is needed
+        self.initialized = False    # wait for control data to start publishing
+
+        self.DETECTION_NAME = 'red_bouy'
         self.ROT_POWER = .1     # max power for scannning rotation
-        self.DRIVE_POWER = .4   # power for driving forward
+        self.DRIVE_POWER = .3   # power for driving forward
 
     def depth_goal_status_callback(self, data: String) -> None:
         # stage 0 complete:
         # only if the goal depth had not been previously reached
-        if self.seek_stage == 0:
+        if self.seek_stage == 0 and self.initialized:
             self.seek_stage = 1
             self.get_logger().info(data.data)
 
@@ -195,21 +205,32 @@ class BuoySeeker(Node):
                 self.pub_depth_goal.publish(depth_goal)
                 self.get_logger().info('Stage 4 complete: buoy bumped')
                 self.get_logger().info('Stage 5 started: surface')
+    
+    def control_callback(self, data: ControlData) -> None:
+        if not self.initialized:
+            self.initialized = True
+            # begin task by descending
+            depth_goal = DepthGoal()
+            depth_goal.depth = float(sys.argv[1])
+            self.pub_depth_goal.publish(depth_goal)
+            self.get_logger().info('Stage 0 started: descending to %.2f' % depth_goal.depth)
 
 
 def main(args=None):
-    time.sleep(3)
+
     # initialize the rclpy library
     rclpy.init(args=args)
 
     # create the node
     buoy_seeker = BuoySeeker()
 
+    """
     # begin task by descending
     depth_goal = DepthGoal()
     depth_goal.depth = float(sys.argv[1])
     buoy_seeker.pub_depth_goal.publish(depth_goal)
     buoy_seeker.get_logger().info('Initial depth set to %.2f' % depth_goal.depth)
+    """
     
     # spin the node so the task can be begin
     # node will automatically destory itself on completion
