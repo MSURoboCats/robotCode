@@ -95,7 +95,7 @@ class BuoySeeker(Node):
 
         self.DETECTION_NAME = 'red_bouy'
         self.ROT_POWER = .1     # max power for scannning rotation
-        self.DRIVE_POWER = .3   # power for driving forward
+        self.DRIVE_POWER = .2   # power for driving forward
 
     def depth_goal_status_callback(self, data: String) -> None:
         # stage 0 complete:
@@ -176,6 +176,7 @@ class BuoySeeker(Node):
             heading.orientation = data.orientation
             self.pub_heading_goal.publish(heading)
             self.get_logger().info('Stage 4 started: rotate to buoy at y=%.2f' % data.orientation.y)
+            time.sleep(2)
 
     def any_detection_callback(self, data: Yolov8Detection) -> None:
         # only if it's time to start creeping toward the buoy
@@ -188,14 +189,14 @@ class BuoySeeker(Node):
                 self.get_logger().info('Buoy lost; surfacing...')
             elif data.dimensions.x < 200:
                 drive_twist = Twist()
-                drive_twist.linear.z = self.DRIVE_POWER
+                drive_twist.linear.z = - self.DRIVE_POWER
                 self.pub_drive_twist.publish(drive_twist)
                 self.get_logger().info('Stage 4 looped: buoy far, continue creep')
                 time.sleep(2)
             elif data.dimensions.x >= 200:
                 self.creep = False
                 drive_twist = Twist()
-                drive_twist.linear.z = self.DRIVE_POWER
+                drive_twist.linear.z = - self.DRIVE_POWER
                 self.pub_drive_twist.publish(drive_twist)
                 self.get_logger().info('Stage 4 loop broken: buoy close, last creep')
                 time.sleep(4)
