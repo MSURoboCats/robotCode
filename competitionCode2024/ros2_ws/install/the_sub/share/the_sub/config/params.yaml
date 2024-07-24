@@ -12,9 +12,9 @@ motor_micro_node:
     motor_mappings:
     - 1
     - 7
-    - 8
+    - 2
+    - 3
     - 6
     - 4
-    - 3
     - 5
-    - 2
+    - 8
