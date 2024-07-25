@@ -187,6 +187,10 @@ class HeadingController(Node):
         self.get_logger().info('Controller activated')       
     
     def heading_control_deactivation_callback(self, data: Empty) -> None:
+        # kill motors and disable
+        rot_twist = Twist()
+        rot_twist.angular.y = 0.0
+        self.pub_twist.publish(rot_twist)
         self.active = False
         self.get_logger().info('Controller deactivated')
 

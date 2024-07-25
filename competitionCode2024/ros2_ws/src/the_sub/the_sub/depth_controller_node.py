@@ -129,6 +129,10 @@ class DepthController(Node):
         self.get_logger().info('Controller activated')
     
     def depth_control_deactivation_callback(self, data: Empty) -> None:
+        # kill motors and deactivate
+        depth_twist = Twist()
+        depth_twist.linear.y = 0.0
+        self.pub_twist.publish(depth_twist)
         self.active = False
         self.get_logger().info('Controller deactivated')
 
