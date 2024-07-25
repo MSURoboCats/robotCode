@@ -8,7 +8,7 @@ gnome-terminal \
 
 gnome-terminal \
 	--tab --title="vision" \
-		-- bash -c 'cd /home/robocats/Desktop/developmentEnvironment/robotCode/competitionCode2024/ros2_ws; source install/setup.bash; ros2 launch the_sub forward_detector_launch.py; '
+		-- bash -c 'cd /home/robocats/Desktop/developmentEnvironment/robotCode/competitionCode2024/ros2_ws; source install/setup.bash; ros2 launch the_sub forward_detector_launch.py; bash'
 
 gnome-terminal \
 	--tab --title="sub_status" \
@@ -16,14 +16,13 @@ gnome-terminal \
 		
 gnome-terminal \
 	--tab --title="depth_controller" \
-		-- bash -c 'cd /home/robocats/Desktop/developmentEnvironment/robotCode/competitionCode2024/ros2_ws; source install/setup.bash; ros2 run the_sub depth_controller_node; '
+		-- bash -c 'cd /home/robocats/Desktop/developmentEnvironment/robotCode/competitionCode2024/ros2_ws; source install/setup.bash; ros2 run the_sub depth_controller_node; bash'
 
 gnome-terminal \
 	--tab --title="heading_controller" \
-		-- bash -c 'cd /home/robocats/Desktop/developmentEnvironment/robotCode/competitionCode2024/ros2_ws; source install/setup.bash; ros2 run the_sub heading_controller_node; '
+		-- bash -c 'cd /home/robocats/Desktop/developmentEnvironment/robotCode/competitionCode2024/ros2_ws; source install/setup.bash; ros2 run the_sub heading_controller_node; bash'
 
 gnome-terminal \
 	--tab --title="tasks" \
-		-- bash -c 'cd /home/robocats/Desktop/developmentEnvironment/robotCode/competitionCode2024/ros2_ws; source install/setup.bash; ros2 run the_sub buoy_seeking_node .5; ros2 launch the_sub kill_motors_launch.py; bash'
-
+		-- bash -c "cd /home/robocats/Desktop/developmentEnvironment/robotCode/competitionCode2024/ros2_ws; source install/setup.bash; ros2 run the_sub buoy_seeking_node 0.0; ros2 topic pub --once /motor_powers interfaces/msg/MotorPowers '{motor1: 0, motor2: 0, motor3: 0, motor4: 0, motor5: 0, motor6: 0, motor7: 0, motor8: 0}'; bash"
 
