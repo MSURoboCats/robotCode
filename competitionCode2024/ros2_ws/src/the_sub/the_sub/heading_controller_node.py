@@ -4,7 +4,7 @@ from rclpy.node import Node
 
 from interfaces.msg import ControlData, HeadingGoal
 from geometry_msgs.msg import Twist, Quaternion
-from std_msgs.msg import String
+from std_msgs.msg import String, Empty
 
 import numpy as np
 import quaternion
@@ -45,16 +45,34 @@ class HeadingController(Node):
             10,
         )
 
+        # subscriber for activation
+        self.sub_heading_control_activation = self.create_subscription(
+            Empty,
+            '/heading_controller_activation',
+            self.heading_control_activation_callback,
+            10,
+        )
+
+        # subscriber for deactivation
+        self.sub_heading_control_deactivation = self.create_subscription(
+            Empty,
+            '/heading_controller_deactivation',
+            self.heading_control_deactivation_callback,
+            10,
+        )
+
         self.goal_heading = np.quaternion(1,0,0,0)      # goal heading
         self.cur_heading = np.quaternion(1,0,0,0)       # current heading read from sensor
         self.cur_heading_der = np.quaternion(1,0,0,0)   # current derivative read from sensor
         
+        
+        self.active = False         # disable it
         self.initialized = False    # heading values not initialized
         self.goal_reached = True    # send success messages when goal_reached=False and cur_heading=goal_heading
-
+        
         # PD controller values
         self.Kp = 2
-        self.Kd = -.5
+        self.Kd = -.3
 
         # maximum rotation speed with mirrored non-constant for slower rotation commands
         self.MAX_POWER = .2
@@ -72,6 +90,7 @@ class HeadingController(Node):
         self.MIN_ERROR = .05
 
     def control_data_callback(self, data: ControlData) -> None:
+
         # if it is the first reading, intialize heading variables
         if not self.initialized:
             self.cur_heading = np.quaternion(
@@ -95,54 +114,56 @@ class HeadingController(Node):
             self.initialized = True
             self.get_logger().info('Initialized cur, prev, goal to %s' % data.imu_data.orientation)
         
-        # skip iteration if the derivative value is unreasonable
-        if data.imu_data.angular_velocity.z > self.ROT_VEL_SENSOR_ERROR:
-            self.get_logger().warn('Unreasonable rot vel z: %.2f' % data.imu_data.angular_velocity.z)
-            return
-        
-        # calculate rolling average for sensor values
-        self.cur_heading = np.quaternion(
-                ((self.ROLLING_AVE - 1) * self.cur_heading.w + data.imu_data.orientation.w)/self.ROLLING_AVE,
-                ((self.ROLLING_AVE - 1) * self.cur_heading.x + data.imu_data.orientation.x)/self.ROLLING_AVE,
-                ((self.ROLLING_AVE - 1) * self.cur_heading.y + data.imu_data.orientation.y)/self.ROLLING_AVE,
-                ((self.ROLLING_AVE - 1) * self.cur_heading.z + data.imu_data.orientation.z)/self.ROLLING_AVE,
-            )
-        self.cur_heading_der = 1/2 * np.quaternion(
-                0,
-                ((self.ROLLING_AVE - 1) * self.cur_heading_der.x + data.imu_data.angular_velocity.x)/self.ROLLING_AVE,
-                ((self.ROLLING_AVE - 1) * self.cur_heading_der.y + data.imu_data.angular_velocity.y)/self.ROLLING_AVE,
-                ((self.ROLLING_AVE - 1) * self.cur_heading_der.z + data.imu_data.angular_velocity.z)/self.ROLLING_AVE,
-            )
-        
-        # calculate error around the y-axis from quaternion orientation
-        e = self.goal_heading * np.conjugate(self.cur_heading)
-        e_y = e.y
+        # only control heading if active
+        if self.active:
+            # skip iteration if the derivative value is unreasonable
+            if data.imu_data.angular_velocity.z > self.ROT_VEL_SENSOR_ERROR:
+                self.get_logger().warn('Unreasonable rot vel z: %.2f' % data.imu_data.angular_velocity.z)
+                return
+            
+            # calculate rolling average for sensor values
+            self.cur_heading = np.quaternion(
+                    ((self.ROLLING_AVE - 1) * self.cur_heading.w + data.imu_data.orientation.w)/self.ROLLING_AVE,
+                    ((self.ROLLING_AVE - 1) * self.cur_heading.x + data.imu_data.orientation.x)/self.ROLLING_AVE,
+                    ((self.ROLLING_AVE - 1) * self.cur_heading.y + data.imu_data.orientation.y)/self.ROLLING_AVE,
+                    ((self.ROLLING_AVE - 1) * self.cur_heading.z + data.imu_data.orientation.z)/self.ROLLING_AVE,
+                )
+            self.cur_heading_der = 1/2 * np.quaternion(
+                    0,
+                    ((self.ROLLING_AVE - 1) * self.cur_heading_der.x + data.imu_data.angular_velocity.x)/self.ROLLING_AVE,
+                    ((self.ROLLING_AVE - 1) * self.cur_heading_der.y + data.imu_data.angular_velocity.y)/self.ROLLING_AVE,
+                    ((self.ROLLING_AVE - 1) * self.cur_heading_der.z + data.imu_data.angular_velocity.z)/self.ROLLING_AVE,
+                )
+            
+            # calculate error around the y-axis from quaternion orientation
+            e = self.goal_heading * np.conjugate(self.cur_heading)
+            e_y = e.y
 
-        # get the derivative around the z-axis from gyroscope
-        delta_z = self.cur_heading_der.z
+            # get the derivative around the z-axis from gyroscope
+            delta_z = self.cur_heading_der.z
 
-        # PD controller with time step of .0625 / 16HZ (what control data is published at)
-        power_out = self.Kp*e_y + self.Kd*delta_z / .0625
+            # PD controller with time step of .0625 / 16HZ (what control data is published at)
+            power_out = self.Kp*e_y + self.Kd*delta_z / .0625
 
-        # publish motor values
-        rot_twist = Twist()
-        rot_twist.angular.y = max(-self.cur_max_power, min(power_out, self.cur_max_power))
-        self.pub_twist.publish(rot_twist)
-        self.get_logger().info('Cur: %.2f | Goal: %.2f | Const: %.2f | Der: %.2f | Motors: %.2f' % (self.cur_heading.y,
-                                                                                                    self.goal_heading.y,
-                                                                                                    self.Kp*e_y,
-                                                                                                    self.Kd*delta_z / .0625,
-                                                                                                    max(-self.cur_max_power, min(power_out, self.cur_max_power)),
-                                                                                                    ))
+            # publish motor values
+            rot_twist = Twist()
+            rot_twist.angular.y = max(-self.cur_max_power, min(power_out, self.cur_max_power))
+            self.pub_twist.publish(rot_twist)
+            self.get_logger().info('Cur: %.2f | Goal: %.2f | Const: %.2f | Der: %.2f | Motors: %.2f' % (self.cur_heading.y,
+                                                                                                        self.goal_heading.y,
+                                                                                                        self.Kp*e_y,
+                                                                                                        self.Kd*delta_z / .0625,
+                                                                                                        max(-self.cur_max_power, min(power_out, self.cur_max_power)),
+                                                                                                        ))
 
-        # check for goal reached condition
-        if not self.goal_reached and abs(self.cur_heading.y - self.goal_heading.y) < self.MIN_ERROR:
-            # only send message once and reset max power
-            self.goal_reached = True    
-            self.cur_max_power = self.MAX_POWER
-            message = String()
-            message.data = "Goal heading reached: %.2f" % self.cur_heading.y
-            self.pub_goal_reached.publish(message)
+            # check for goal reached condition
+            if not self.goal_reached and abs(self.cur_heading.y - self.goal_heading.y) < self.MIN_ERROR:
+                # only send message once and reset max power
+                self.goal_reached = True    
+                self.cur_max_power = self.MAX_POWER
+                message = String()
+                message.data = "Goal heading reached: %.2f" % self.cur_heading.y
+                self.pub_goal_reached.publish(message)
 
     def heading_goal_callback(self, data: HeadingGoal) -> None:
         # set heading goal
@@ -161,6 +182,14 @@ class HeadingController(Node):
                                                                                self.goal_heading.z,
                                                                                self.cur_max_power*100,
                                                                                ))
+    def heading_control_activation_callback(self, data: Empty) -> None:
+        self.active = True
+        self.get_logger().info('Controller activated')       
+    
+    def heading_control_deactivation_callback(self, data: Empty) -> None:
+        self.active = False
+        self.get_logger().info('Controller deactivated')
+
 
 def main(args = None):
 

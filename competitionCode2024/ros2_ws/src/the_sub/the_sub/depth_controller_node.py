@@ -4,7 +4,7 @@ from rclpy.node import Node
 from interfaces.msg import ControlData, DepthGoal
 
 from geometry_msgs.msg import Twist
-from std_msgs.msg import String
+from std_msgs.msg import String, Empty
 
 class DepthController(Node):
 
@@ -39,10 +39,27 @@ class DepthController(Node):
             self.depth_goal_callback, 
             10)
         
+        # subscriber for activation
+        self.sub_depth_control_activation = self.create_subscription(
+            Empty,
+            '/depth_controller_activation',
+            self.depth_control_activation_callback,
+            10,
+        )
+
+        # subscriber for deactivation
+        self.sub_depth_control_deactivation = self.create_subscription(
+            Empty,
+            '/depth_controller_deactivation',
+            self.depth_control_deactivation_callback,
+            10,
+        )
+        
         self.goal_depth = 0.0       # float
         self.cur_depth = 0.0        # rolling average of most recent samples
         self.prev_depth = 0.0       # rolling average one time step behind cur_depth
 
+        self.active = False         # disable it
         self.initialized = False    # depth values not initialized
         self.goal_reached = True    # send success messages when goal_reached=False and cur_depth=goal_depth
 
@@ -62,49 +79,58 @@ class DepthController(Node):
         self.MIN_ERROR = .1
     
     def control_data_callback(self, data: ControlData) -> None:
-        # if it is the first reading, intialize depth variables
-        if not self.initialized:
-            self.cur_depth = 0.0
-            self.prev_depth = 0.0
-            self.initialized = True
-            self.get_logger().info('Initialized cur, prev depth to %.2fm | Goal is %.2f' % (0.0, self.goal_depth))
+        if self.active:
+            # if it is the first reading, intialize depth variables
+            if not self.initialized:
+                self.cur_depth = 0.0
+                self.prev_depth = 0.0
+                self.initialized = True
+                self.get_logger().info('Initialized cur, prev depth to %.2fm | Goal is %.2f' % (0.0, self.goal_depth))
 
-        # if it is a bad sensor reading, skip the iteration
-        if abs(data.depth - self.cur_depth) > self.SENSOR_ERROR:
-            self.get_logger().warn('Unreasonable value | Current: %.2f | New: %.2f' % (self.cur_depth, data.depth))
-            return
-        
-        # calculate error and derivative
-        self.prev_depth = self.cur_depth
-        self.cur_depth = (data.depth + (self.ROLLING_AVE-1)*self.cur_depth) / self.ROLLING_AVE
-        e = self.goal_depth - self.cur_depth
-        delta_depth = self.cur_depth - self.prev_depth
+            # if it is a bad sensor reading, skip the iteration
+            if abs(data.depth - self.cur_depth) > self.SENSOR_ERROR:
+                self.get_logger().warn('Unreasonable value | Current: %.2f | New: %.2f' % (self.cur_depth, data.depth))
+                return
+            
+            # calculate error and derivative
+            self.prev_depth = self.cur_depth
+            self.cur_depth = (data.depth + (self.ROLLING_AVE-1)*self.cur_depth) / self.ROLLING_AVE
+            e = self.goal_depth - self.cur_depth
+            delta_depth = self.cur_depth - self.prev_depth
 
-        # PD controller with time step of .0625 / 16HZ (what control data is published at)
-        power_out = self.Kp*e + self.Kd*delta_depth / .0625
+            # PD controller with time step of .0625 / 16HZ (what control data is published at)
+            power_out = self.Kp*e + self.Kd*delta_depth / .0625
 
-        # publish motor values
-        depth_twist = Twist()
-        depth_twist.linear.y = power_out
-        self.pub_twist.publish(depth_twist)
-        self.get_logger().info('Cur: %.2f | Goal: %.2f | Const: %.2f | Der: %.2f | Motors: %.2f' % (self.cur_depth,
-                                                                                                    self.goal_depth,
-                                                                                                    self.Kp*e,
-                                                                                                    self.Kd*delta_depth / .0625,
-                                                                                                    power_out))
+            # publish motor values
+            depth_twist = Twist()
+            depth_twist.linear.y = power_out
+            self.pub_twist.publish(depth_twist)
+            self.get_logger().info('Cur: %.2f | Goal: %.2f | Const: %.2f | Der: %.2f | Motors: %.2f' % (self.cur_depth,
+                                                                                                        self.goal_depth,
+                                                                                                        self.Kp*e,
+                                                                                                        self.Kd*delta_depth / .0625,
+                                                                                                        power_out))
 
-        # check for goal reached condition
-        if not self.goal_reached and abs(self.cur_depth - self.goal_depth) < self.MIN_ERROR:
-            self.goal_reached = True
-            message = String()
-            message.data = "Goal depth reached: %.2f" % self.cur_depth
-            self.pub_goal_reached.publish(message)
+            # check for goal reached condition
+            if not self.goal_reached and abs(self.cur_depth - self.goal_depth) < self.MIN_ERROR:
+                self.goal_reached = True
+                message = String()
+                message.data = "Goal depth reached: %.2f" % self.cur_depth
+                self.pub_goal_reached.publish(message)
 
     def depth_goal_callback(self, data: DepthGoal) -> None:
         # set depth goal
         self.goal_depth = data.depth
         self.goal_reached = False
         self.get_logger().info('Depth goal set to %.2f' % self.goal_depth)
+    
+    def depth_control_activation_callback(self, data: Empty) -> None:
+        self.active = True
+        self.get_logger().info('Controller activated')
+    
+    def depth_control_deactivation_callback(self, data: Empty) -> None:
+        self.active = False
+        self.get_logger().info('Controller deactivated')
 
 def main(args = None):
 

@@ -9,7 +9,7 @@ from rclpy.node import Node
 
 from interfaces.msg import DepthGoal, HeadingGoal, OrientedDetection, Yolov8Detection, ControlData
 
-from std_msgs.msg import String
+from std_msgs.msg import String, Int16, Empty
 from geometry_msgs.msg import Twist
 
 import sys
@@ -38,6 +38,48 @@ class BuoySeeker(Node):
         self.pub_drive_twist = self.create_publisher(
             Twist,
             '/control_drive_twist',
+            10,
+        )
+
+        # publisher for starting track
+        self.pub_track_start = self.create_publisher(
+            Int16,
+            '/forward_rgb_camera/track_start',
+            10,
+        )
+
+        # publisher for stopping track
+        self.pub_track_stop = self.create_publisher(
+            Empty,
+            '/forward_rgb_camera/track_stop',
+            10,
+        )
+
+        # publisher for starting depth controller
+        self.pub_depth_controller_activation = self.create_publisher(
+            Empty,
+            '/depth_controller_activation',
+            10,
+        )
+
+        # publisher for starting heading controller
+        self.pub_heading_controller_activation = self.create_publisher(
+            Empty,
+            '/heading_controller_activation',
+            10,
+        )
+
+        # publisher for stopping depth controller
+        self.pub_depth_controller_deactivation = self.create_publisher(
+            Empty,
+            '/depth_controller_deactivation',
+            10,
+        )
+
+        # publisher for stopping heading controller
+        self.pub_heading_controller_deactivation = self.create_publisher(
+            Empty,
+            '/heading_controller_deactivation',
             10,
         )
 
@@ -81,19 +123,28 @@ class BuoySeeker(Node):
             10,
         )
 
+        # subscriber for track lost
+        self.sub_track_lost = self.create_subscription(
+            Empty,
+            '/forward_rgb_camera/track_lost',
+            self.track_lost_callback,
+            10,
+        )
+
         # flow control variable
         self.seek_stage = 0     # Key: 
                                     # 0: descendng to set depth
                                     # 1: depth reached; rotating to initialial search orientation 
                                     # 2: initial orientation reached; rotating the first 180deg CCW
                                     # 3: first 180deg complete; rotating the final 180deg CCW
-                                    # 4: buoy detected; creep and check loop until close
-                                    # 5: bump and surface
+                                    # 4: buoy detected; activate track, creep and check loop until close
+                                    # 5: deactivate track, bump, and surface
         
         self.creep = False          # only run CV once it is needed
         self.initialized = False    # wait for control data to start publishing
+        self.track_lost = False     # surface if the track is lost
 
-        self.DETECTION_NAME = 'red_bouy'
+        self.DETECTION_NAME = 'buoys'
         self.ROT_POWER = .1     # max power for scannning rotation
         self.DRIVE_POWER = .2   # power for driving forward
 
@@ -116,7 +167,9 @@ class BuoySeeker(Node):
             self.get_logger().info('Stage 1 started: initialize scan at y=%.2f' % heading.orientation.y)
         
         elif self.seek_stage == 5:
-            self.get_logger().info('Stage 5 complete: surfaced')
+            self.pub_depth_controller_deactivation.publish(Empty())
+            self.pub_heading_controller_deactivation.publish(Empty())
+            self.get_logger().info('Stage 5 complete: surfaced and controllers killed')
             raise SystemExit
 
     def heading_goal_status_callback(self, data: String) -> None:
@@ -158,10 +211,14 @@ class BuoySeeker(Node):
             raise SystemExit
         
         # buoy heading has been reached, loop creep and check
-        elif self.seek_stage == 4:
-            self.get_logger().info('Stage 4 initiated: buoy heading reached')
-            self.get_logger().info('Stage 4 loop started: creep towards buoy')
+        elif self.seek_stage == 4 and self.creep == False:
+            message = Int16()
+            message.data = self.tracking_id
+            self.pub_track_start.publish(message)
+            self.get_logger().info('Stage 4 initiated: buoy heading reached and tracking started')
+    
             self.creep = True
+            self.get_logger().info('Stage 4 loop started: creep towards buoy')
 
     def oriented_detection_callback(self, data: OrientedDetection) -> None:
         # run second (ish):
@@ -171,6 +228,7 @@ class BuoySeeker(Node):
             self.get_logger().info('Stage 3 terminated: buoy detected at y=%.2f' % data.orientation.y)
 
             # rotate to buoy
+            self.tracking_id = data.detection.tracking_id
             self.seek_stage = 4     # buoy has been detected, stop 180deg scan loop
             heading = HeadingGoal()
             heading.orientation = data.orientation
@@ -179,27 +237,42 @@ class BuoySeeker(Node):
             time.sleep(2)
 
     def any_detection_callback(self, data: Yolov8Detection) -> None:
-        # only if it's time to start creeping toward the buoy
+        # surface if track is lost
+        if self.creep and self.track_lost:
+            self.creep = False
+            self.seek_stage = 5
+            depth_goal =  DepthGoal()
+            depth_goal.depth = 0.00
+            self.pub_depth_goal.publish(depth_goal)
+            self.get_logger().info('Stage 4 terminated: buoy lost')
+            self.get_logger().info('Stage 5 started: surface')
+
+        # creep towards the buoy if we have a detection for it
         if self.creep and data.name == self.DETECTION_NAME:
-            if data.dimensions.x == None:
-                self.seek_stage = 5
-                depth_goal =  DepthGoal()
-                depth_goal.depth = 0.00
-                self.pub_depth_goal.publish(depth_goal)
-                self.get_logger().info('Buoy lost; surfacing...')
-            elif data.dimensions.x < 200:
+            
+            # continue creeping if it is far away
+            if data.dimensions.x < 200:
                 drive_twist = Twist()
                 drive_twist.linear.z = - self.DRIVE_POWER
                 self.pub_drive_twist.publish(drive_twist)
-                self.get_logger().info('Stage 4 looped: buoy far, continue creep')
+                self.get_logger().info('Stage 4 looped: buoy far -> continue creep')
                 time.sleep(2)
+
+            # one last creep to bump it if we are close
             elif data.dimensions.x >= 200:
+
+                # cancel creep and tracking
                 self.creep = False
+                self.pub_track_stop.publish(Empty())
+
+                # bump into buoy
                 drive_twist = Twist()
                 drive_twist.linear.z = - self.DRIVE_POWER
                 self.pub_drive_twist.publish(drive_twist)
                 self.get_logger().info('Stage 4 loop broken: buoy close, last creep')
                 time.sleep(4)
+
+                # surface
                 self.seek_stage = 5
                 depth_goal =  DepthGoal()
                 depth_goal.depth = 0.00
@@ -210,6 +283,10 @@ class BuoySeeker(Node):
     def control_callback(self, data: ControlData) -> None:
         if not self.initialized:
             self.initialized = True
+            # activate depth and heading control nodees
+            self.pub_depth_controller_activation.publish(Empty())
+            self.pub_heading_controller_activation.publish(Empty())
+            
             # begin task by descending
             depth_goal = DepthGoal()
             depth_goal.depth = float(sys.argv[1])
@@ -217,6 +294,9 @@ class BuoySeeker(Node):
             self.get_logger().info('Stage 0 started: descending to %.2f' % depth_goal.depth)
 
 
+    def track_lost_callback(self, data: Empty) -> None:
+        self.track_lost = True
+        
 def main(args=None):
 
     # initialize the rclpy library
@@ -225,14 +305,6 @@ def main(args=None):
     # create the node
     buoy_seeker = BuoySeeker()
 
-    """
-    # begin task by descending
-    depth_goal = DepthGoal()
-    depth_goal.depth = float(sys.argv[1])
-    buoy_seeker.pub_depth_goal.publish(depth_goal)
-    buoy_seeker.get_logger().info('Initial depth set to %.2f' % depth_goal.depth)
-    """
-    
     # spin the node so the task can be begin
     # node will automatically destory itself on completion
     try:
