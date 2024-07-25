@@ -144,7 +144,7 @@ class BuoySeeker(Node):
         self.initialized = False    # wait for control data to start publishing
         self.track_lost = False     # surface if the track is lost
 
-        self.DETECTION_NAME = 'buoys'
+        self.DETECTION_NAME = 'red_bouy'
         self.ROT_POWER = .1     # max power for scannning rotation
         self.DRIVE_POWER = .2   # power for driving forward
 
@@ -232,7 +232,7 @@ class BuoySeeker(Node):
             heading.orientation = data.orientation
             self.pub_heading_goal.publish(heading)
             self.get_logger().info('Stage 4 started: rotate to buoy at y=%.2f' % data.orientation.y)
-            time.sleep(2)
+            time.sleep(1)
 
     def any_detection_callback(self, data: Yolov8Detection) -> None:
         # surface if track is lost
@@ -249,7 +249,7 @@ class BuoySeeker(Node):
         if self.creep and data.name == self.DETECTION_NAME:
             
             # continue creeping if it is far away
-            if data.dimensions.x < 200:
+            if data.dimensions.x < 180:
                 drive_twist = Twist()
                 drive_twist.linear.z = - self.DRIVE_POWER
                 self.pub_drive_twist.publish(drive_twist)
@@ -257,7 +257,7 @@ class BuoySeeker(Node):
                 time.sleep(2)
 
             # one last creep to bump it if we are close
-            elif data.dimensions.x >= 200:
+            elif data.dimensions.x >= 180:
 
                 # cancel creep and tracking
                 self.creep = False
