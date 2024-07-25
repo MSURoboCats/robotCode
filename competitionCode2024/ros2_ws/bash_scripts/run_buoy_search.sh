@@ -24,5 +24,5 @@ gnome-terminal \
 
 gnome-terminal \
 	--tab --title="tasks" \
-		-- bash -c "cd /home/robocats/Desktop/developmentEnvironment/robotCode/competitionCode2024/ros2_ws; source install/setup.bash; ros2 run the_sub buoy_seeking_node 0.0; ros2 topic pub --once /motor_powers interfaces/msg/MotorPowers '{motor1: 0, motor2: 0, motor3: 0, motor4: 0, motor5: 0, motor6: 0, motor7: 0, motor8: 0}'; bash"
+		-- bash -c "cd /home/robocats/Desktop/developmentEnvironment/robotCode/competitionCode2024/ros2_ws; source install/setup.bash; ros2 run the_sub buoy_seeking_node 0.0; ros2 topic pub /motor_powers interfaces/msg/MotorPowers '{motor1: 0, motor2: 0, motor3: 0, motor4: 0, motor5: 0, motor6: 0, motor7: 0, motor8: 0}'; bash"
 
