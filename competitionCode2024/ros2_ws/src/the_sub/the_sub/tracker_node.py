@@ -95,7 +95,7 @@ class Tracker(Node):
         if self.active:
             # if the active object hasn't been seen for 20 control callbacks, cancel the tracking
             self.new_detection_counter += 1
-            if self.new_detection_counter > 20:
+            if self.new_detection_counter > 15:
                 self.active = False
                 self.new_detection_counter = 0
                 self.pub_track_lost.publish(Empty())
