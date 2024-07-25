@@ -144,9 +144,10 @@ class BuoySeeker(Node):
         self.initialized = False    # wait for control data to start publishing
         self.track_lost = False     # surface if the track is lost
 
-        self.DETECTION_NAME = 'red_bouy'
+        self.DETECTION_NAME = 'buoys'
         self.ROT_POWER = .1     # max power for scannning rotation
-        self.DRIVE_POWER = .2   # power for driving forward
+        self.DRIVE_POWER = .2   # power for driving 
+        self.BUMP_POWER = .5     # power for bumping the buoy
 
     def depth_goal_status_callback(self, data: String) -> None:
         # stage 0 complete:
@@ -167,7 +168,11 @@ class BuoySeeker(Node):
             self.get_logger().info('Stage 1 started: initialize scan at y=%.2f' % heading.orientation.y)
         
         elif self.seek_stage == 5:
-            self.get_logger().info('Stage 5 complete: surfaced and controllers killed')
+            time.sleep(2)
+            # kill the controllers
+            self.pub_depth_controller_deactivation.publish(Empty())
+            self.pub_heading_controller_deactivation.publish(Empty())
+            self.get_logger().info('Stage 5 complete: surfaced, stabilized, and controllers killed')
             raise SystemExit
 
     def heading_goal_status_callback(self, data: String) -> None:
@@ -216,6 +221,9 @@ class BuoySeeker(Node):
             self.get_logger().info('Stage 4 initiated: buoy heading reached and tracking started')
     
             self.creep = True
+            drive_twist = Twist()
+            drive_twist.linear.z = self.DRIVE_POWER
+            self.pub_drive_twist.publish(drive_twist)
             self.get_logger().info('Stage 4 loop started: creep towards buoy')
 
     def oriented_detection_callback(self, data: OrientedDetection) -> None:
@@ -245,38 +253,30 @@ class BuoySeeker(Node):
             self.get_logger().info('Stage 4 terminated: buoy lost')
             self.get_logger().info('Stage 5 started: surface')
 
-        # creep towards the buoy if we have a detection for it
-        if self.creep and data.name == self.DETECTION_NAME:
-            
-            # continue creeping if it is far away
-            if data.dimensions.x < 180:
-                drive_twist = Twist()
-                drive_twist.linear.z = - self.DRIVE_POWER
-                self.pub_drive_twist.publish(drive_twist)
-                self.get_logger().info('Stage 4 looped: buoy far -> continue creep')
-                time.sleep(2)
+        # stop creeping if we are close to the buoy
+        if self.creep and data.name == self.DETECTION_NAME and data.dimensions.x >= 180:
+                
+            # cancel creep and tracking
+            self.creep = False
+            self.pub_track_stop.publish(Empty())
 
-            # one last creep to bump it if we are close
-            elif data.dimensions.x >= 180:
+            # bump into buoy
+            drive_twist = Twist()
+            drive_twist.linear.z = self.BUMP_POWER
+            self.pub_drive_twist.publish(drive_twist)
+            self.get_logger().info('Stage 4 loop broken: buoy close, last push')
+            time.sleep(3)
+            drive_twist.linear.z = 0.0
+            self.pub_drive_twist.publish(drive_twist)
 
-                # cancel creep and tracking
-                self.creep = False
-                self.pub_track_stop.publish(Empty())
 
-                # bump into buoy
-                drive_twist = Twist()
-                drive_twist.linear.z = - self.DRIVE_POWER
-                self.pub_drive_twist.publish(drive_twist)
-                self.get_logger().info('Stage 4 loop broken: buoy close, last creep')
-                time.sleep(4)
-
-                # surface
-                self.seek_stage = 5
-                depth_goal =  DepthGoal()
-                depth_goal.depth = 0.00
-                self.pub_depth_goal.publish(depth_goal)
-                self.get_logger().info('Stage 4 complete: buoy bumped')
-                self.get_logger().info('Stage 5 started: surface')
+            # surface
+            self.seek_stage = 5
+            depth_goal =  DepthGoal()
+            depth_goal.depth = 0.00
+            self.pub_depth_goal.publish(depth_goal)
+            self.get_logger().info('Stage 4 complete: buoy bumped')
+            self.get_logger().info('Stage 5 started: surface')
     
     def control_callback(self, data: ControlData) -> None:
         if not self.initialized:
@@ -309,10 +309,6 @@ def main(args=None):
         rclpy.spin(buoy_seeker)
     except SystemExit:
         rclpy.logging.get_logger('Quitting').info('Task complete! Node killed.')
-    
-    # kill the controllers
-    buoy_seeker.pub_depth_controller_deactivation.publish(Empty())
-    buoy_seeker.pub_heading_controller_deactivation.publish(Empty())
 
     # kill the node
     buoy_seeker.destroy_node()
