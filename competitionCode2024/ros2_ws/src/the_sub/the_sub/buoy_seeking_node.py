@@ -167,8 +167,6 @@ class BuoySeeker(Node):
             self.get_logger().info('Stage 1 started: initialize scan at y=%.2f' % heading.orientation.y)
         
         elif self.seek_stage == 5:
-            self.pub_depth_controller_deactivation.publish(Empty())
-            self.pub_heading_controller_deactivation.publish(Empty())
             self.get_logger().info('Stage 5 complete: surfaced and controllers killed')
             raise SystemExit
 
@@ -312,6 +310,9 @@ def main(args=None):
     except SystemExit:
         rclpy.logging.get_logger('Quitting').info('Task complete! Node killed.')
     
+    # kill the controllers
+    buoy_seeker.pub_depth_controller_deactivation.publish(Empty())
+    buoy_seeker.pub_heading_controller_deactivation.publish(Empty())
 
     # kill the node
     buoy_seeker.destroy_node()
