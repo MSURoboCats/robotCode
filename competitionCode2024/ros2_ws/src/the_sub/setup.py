@@ -41,6 +41,7 @@ setup(
             'keyboard_controller_node = the_sub.keyboard_controller_node:main',
             'gui_control_node = the_sub.gui_control_node:main',
             'sub_status_observer_node = the_sub.sub_status_observer_node:main',
+            'tracker_node = the_sub.tracker_node:main',
             # Tasks
             'buoy_seeking_node = the_sub.buoy_seeking_node:main',
             # setup
