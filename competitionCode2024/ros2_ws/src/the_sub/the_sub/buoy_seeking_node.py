@@ -144,7 +144,7 @@ class BuoySeeker(Node):
         self.initialized = False    # wait for control data to start publishing
         self.track_lost = False     # surface if the track is lost
 
-        self.DETECTION_NAME = 'buoys'
+        self.DETECTION_NAME = 'red_bouy'
         self.ROT_POWER = .1     # max power for scannning rotation
         self.DRIVE_POWER = .2   # power for driving 
         self.BUMP_POWER = .5     # power for bumping the buoy
