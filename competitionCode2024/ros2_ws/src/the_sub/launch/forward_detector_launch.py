@@ -51,4 +51,15 @@ def generate_launch_description():
     )
     ld.add_action(center_detection_node)
 
+    # create node to track detections
+    forward_rgb_track_node = launch_ros.actions.Node(
+        namespace='forward_rgb_camera',
+        package='the_sub',
+        executable='tracker_node',
+        name='tracker_node',
+        #remappings=[('/forward_rgb_camera/control_data', '/control_data'),
+        #            ('/forward_rgb_camera/heading_goal', '/heading_goal')],
+    )
+    ld.add_action(forward_rgb_track_node)
+
     return ld
