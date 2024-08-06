@@ -138,7 +138,7 @@ class BuoyTask(Node):
                                     # 2: initial orientation reached; rotating the first 180deg CCW
                                     # 3: first 180deg complete; rotating the final 180deg CCW
                                     # 4: buoy detected; activate track, creep and check loop until close,
-                                    #    then deactivate track, bump, hold, and end script
+                                    #    then deactivate track, bump, scoot out of the way, and end script
                                     # 5: surfaced (if track is lost): end script
         
         self.creep = False          # only run CV once it is needed
@@ -270,9 +270,18 @@ class BuoyTask(Node):
             self.pub_drive_twist.publish(drive_twist)
             self.get_logger().info('Stage 4 loop broken: buoy close, last push')
             time.sleep(3)
+            self.get_logger().info('Stage 4 complete: buoy bumped; scoot out of the way and hold')
+
+
+            # deactivate heading control, scoot sideways, reactivate heading conrol, and exit
+            self.pub_heading_controller_deactivation.publish(Empty())
             drive_twist.linear.z = 0.0
+            drive_twist.linear.x = self.BUMP_POWER
             self.pub_drive_twist.publish(drive_twist)
-            self.get_logger().info('Stage 4 complete: buoy bumped; hold')
+            time.sleep(3)
+            drive_twist.linear.x = 0.0
+            self.pub_drive_twist.publish(drive_twist)
+            self.pub_heading_controller_activation.publish(Empty())
             raise SystemExit
             
     def control_callback(self, data: ControlData) -> None:
