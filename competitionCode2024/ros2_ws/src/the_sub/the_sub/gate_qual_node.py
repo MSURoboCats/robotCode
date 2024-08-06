@@ -15,7 +15,7 @@ from geometry_msgs.msg import Twist
 import sys
 import time
 
-class GateTask(Node):
+class GateQual(Node):
 
     def __init__(self):
         super().__init__('gate_qual_node')
@@ -137,8 +137,9 @@ class GateTask(Node):
                                     # 1: depth reached; rotating to initialial search orientation 
                                     # 2: initial orientation reached; rotating the first 180deg CCW
                                     # 3: first 180deg complete; rotating the final 180deg CCW
-                                    # 4: gate detected; activate track, creep and check loop until close
-                                    # 5: deactivate track, pass through, and surface
+                                    # 4: gate detected; activate track, creep and check loop until close,
+                                    #    then deactivate track, pass through, and surface
+                                    # 5: surfaced (on success or if track is lost): end script
         
         self.creep = False          # only run CV once it is needed
         self.initialized = False    # wait for control data to start publishing
@@ -303,7 +304,7 @@ def main(args=None):
     rclpy.init(args=args)
 
     # create the node
-    gate_qual = GateTask()
+    gate_qual = GateQual()
 
     # spin the node so the task can be begin
     # node will automatically destory itself on completion

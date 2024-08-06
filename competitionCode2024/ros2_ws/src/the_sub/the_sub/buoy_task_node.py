@@ -139,7 +139,7 @@ class BuoyTask(Node):
                                     # 3: first 180deg complete; rotating the final 180deg CCW
                                     # 4: buoy detected; activate track, creep and check loop until close,
                                     #    then deactivate track, bump, hold, and end script
-                                    # 5: surface if track is lost and end script
+                                    # 5: surfaced (if track is lost): end script
         
         self.creep = False          # only run CV once it is needed
         self.initialized = False    # wait for control data to start publishing
