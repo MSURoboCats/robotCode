@@ -16,6 +16,9 @@ class KeyboardController(Node):
         # keep track of the twist
         self.keyboard_twist = Twist()
 
+        # reset motor powers to 0.0
+        self.pub_twist.publish(self.keyboard_twist)
+
         # scaler to adjust motor power
         self.power_scaler = .1
 
