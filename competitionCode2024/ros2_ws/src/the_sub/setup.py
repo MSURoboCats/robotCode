@@ -44,6 +44,7 @@ setup(
             'tracker_node = the_sub.tracker_node:main',
             # Tasks
             'buoy_seeking_node = the_sub.buoy_seeking_node:main',
+            'gate_task_node = the_sub.gate_task_node:main',
             # setup
             'map_motors_node = the_sub.map_motors_node:main',
         ],
