@@ -10,7 +10,7 @@ def generate_launch_description():
     '''
     
     FORWARD_RGB_CAM_PORT = '1'
-    FORWARD_RGB_DETECTION_MODEL = 'pool_tuned_base'
+    FORWARD_RGB_DETECTION_MODEL = '8am_test_small_batch'
 
     ld = launch.LaunchDescription()
 
