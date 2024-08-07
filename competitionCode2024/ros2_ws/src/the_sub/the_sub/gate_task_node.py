@@ -224,7 +224,7 @@ class GateTask(Node):
             message.data = self.tracking_id
             self.pub_track_start.publish(message)
             self.get_logger().info('Stage 4 initiated: gate heading reached and tracking started')
-    
+            time.sleep(2)   
             self.creep = True
             drive_twist = Twist()
             drive_twist.linear.z = self.DRIVE_POWER
@@ -269,7 +269,7 @@ class GateTask(Node):
             drive_twist.linear.z = self.BUMP_POWER
             self.pub_drive_twist.publish(drive_twist)
             self.get_logger().info('Stage 4 loop broken: gate close, last push')
-            time.sleep(8)
+            time.sleep(10)
             drive_twist.linear.z = 0.0
             self.pub_drive_twist.publish(drive_twist)
 

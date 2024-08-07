@@ -146,9 +146,9 @@ class OctagonTask(Node):
         self.track_lost = False     # surface if the track is lost
 
         self.DETECTION_NAME = 'table'
-        self.ROT_POWER = .1     # max power for scannning rotation
-        self.DRIVE_POWER = .2   # power for driving 
-        self.BUMP_POWER = .5     # power for last approach to table
+        self.ROT_POWER = .1         # max power for scannning rotation
+        self.DRIVE_POWER = .2       # power for driving 
+        self.BUMP_POWER = .3        # power for last approach to table
 
         
         #-- SKIP THE FIRST STAGE AND JUST CONTINUE AT THE SAME DEPTH AS BEFORE
@@ -283,7 +283,7 @@ class OctagonTask(Node):
             drive_twist.linear.z = self.BUMP_POWER
             self.pub_drive_twist.publish(drive_twist)
             self.get_logger().info('Stage 4 loop broken: table close, last push')
-            time.sleep(1)
+            time.sleep(3)
             drive_twist.linear.z = 0.0
             self.pub_drive_twist.publish(drive_twist)
 
