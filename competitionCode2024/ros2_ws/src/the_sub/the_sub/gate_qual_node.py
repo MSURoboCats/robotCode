@@ -145,7 +145,7 @@ class GateQual(Node):
         self.initialized = False    # wait for control data to start publishing
         self.track_lost = False     # surface if the track is lost
 
-        self.DETECTION_NAME = 'right_gate'
+        self.DETECTION_NAME = 'blue_cw'
         self.ROT_POWER = .1     # max power for scannning rotation
         self.DRIVE_POWER = .2   # power for driving 
         self.BUMP_POWER = .5     # power for going through the gate
