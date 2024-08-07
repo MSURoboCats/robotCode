@@ -132,7 +132,7 @@ class OctagonTask(Node):
         )
 
         # flow control variable
-        self.seek_stage = 0     # Key: 
+        self.seek_stage = 1     # Key: 
                                     # 0: descendng to set depth
                                     # 1: depth reached; rotating to initialial search orientation 
                                     # 2: initial orientation reached; rotating the first 180deg CCW
@@ -142,13 +142,27 @@ class OctagonTask(Node):
                                     # 5: surfaced (on success or if track is lost): end script
         
         self.creep = False          # only run CV once it is needed
-        self.initialized = False    # wait for control data to start publishing
+        self.initialized = True     # wait for control data to start publishing
         self.track_lost = False     # surface if the track is lost
 
         self.DETECTION_NAME = 'table'
         self.ROT_POWER = .1     # max power for scannning rotation
         self.DRIVE_POWER = .2   # power for driving 
         self.BUMP_POWER = .5     # power for last approach to table
+
+        
+        #-- SKIP THE FIRST STAGE AND JUST CONTINUE AT THE SAME DEPTH AS BEFORE
+        # reorient to (1,0,0,0)
+        time.sleep(3)
+        heading = HeadingGoal()
+        heading.orientation.x = 0.0
+        heading.orientation.y = 0.0
+        heading.orientation.z = 0.0
+        heading.orientation.w = 1.0
+        heading.max_power = self.ROT_POWER
+        self.pub_heading_goal.publish(heading)
+        self.get_logger().info('Stage 1 started: initialize scan at y=%.2f' % heading.orientation.y)
+        
 
     def depth_goal_status_callback(self, data: String) -> None:
         # stage 0 complete:
