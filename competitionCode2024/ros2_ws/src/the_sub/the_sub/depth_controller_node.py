@@ -105,7 +105,7 @@ class DepthController(Node):
             depth_twist = Twist()
             depth_twist.linear.y = power_out
             self.pub_twist.publish(depth_twist)
-            self.get_logger().info('Cur: %.2f | Goal: %.2f | Const: %.2f | Der: %.2f | Motors: %.2f' % (self.cur_depth,
+            self.get_logger().debug('Cur: %.2f | Goal: %.2f | Const: %.2f | Der: %.2f | Motors: %.2f' % (self.cur_depth,
                                                                                                         self.goal_depth,
                                                                                                         self.Kp*e,
                                                                                                         self.Kd*delta_depth / .0625,

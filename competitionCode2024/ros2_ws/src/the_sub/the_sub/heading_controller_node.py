@@ -149,7 +149,7 @@ class HeadingController(Node):
             rot_twist = Twist()
             rot_twist.angular.y = max(-self.cur_max_power, min(power_out, self.cur_max_power))
             self.pub_twist.publish(rot_twist)
-            self.get_logger().info('Cur: %.2f | Goal: %.2f | Const: %.2f | Der: %.2f | Motors: %.2f' % (self.cur_heading.y,
+            self.get_logger().debug('Cur: %.2f | Goal: %.2f | Const: %.2f | Der: %.2f | Motors: %.2f' % (self.cur_heading.y,
                                                                                                         self.goal_heading.y,
                                                                                                         self.Kp*e_y,
                                                                                                         self.Kd*delta_z / .0625,
