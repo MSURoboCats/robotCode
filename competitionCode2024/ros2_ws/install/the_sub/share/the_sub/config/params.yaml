@@ -10,11 +10,11 @@ motor_micro_node:
     - 1
     - 1
     motor_mappings:
-    - 1
+    - 8
+    - 6
     - 7
     - 2
     - 3
-    - 6
+    - 1
     - 4
     - 5
-    - 8
