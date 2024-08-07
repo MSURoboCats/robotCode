@@ -12,7 +12,7 @@ def generate_launch_description():
 
     DEPTH = '.5'
     FORWARD_RGB_CAM_PORT = '1'
-    FORWARD_RGB_DETECTION_MODEL = '8am_test_small_batch'
+    FORWARD_RGB_DETECTION_MODEL = '8am_530pm_test_medium_batch'
 
     # get path to load node parameters from
     config = os.path.join(
