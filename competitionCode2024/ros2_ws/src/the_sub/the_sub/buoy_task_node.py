@@ -165,7 +165,6 @@ class BuoyTask(Node):
         time.sleep(10)
         rot_twist.angular.y = 0.0
         self.pub_manual_control.publish(rot_twist)
-
         self.pub_heading_controller_activation.publish(Empty())
         
         #-- SKIP THE FIRST STAGE AND JUST CONTINUE AT THE SAME DEPTH AS BEFORE
@@ -289,7 +288,7 @@ class BuoyTask(Node):
             self.get_logger().info('Stage 5 started: surface')
 
         # stop creeping if we are close to the buoy
-        if self.creep and data.name == self.DETECTION_NAME and data.dimensions.x >= 150:
+        if self.creep and data.name == self.DETECTION_NAME and data.dimensions.x >= 200:
                 
             # cancel creep and tracking
             self.creep = False
@@ -300,7 +299,7 @@ class BuoyTask(Node):
             drive_twist.linear.z = self.BUMP_POWER
             self.pub_drive_twist.publish(drive_twist)
             self.get_logger().info('Stage 4 loop broken: buoy close, last push')
-            time.sleep(5)
+            time.sleep(3)
             self.get_logger().info('Stage 4 complete: buoy bumped; scoot out of the way and hold')
 
 
