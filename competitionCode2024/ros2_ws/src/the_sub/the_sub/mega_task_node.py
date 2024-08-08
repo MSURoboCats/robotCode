@@ -147,9 +147,10 @@ class GateTask(Node):
         self.success = False        # set as true if gate passed through
 
         self.DETECTION_NAME = 'red_ccw'
-        self.ROT_POWER = .1         # max power for scannning rotation
-        self.DRIVE_POWER = .3       # power for driving 
-        self.BUMP_POWER = .4        # power for going through the gate
+        self.ROT_POWER = .2         # max power for rotation
+        self.SCAN_POWER = .1        # max power for scanning
+        self.DRIVE_POWER = .2       # power for driving 
+        self.BUMP_POWER = .3        # power for going through the gate
 
     def depth_goal_status_callback(self, data: String) -> None:
         # stage 0 complete:
@@ -191,7 +192,7 @@ class GateTask(Node):
             heading.orientation.y = 1.0
             heading.orientation.z = 0.0
             heading.orientation.w = 0.0
-            heading.max_power = self.ROT_POWER
+            heading.max_power = self.SCAN_POWER
             self.pub_heading_goal.publish(heading)
             self.get_logger().info('Stage 1 complete: initial orientation reached')
             self.get_logger().info('Stage 2 started: rotate 180deg CCW to y=%.2f' % heading.orientation.y)
@@ -205,7 +206,7 @@ class GateTask(Node):
             heading.orientation.y = 0.0
             heading.orientation.z = 0.0
             heading.orientation.w = -1.0
-            heading.max_power = self.ROT_POWER
+            heading.max_power = self.SCAN_POWER
             self.pub_heading_goal.publish(heading)
             self.get_logger().info('Stage 2 complete: 180deg CCW reached')
             self.get_logger().info('Stage 3 started: rotate 180deg CCW to y=%.2f' % heading.orientation.y)
@@ -226,7 +227,7 @@ class GateTask(Node):
             self.pub_track_start.publish(message)
             self.get_logger().info('Stage 4 initiated: gate heading reached and tracking started')
             
-            time.sleep(2)   
+            time.sleep(4)   
             
             self.creep = True
             drive_twist = Twist()
@@ -237,7 +238,7 @@ class GateTask(Node):
     def oriented_detection_callback(self, data: OrientedDetection) -> None:
         # run second (ish):
         # only if the goal depth has been reached, a gate has not been detected, and the detected object is a gate (with 80% certainty)
-        if self.seek_stage in [1,2,3] and data.detection.name == self.DETECTION_NAME and data.detection.confidence > .8:
+        if self.seek_stage in [2,3] and data.detection.name == self.DETECTION_NAME and data.detection.confidence > .65:
             self.get_logger().info('Stage 3 terminated: gate detected at y=%.2f' % data.orientation.y)
 
             # rotate to gate
@@ -261,7 +262,7 @@ class GateTask(Node):
             self.get_logger().info('Stage 5 started: surface')
 
         # stop creeping if we are close to the gate
-        if self.creep and data.name == self.DETECTION_NAME and data.dimensions.x >= 110:
+        if self.creep and data.name == self.DETECTION_NAME and data.dimensions.x >= 90:
                 
             # cancel creep and tracking
             self.creep = False
@@ -272,7 +273,7 @@ class GateTask(Node):
             drive_twist.linear.z = self.DRIVE_POWER
             self.pub_drive_twist.publish(drive_twist)
             self.get_logger().info('Stage 4 loop broken: gate close, last push')
-            time.sleep(6)
+            time.sleep(8.5)
             drive_twist.linear.z = 0.0
             self.pub_drive_twist.publish(drive_twist)
 
@@ -438,28 +439,14 @@ class BuoyTask(Node):
         self.success = False        # set as true if buoy bumped
 
         self.DETECTION_NAME = 'buoy_red'
-        self.ROT_POWER = .1     # max power for scannning rotation
-        self.DRIVE_POWER = .2   # power for driving 
-        self.BUMP_POWER = .4     # power for bumping the buoy
-        
-        '''
-        #-- DO A COUPLE SPINS TO START OUT WITH
-        time.sleep(2)
-        self.get_logger().info('Spinning for 10 seconds')
-        self.pub_heading_controller_deactivation.publish(Empty())
-        rot_twist = Twist()
-        rot_twist.angular.y = 0.5
-        self.pub_manual_control.publish(rot_twist)
-        time.sleep(10)
-        rot_twist.angular.y = 0.0
-        self.get_logger().info('Spinning complete')
-        self.pub_manual_control.publish(rot_twist)
-        self.pub_heading_controller_activation.publish(Empty())
-        '''
+        self.ROT_POWER = .2         # max power rotation
+        self.SCAN_POWER = .1        # max power for scanning
+        self.DRIVE_POWER = .2       # power for driving 
+        self.BUMP_POWER = .3        # power for bumping the buoy
         
         #-- SKIP THE FIRST STAGE AND JUST CONTINUE AT THE SAME DEPTH AS BEFORE
         # reorient to (1,0,0,0)
-        time.sleep(3)
+        time.sleep(1)
         heading = HeadingGoal()
         heading.orientation.x = 0.0
         heading.orientation.y = 0.0
@@ -469,7 +456,6 @@ class BuoyTask(Node):
         self.pub_heading_goal.publish(heading)
         self.get_logger().info('Stage 1 started: initialize scan at y=%.2f' % heading.orientation.y)
         
-
     def depth_goal_status_callback(self, data: String) -> None:
         # stage 0 complete:
         # only if the goal depth had not been previously reached
@@ -503,13 +489,14 @@ class BuoyTask(Node):
         # initial scan heading reached at (1,0,0,0): stage 1 compete
         if self.seek_stage == 1:
             # reorient to (0,0,1,0): 180deg CCW
+            time.sleep(3)
             self.seek_stage = 2
             heading = HeadingGoal()
             heading.orientation.x = 0.0
             heading.orientation.y = 1.0
             heading.orientation.z = 0.0
             heading.orientation.w = 0.0
-            heading.max_power = self.ROT_POWER
+            heading.max_power = self.SCAN_POWER
             self.pub_heading_goal.publish(heading)
             self.get_logger().info('Stage 1 complete: initial orientation reached')
             self.get_logger().info('Stage 2 started: rotate 180deg CCW to y=%.2f' % heading.orientation.y)
@@ -523,7 +510,7 @@ class BuoyTask(Node):
             heading.orientation.y = 0.0
             heading.orientation.z = 0.0
             heading.orientation.w = -1.0
-            heading.max_power = self.ROT_POWER
+            heading.max_power = self.SCAN_POWER
             self.pub_heading_goal.publish(heading)
             self.get_logger().info('Stage 2 complete: 180deg CCW reached')
             self.get_logger().info('Stage 3 started: rotate 180deg CCW to y=%.2f' % heading.orientation.y)
@@ -543,7 +530,8 @@ class BuoyTask(Node):
             message.data = self.tracking_id
             self.pub_track_start.publish(message)
             self.get_logger().info('Stage 4 initiated: buoy heading reached and tracking started')
-    
+            time.sleep(5)
+
             self.creep = True
             drive_twist = Twist()
             drive_twist.linear.z = self.DRIVE_POWER
@@ -552,8 +540,8 @@ class BuoyTask(Node):
 
     def oriented_detection_callback(self, data: OrientedDetection) -> None:
         # run second (ish):
-        # only if the goal depth has been reached, a buoy has not been detected, and the detected object is a buoy (with 80% certainty)
-        if self.seek_stage in [1,2,3] and data.detection.name == self.DETECTION_NAME and data.detection.confidence > .8:
+        # only if the goal depth has been reached, a buoy has not been detected, and the detected object is a buoy (with 65% certainty)
+        if self.seek_stage in [2,3] and data.detection.name == self.DETECTION_NAME and data.detection.confidence > .65:
             self.buoy_detected = True
             self.get_logger().info('Stage 3 terminated: buoy detected at y=%.2f' % data.orientation.y)
 
@@ -755,7 +743,8 @@ class OctagonTask(Node):
         self.success = False        # set as true if gate passed through
 
         self.DETECTION_NAME = 'table'
-        self.ROT_POWER = .1         # max power for scannning rotation
+        self.ROT_POWER = .2         # max power rotation
+        self.SCAN_POWER = .1        # max power for scanniing
         self.DRIVE_POWER = .2       # power for driving 
         self.BUMP_POWER = .3        # power for last approach to table
 
@@ -813,7 +802,7 @@ class OctagonTask(Node):
             heading.orientation.y = 1.0
             heading.orientation.z = 0.0
             heading.orientation.w = 0.0
-            heading.max_power = self.ROT_POWER
+            heading.max_power = self.SCAN_POWER
             self.pub_heading_goal.publish(heading)
             self.get_logger().info('Stage 1 complete: initial orientation reached')
             self.get_logger().info('Stage 2 started: rotate 180deg CCW to y=%.2f' % heading.orientation.y)
@@ -827,7 +816,7 @@ class OctagonTask(Node):
             heading.orientation.y = 0.0
             heading.orientation.z = 0.0
             heading.orientation.w = -1.0
-            heading.max_power = self.ROT_POWER
+            heading.max_power = self.SCAN_POWER
             self.pub_heading_goal.publish(heading)
             self.get_logger().info('Stage 2 complete: 180deg CCW reached')
             self.get_logger().info('Stage 3 started: rotate 180deg CCW to y=%.2f' % heading.orientation.y)
@@ -857,7 +846,7 @@ class OctagonTask(Node):
     def oriented_detection_callback(self, data: OrientedDetection) -> None:
         # run second (ish):
         # only if the goal depth has been reached, a table has not been detected, and the detected object is a table (with 60% certainty)
-        if self.seek_stage in [1,2,3] and data.detection.name == self.DETECTION_NAME and data.detection.confidence > .6:
+        if self.seek_stage in [2,3] and data.detection.name == self.DETECTION_NAME and data.detection.confidence > .15:
             self.get_logger().info('Stage 3 terminated: table detected at y=%.2f' % data.orientation.y)
 
             # rotate to table
@@ -892,7 +881,7 @@ class OctagonTask(Node):
             drive_twist.linear.z = self.BUMP_POWER
             self.pub_drive_twist.publish(drive_twist)
             self.get_logger().info('Stage 4 loop broken: table close, last push')
-            time.sleep(3)
+            time.sleep(1.5)
             drive_twist.linear.z = 0.0
             self.pub_drive_twist.publish(drive_twist)
 
@@ -944,6 +933,30 @@ def main(args=None):
 #-- BUOY task 
     buoy_task = BuoyTask()
 
+    #-- DO A COUPLE SPINS TO START OUT WITH
+    buoy_task.get_logger().info('Spinning for 10 seconds')
+    buoy_task.pub_heading_controller_deactivation.publish(Empty())  # deactivate heading
+    rot_twist = Twist()                                             # start spinning
+    rot_twist.angular.y = 0.6
+    buoy_task.pub_manual_control.publish(rot_twist)
+
+    time.sleep(10)                                                  # spin...
+
+    rot_twist.angular.y = 0.0                                       # stop spinning
+    buoy_task.get_logger().info('Spinning complete')
+    buoy_task.pub_manual_control.publish(rot_twist)
+    heading = HeadingGoal()                                         # rotate to original heading
+    heading.orientation.x = 0.0
+    heading.orientation.y = 0.0
+    heading.orientation.z = 0.0
+    heading.orientation.w = 1.0
+    heading.max_power = buoy_task.ROT_POWER
+    buoy_task.pub_heading_goal.publish(heading)
+    buoy_task.pub_heading_controller_activation.publish(Empty())    # activate heading
+
+    time.sleep(8)                                                   # wait a bit
+    
+    
     # spin the node so the task can be begin
     # node will automatically destory itself on completion
     try:
