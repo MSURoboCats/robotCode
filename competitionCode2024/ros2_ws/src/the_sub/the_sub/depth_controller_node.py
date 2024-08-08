@@ -89,7 +89,7 @@ class DepthController(Node):
 
             # if it is a bad sensor reading, skip the iteration
             if abs(data.depth - self.cur_depth) > self.SENSOR_ERROR:
-                self.get_logger().warn('Unreasonable value | Current: %.2f | New: %.2f' % (self.cur_depth, data.depth))
+                self.get_logger().debug('Unreasonable value | Current: %.2f | New: %.2f' % (self.cur_depth, data.depth))
                 return
             
             # calculate error and derivative

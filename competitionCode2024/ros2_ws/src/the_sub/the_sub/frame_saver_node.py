@@ -57,7 +57,7 @@ class FrameSaver(Node):
     # ensure that a frame has been received before trying to save images
     if type(self.frame) == np.ndarray:
       cv2.imwrite(full_img_path, self.frame)
-      self.get_logger().info("Frame saved: %s" % ('cv_training_data/' + str(sys.argv[1]) + '/' + str(self.counter) + '.jpg'))
+      self.get_logger().info("Frame saved: %s" % ('training_data/' + str(sys.argv[1]) + '/' + str(self.counter) + '.jpg'))
       self.counter += 1
     else:
       self.get_logger().info("Frame lock not aquired")
