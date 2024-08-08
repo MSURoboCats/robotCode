@@ -144,6 +144,7 @@ class OctagonTask(Node):
         self.creep = False          # only run CV once it is needed
         self.initialized = True     # wait for control data to start publishing
         self.track_lost = False     # surface if the track is lost
+        self.success = False        # set as true if octagon is surfaced in
 
         self.DETECTION_NAME = 'table'
         self.ROT_POWER = .1         # max power for scannning rotation
@@ -288,6 +289,7 @@ class OctagonTask(Node):
             self.pub_drive_twist.publish(drive_twist)
 
             # surface
+            self.success = True
             self.seek_stage = 5
             depth_goal =  DepthGoal()
             depth_goal.depth = 0.00

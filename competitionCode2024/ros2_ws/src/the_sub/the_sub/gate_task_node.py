@@ -144,6 +144,7 @@ class GateTask(Node):
         self.creep = False          # only run CV once it is needed
         self.initialized = False    # wait for control data to start publishing
         self.track_lost = False     # surface if the track is lost
+        self.success = False        # set as true if gate passed through
 
         self.DETECTION_NAME = 'red_ccw'
         self.ROT_POWER = .1     # max power for scannning rotation
@@ -275,6 +276,7 @@ class GateTask(Node):
 
             # hold and exit
             self.get_logger().info('Stage 4 complete: gate passed; holding')
+            self.success = True
             raise SystemExit
     
     def control_callback(self, data: ControlData) -> None:
