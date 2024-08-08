@@ -856,8 +856,8 @@ class OctagonTask(Node):
 
     def oriented_detection_callback(self, data: OrientedDetection) -> None:
         # run second (ish):
-        # only if the goal depth has been reached, a table has not been detected, and the detected object is a table (with 80% certainty)
-        if self.seek_stage in [1,2,3] and data.detection.name == self.DETECTION_NAME and data.detection.confidence > .8:
+        # only if the goal depth has been reached, a table has not been detected, and the detected object is a table (with 60% certainty)
+        if self.seek_stage in [1,2,3] and data.detection.name == self.DETECTION_NAME and data.detection.confidence > .6:
             self.get_logger().info('Stage 3 terminated: table detected at y=%.2f' % data.orientation.y)
 
             # rotate to table
