@@ -153,6 +153,7 @@ class BuoyTask(Node):
         self.creep = False          # only run CV once it is needed
         self.initialized = True     # wait for control data to start publishing
         self.track_lost = False     # surface if the track is lost
+        self.success = False        # set as true if buoy is bumped
 
         self.DETECTION_NAME = 'buoy_red'
         self.ROT_POWER = .1     # max power for scannning rotation
@@ -319,6 +320,7 @@ class BuoyTask(Node):
             drive_twist.linear.x = 0.0
             self.pub_drive_twist.publish(drive_twist)
             self.pub_heading_controller_activation.publish(Empty())
+            self.success = True
             raise SystemExit
             
     def control_callback(self, data: ControlData) -> None:
