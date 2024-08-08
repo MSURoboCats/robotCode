@@ -144,11 +144,12 @@ class GateTask(Node):
         self.creep = False          # only run CV once it is needed
         self.initialized = False    # wait for control data to start publishing
         self.track_lost = False     # surface if the track is lost
+        self.success = False        # set as true if gate passed through
 
         self.DETECTION_NAME = 'red_ccw'
-        self.ROT_POWER = .1     # max power for scannning rotation
-        self.DRIVE_POWER = .3   # power for driving 
-        self.BUMP_POWER = .4     # power for going through the gate
+        self.ROT_POWER = .1         # max power for scannning rotation
+        self.DRIVE_POWER = .3       # power for driving 
+        self.BUMP_POWER = .4        # power for going through the gate
 
     def depth_goal_status_callback(self, data: String) -> None:
         # stage 0 complete:
@@ -224,7 +225,9 @@ class GateTask(Node):
             message.data = self.tracking_id
             self.pub_track_start.publish(message)
             self.get_logger().info('Stage 4 initiated: gate heading reached and tracking started')
+            
             time.sleep(2)   
+            
             self.creep = True
             drive_twist = Twist()
             drive_twist.linear.z = self.DRIVE_POWER
@@ -266,7 +269,7 @@ class GateTask(Node):
 
             # pass through gate
             drive_twist = Twist()
-            drive_twist.linear.z = self.BUMP_POWER
+            drive_twist.linear.z = self.DRIVE_POWER
             self.pub_drive_twist.publish(drive_twist)
             self.get_logger().info('Stage 4 loop broken: gate close, last push')
             time.sleep(6)
@@ -275,6 +278,7 @@ class GateTask(Node):
 
             # hold and exit
             self.get_logger().info('Stage 4 complete: gate passed; holding')
+            self.success = True
             raise SystemExit
     
     def control_callback(self, data: ControlData) -> None:
@@ -431,6 +435,7 @@ class BuoyTask(Node):
         self.creep = False          # only run CV once it is needed
         self.initialized = True     # wait for control data to start publishing
         self.track_lost = False     # surface if the track is lost
+        self.success = False        # set as true if buoy bumped
 
         self.DETECTION_NAME = 'buoy_red'
         self.ROT_POWER = .1     # max power for scannning rotation
@@ -597,6 +602,7 @@ class BuoyTask(Node):
             drive_twist.linear.x = 0.0
             self.pub_drive_twist.publish(drive_twist)
             self.pub_heading_controller_activation.publish(Empty())
+            self.success = True
             raise SystemExit
             
     def control_callback(self, data: ControlData) -> None:
@@ -746,6 +752,7 @@ class OctagonTask(Node):
         self.creep = False          # only run CV once it is needed
         self.initialized = True     # wait for control data to start publishing
         self.track_lost = False     # surface if the track is lost
+        self.success = False        # set as true if gate passed through
 
         self.DETECTION_NAME = 'table'
         self.ROT_POWER = .1         # max power for scannning rotation
@@ -890,6 +897,7 @@ class OctagonTask(Node):
             self.pub_drive_twist.publish(drive_twist)
 
             # surface
+            self.success = True
             self.seek_stage = 5
             depth_goal =  DepthGoal()
             depth_goal.depth = 0.00
@@ -929,6 +937,9 @@ def main(args=None):
         rclpy.spin(gate_task)
     except SystemExit:
         rclpy.logging.get_logger('Quitting').info('Gate task complete! Node killed.')
+        if gate_task.success == False:
+            rclpy.shutdown()
+            return
 
 #-- BUOY task 
     buoy_task = BuoyTask()
@@ -939,6 +950,10 @@ def main(args=None):
         rclpy.spin(buoy_task)
     except SystemExit:
         rclpy.logging.get_logger('Quitting').info('Buoy task complete! Node killed.')
+        if buoy_task.success == False:
+            rclpy.shutdown()
+            return
+            
 
 #-- OCTAGON task
     octagon_task = OctagonTask()
@@ -949,6 +964,9 @@ def main(args=None):
         rclpy.spin(octagon_task)
     except SystemExit:
         rclpy.logging.get_logger('Quitting').info('Task complete! Node killed.')
+        if octagon_task.success == False:
+            rclpy.shutdown()
+            return
 
     # shutdown the ROS client library for Python
     rclpy.shutdown()
