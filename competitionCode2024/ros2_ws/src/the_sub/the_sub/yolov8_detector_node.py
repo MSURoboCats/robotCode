@@ -54,7 +54,7 @@ class Yolov8Detector(Node):
     # publish each detection
     for r in results:
       for box in r.boxes:
-        if float(box.conf) > .7:
+        if float(box.conf) > .4:
           detection = Yolov8Detection()
           detection.name = self.trt_model.names[int(box.cls)]
           if r.boxes.is_track:
