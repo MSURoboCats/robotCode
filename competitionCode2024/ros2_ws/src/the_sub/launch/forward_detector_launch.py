@@ -10,7 +10,7 @@ def generate_launch_description():
     '''
     
     FORWARD_RGB_CAM_PORT = '1'
-    FORWARD_RGB_DETECTION_MODEL = '8am_530pm_test_medium_batch'
+    FORWARD_RGB_DETECTION_MODEL = '8am_5pm_table_batch'
 
     ld = launch.LaunchDescription()
 
