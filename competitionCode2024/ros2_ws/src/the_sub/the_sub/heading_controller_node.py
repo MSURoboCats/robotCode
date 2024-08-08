@@ -118,7 +118,7 @@ class HeadingController(Node):
         if self.active:
             # skip iteration if the derivative value is unreasonable
             if data.imu_data.angular_velocity.z > self.ROT_VEL_SENSOR_ERROR:
-                self.get_logger().warn('Unreasonable rot vel z: %.2f' % data.imu_data.angular_velocity.z)
+                self.get_logger().debug('Unreasonable rot vel z: %.2f' % data.imu_data.angular_velocity.z)
                 return
             
             # calculate rolling average for sensor values
@@ -188,10 +188,10 @@ class HeadingController(Node):
     
     def heading_control_deactivation_callback(self, data: Empty) -> None:
         # kill motors and disable
+        self.active = False
         rot_twist = Twist()
         rot_twist.angular.y = 0.0
         self.pub_twist.publish(rot_twist)
-        self.active = False
         self.get_logger().info('Controller deactivated')
 
 
