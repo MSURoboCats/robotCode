@@ -93,9 +93,9 @@ class Twist2Action(Node):
         # only updated motors that control forward motion, accounting for power differences
         if power > 0:
             self.motor_powers.motor4 = -power
-            self.motor_powers.motor5 = -power*.7
+            self.motor_powers.motor5 = -power*.85
         else:
-            self.motor_powers.motor4 = -power*.7
+            self.motor_powers.motor4 = -power*.85
             self.motor_powers.motor5 = -power
 
         # publish motor values
