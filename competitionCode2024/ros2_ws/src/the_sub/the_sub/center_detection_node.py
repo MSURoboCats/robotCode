@@ -5,6 +5,7 @@ from rclpy.node import Node
 from interfaces.msg import Yolov8Detection, ControlData, OrientedDetection
 
 from geometry_msgs.msg import Quaternion
+from std_msgs.msg import Empty
 
 import numpy as np
 import quaternion
@@ -33,6 +34,14 @@ class CenterScanner(Node):
             ControlData,
             'control_data',
             self.control_callback,
+            10,
+        )
+
+        # subscriber for clearing saved detefctions
+        self.sub_clear_detections = self.create_subscription(
+            Empty,
+            'clear_detections',
+            self.clear_detections_callback,
             10,
         )
 
@@ -65,6 +74,9 @@ class CenterScanner(Node):
                 data.imu_data.orientation.y,
                 data.imu_data.orientation.z,
             )
+        
+    def clear_detections_callback(self, data: Empty):
+        self.saved_detections = []
         
 def main(args=None):
   
