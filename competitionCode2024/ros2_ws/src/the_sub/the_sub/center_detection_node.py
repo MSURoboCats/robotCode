@@ -37,22 +37,31 @@ class CenterScanner(Node):
             10,
         )
 
-        # subscriber for clearing saved detefctions
-        self.sub_clear_detections = self.create_subscription(
+        # subscriber for activating
+        self.sub_activate = self.create_subscription(
             Empty,
-            'clear_detections',
-            self.clear_detections_callback,
+            'activate_detections',
+            self.activate_detections_callback,
+            10,
+        )
+
+        # subscriber for deactivating
+        self.sub_deactivate = self.create_subscription(
+            Empty,
+            'deactivate_detections',
+            self.deactivate_detections_callback,
             10,
         )
 
         self.current_quat = np.quaternion(1,0,0,0)
         self.saved_detections = []
+        self.active = True
 
         self.QUAT_FOV_LEFT = np.quaternion(.94, 0, .342, 0)
         self.QUAT_FOV_RIGHT = np.quaternion(.94, 0, -.342, 0)
 
     def detection_callback(self, data: Yolov8Detection) -> None:
-        if data.center.x > 300 and data.center.x < 340 and data.tracking_id not in self.saved_detections:
+        if data.center.x > 300 and data.center.x < 340 and data.tracking_id not in self.saved_detections and self.active == True:
             self.saved_detections.append(data.tracking_id)
             message = OrientedDetection()
             message.detection = data
@@ -75,8 +84,16 @@ class CenterScanner(Node):
                 data.imu_data.orientation.z,
             )
         
-    def clear_detections_callback(self, data: Empty):
+    def activate_detections_callback(self, data: Empty):
+        self.active == True
         self.saved_detections = []
+        self.get_logger().info('Detections activated')
+
+    def deactivate_detections_callback(self, data: Empty):
+        self.active == False
+        self.saved_detections = []
+        self.get_logger().info('Detections deactivated')
+
         
 def main(args=None):
   
