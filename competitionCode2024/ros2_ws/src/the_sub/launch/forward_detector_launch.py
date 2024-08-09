@@ -47,7 +47,6 @@ def generate_launch_description():
         package='the_sub',
         executable='center_detection_node',
         name='center_detection_node',
-        remappings=[('/forward_rgb_camera/control_data', '/control_data')],
     )
     ld.add_action(center_detection_node)
 
@@ -57,8 +56,6 @@ def generate_launch_description():
         package='the_sub',
         executable='tracker_node',
         name='tracker_node',
-        #remappings=[('/forward_rgb_camera/control_data', '/control_data'),
-        #            ('/forward_rgb_camera/heading_goal', '/heading_goal')],
     )
     ld.add_action(forward_rgb_track_node)
 
