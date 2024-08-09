@@ -15,6 +15,10 @@ from geometry_msgs.msg import Twist
 import sys
 import time
 
+
+global forward_twist
+forward_twist = Twist()
+
 class GateTask(Node):
 
     def __init__(self):
@@ -246,6 +250,8 @@ class GateTask(Node):
             self.seek_stage = 4     # gate has been detected, stop 180deg scan loop
             heading = HeadingGoal()
             heading.orientation = data.orientation
+            global forward_twist
+            forward_twist = data.orientation
             self.pub_heading_goal.publish(heading)
             self.get_logger().info('Stage 4 started: rotate to gate at y=%.2f' % data.orientation.y)
             time.sleep(1)
@@ -294,7 +300,6 @@ class GateTask(Node):
             depth_goal.depth = float(sys.argv[1])
             self.pub_depth_goal.publish(depth_goal)
             self.get_logger().info('Stage 0 started: descending to %.2f' % depth_goal.depth)
-
 
     def track_lost_callback(self, data: Empty) -> None:
         self.track_lost = True
@@ -375,6 +380,13 @@ class BuoyTask(Node):
             10,
         )
 
+        # publisher for clearing detections
+        self.pub_clear_detections = self.create_publisher(
+            Empty,
+            '/forwward_rgb_camera/clear_detections',
+            10,
+        )
+
         # subscriper for depth goal status
         self.sub_depth_goal_status = self.create_subscription(
             String,
@@ -444,6 +456,7 @@ class BuoyTask(Node):
         self.DRIVE_POWER = .25       # power for driving 
         self.BUMP_POWER = .3        # power for bumping the buoy
         
+
         #-- SKIP THE FIRST STAGE AND JUST CONTINUE AT THE SAME DEPTH AS BEFORE
         # reorient to (1,0,0,0)
         time.sleep(1)
@@ -488,6 +501,8 @@ class BuoyTask(Node):
         
         # initial scan heading reached at (1,0,0,0): stage 1 compete
         if self.seek_stage == 1:
+            #-- CLEAR ANY DETECTIONS ALREADY SEEN
+            self.pub_clear_detections.publish(Empty())
             # reorient to (0,0,1,0): 180deg CCW
             time.sleep(3)
             self.seek_stage = 2
@@ -956,7 +971,6 @@ def main(args=None):
 
     time.sleep(8)                                                   # wait a bit
     
-    
     # spin the node so the task can be begin
     # node will automatically destory itself on completion
     try:
@@ -966,10 +980,29 @@ def main(args=None):
         if buoy_task.success == False:
             rclpy.shutdown()
             return
-            
+
 
 #-- OCTAGON task
     octagon_task = OctagonTask()
+
+    # get closer to the table hopefully
+    octagon_task.get_logger().info('Attempting to get closer to the table: rotating toward it?')
+    #-- rotate in same direction gate was detected
+    global forward_twist
+    heading = HeadingGoal()
+    heading.orientation = forward_twist
+    heading.max_power = octagon_task.ROT_POWER
+    octagon_task.pub_heading_goal.publish(heading)
+    time.sleep(6)
+    #-- creep forward for some time, the spin up node to scan
+    octagon_task.get_logger().info('Attempting to get closer to the table: approaching it?')
+    drive_twist = Twist()
+    drive_twist.linear.z = octagon_task.DRIVE_POWER
+    octagon_task.pub_drive_twist.publish(drive_twist)
+    time.sleep(25)
+    drive_twist = Twist()
+    drive_twist.linear.z = 0.0
+    octagon_task.pub_drive_twist.publish(drive_twist)   
 
     # spin the node so the task can be begin
     # node will automatically destory itself on completion
