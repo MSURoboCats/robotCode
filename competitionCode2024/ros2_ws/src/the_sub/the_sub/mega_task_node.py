@@ -962,7 +962,7 @@ def main(args=None):
     rot_twist.angular.y = 0.6
     buoy_task.pub_manual_control.publish(rot_twist)
 
-    time.sleep(10)                                                  # spin...
+    time.sleep(14)                                                  # spin...
 
     rot_twist.angular.y = 0.0                                       # stop spinning
     buoy_task.get_logger().info('Spinning complete')
@@ -1000,7 +1000,7 @@ def main(args=None):
     heading.orientation = forward_twist
     heading.max_power = octagon_task.ROT_POWER
     octagon_task.pub_heading_goal.publish(heading)
-    time.sleep(6)
+    time.sleep(15)
     #-- creep forward for some time, the spin up node to scan
     octagon_task.get_logger().info('Attempting to get closer to the table: approaching it?')
     drive_twist = Twist()
