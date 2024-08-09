@@ -32,7 +32,7 @@ class CenterScanner(Node):
         # subscriber for control data
         self.sub_control = self.create_subscription(
             ControlData,
-            'control_data',
+            '/control_data',
             self.control_callback,
             10,
         )
