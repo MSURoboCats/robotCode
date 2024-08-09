@@ -518,8 +518,9 @@ class BuoyTask(Node):
             heading.orientation.w = 0.0
             heading.max_power = self.SCAN_POWER
             self.pub_heading_goal.publish(heading)
+            self.pub_activate_detections.publish(Empty())
             self.get_logger().info('Stage 1 complete: initial orientation reached')
-            self.get_logger().info('Stage 2 started: rotate 180deg CCW to y=%.2f' % heading.orientation.y)
+            self.get_logger().info('Stage 2 started: detections activated; rotate 180deg CCW to y=%.2f' % heading.orientation.y)
 
         # first 180deg compete to (0,0,1,0): stage 2 compete
         elif self.seek_stage == 2:
@@ -936,7 +937,7 @@ def main(args=None):
 
     # initialize the rclpy library
     rclpy.init(args=args)
-
+    
 #-- GATE task
     gate_task = GateTask()
 
@@ -949,7 +950,7 @@ def main(args=None):
         if gate_task.success == False:
             rclpy.shutdown()
             return
-
+    
 #-- BUOY task 
     buoy_task = BuoyTask()
 
@@ -976,8 +977,6 @@ def main(args=None):
     buoy_task.pub_heading_controller_activation.publish(Empty())    # activate heading
 
     time.sleep(8)                                                   # wait a bit
-    buoy_task.pub_activate_detections.publish(Empty())              # activate detections
-
     
     # spin the node so the task can be begin
     # node will automatically destory itself on completion
