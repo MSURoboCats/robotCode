@@ -380,10 +380,17 @@ class BuoyTask(Node):
             10,
         )
 
-        # publisher for clearing detections
-        self.pub_clear_detections = self.create_publisher(
+        # publisher for activating detections
+        self.pub_activate_detections = self.create_publisher(
             Empty,
-            '/forwward_rgb_camera/clear_detections',
+            '/forward_rgb_camera/activate_detections',
+            10,
+        )
+
+        # publisher for deactivating detections
+        self.pub_deactivate_detections = self.create_publisher(
+            Empty,
+            '/forward_rgb_camera/deactivate_detections',
             10,
         )
 
@@ -501,8 +508,6 @@ class BuoyTask(Node):
         
         # initial scan heading reached at (1,0,0,0): stage 1 compete
         if self.seek_stage == 1:
-            #-- CLEAR ANY DETECTIONS ALREADY SEEN
-            self.pub_clear_detections.publish(Empty())
             # reorient to (0,0,1,0): 180deg CCW
             time.sleep(3)
             self.seek_stage = 2
@@ -951,6 +956,7 @@ def main(args=None):
     #-- DO A COUPLE SPINS TO START OUT WITH
     buoy_task.get_logger().info('Spinning for 10 seconds')
     buoy_task.pub_heading_controller_deactivation.publish(Empty())  # deactivate heading
+    buoy_task.pub_deactivate_detections.publish(Empty())            # deactivate detections
     rot_twist = Twist()                                             # start spinning
     rot_twist.angular.y = 0.6
     buoy_task.pub_manual_control.publish(rot_twist)
@@ -970,6 +976,8 @@ def main(args=None):
     buoy_task.pub_heading_controller_activation.publish(Empty())    # activate heading
 
     time.sleep(8)                                                   # wait a bit
+    buoy_task.pub_activate_detections.publish(Empty())              # activate detections
+
     
     # spin the node so the task can be begin
     # node will automatically destory itself on completion
