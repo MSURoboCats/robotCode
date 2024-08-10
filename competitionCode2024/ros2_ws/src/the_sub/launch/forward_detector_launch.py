@@ -10,7 +10,7 @@ def generate_launch_description():
     '''
     
     FORWARD_RGB_CAM_PORT = '1'
-    FORWARD_RGB_DETECTION_MODEL = 'mega_buoy_better_work'
+    FORWARD_RGB_DETECTION_MODEL = 'the_one'
 
     ld = launch.LaunchDescription()
 
