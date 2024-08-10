@@ -190,6 +190,7 @@ class GateTask(Node):
         # initial scan heading reached at (1,0,0,0): stage 1 compete
         if self.seek_stage == 1:
             # reorient to (0,0,1,0): 180deg CCW
+            time.sleep(2)
             self.seek_stage = 2
             heading = HeadingGoal()
             heading.orientation.x = 0.0
@@ -509,7 +510,7 @@ class BuoyTask(Node):
         # initial scan heading reached at (1,0,0,0): stage 1 compete
         if self.seek_stage == 1:
             # reorient to (0,0,1,0): 180deg CCW
-            time.sleep(3)
+            time.sleep(2)
             self.seek_stage = 2
             heading = HeadingGoal()
             heading.orientation.x = 0.0
@@ -605,9 +606,9 @@ class BuoyTask(Node):
             # deactivate heading control, scoot sideways, reactivate heading conrol, and exit
             self.pub_heading_controller_deactivation.publish(Empty())
             drive_twist.linear.z = 0.0
-            drive_twist.linear.x = self.BUMP_POWER
+            drive_twist.linear.x = -self.BUMP_POWER
             self.pub_drive_twist.publish(drive_twist)
-            time.sleep(3)
+            time.sleep(5)
             drive_twist.linear.x = 0.0
             self.pub_drive_twist.publish(drive_twist)
             self.pub_heading_controller_activation.publish(Empty())
@@ -697,6 +698,20 @@ class OctagonTask(Node):
         self.pub_heading_controller_deactivation = self.create_publisher(
             Empty,
             '/heading_controller_deactivation',
+            10,
+        )
+
+        # publisher for activating detections
+        self.pub_activate_detections = self.create_publisher(
+            Empty,
+            '/forward_rgb_camera/activate_detections',
+            10,
+        )
+
+        # publisher for deactivating detections
+        self.pub_deactivate_detections = self.create_publisher(
+            Empty,
+            '/forward_rgb_camera/deactivate_detections',
             10,
         )
 
@@ -817,6 +832,7 @@ class OctagonTask(Node):
         # initial scan heading reached at (1,0,0,0): stage 1 compete
         if self.seek_stage == 1:
             # reorient to (0,0,1,0): 180deg CCW
+            time.sleep(2)
             self.seek_stage = 2
             heading = HeadingGoal()
             heading.orientation.x = 0.0
@@ -825,6 +841,7 @@ class OctagonTask(Node):
             heading.orientation.w = 0.0
             heading.max_power = self.SCAN_POWER
             self.pub_heading_goal.publish(heading)
+            self.pub_activate_detections.publish(Empty())
             self.get_logger().info('Stage 1 complete: initial orientation reached')
             self.get_logger().info('Stage 2 started: rotate 180deg CCW to y=%.2f' % heading.orientation.y)
 
@@ -866,7 +883,7 @@ class OctagonTask(Node):
 
     def oriented_detection_callback(self, data: OrientedDetection) -> None:
         # run second (ish):
-        # only if the goal depth has been reached, a table has not been detected, and the detected object is a table (with 60% certainty)
+        # only if the goal depth has been reached, a table has not been detected, and the detected object is a table (with 50% certainty)
         if self.seek_stage in [2,3] and data.detection.name == self.DETECTION_NAME and data.detection.confidence > .5:
             self.get_logger().info('Stage 3 terminated: table detected at y=%.2f' % data.orientation.y)
 
@@ -891,7 +908,7 @@ class OctagonTask(Node):
             self.get_logger().info('Stage 5 started: surface')
 
         # stop creeping if we are close to the table
-        if self.creep and data.name == self.DETECTION_NAME and data.dimensions.x >= 400:
+        if self.creep and data.name == self.DETECTION_NAME and data.dimensions.x >= 160:
                 
             # cancel creep and tracking
             self.creep = False
@@ -902,7 +919,7 @@ class OctagonTask(Node):
             drive_twist.linear.z = self.BUMP_POWER
             self.pub_drive_twist.publish(drive_twist)
             self.get_logger().info('Stage 4 loop broken: table close, last push')
-            time.sleep(1.5)
+            time.sleep(5)
             drive_twist.linear.z = 0.0
             self.pub_drive_twist.publish(drive_twist)
 
@@ -987,12 +1004,13 @@ def main(args=None):
         if buoy_task.success == False:
             rclpy.shutdown()
             return
-
+    
 
 #-- OCTAGON task
     octagon_task = OctagonTask()
-
-    # get closer to the table hopefully
+    
+    # get closer to the table hopefully with center detections deactivated
+    octagon_task.pub_deactivate_detections.publish(Empty())
     octagon_task.get_logger().info('Attempting to get closer to the table: rotating toward it?')
     #-- rotate in same direction gate was detected
     global forward_twist
@@ -1006,11 +1024,11 @@ def main(args=None):
     drive_twist = Twist()
     drive_twist.linear.z = octagon_task.DRIVE_POWER
     octagon_task.pub_drive_twist.publish(drive_twist)
-    time.sleep(25)
+    time.sleep(10)
     drive_twist = Twist()
     drive_twist.linear.z = 0.0
     octagon_task.pub_drive_twist.publish(drive_twist)   
-
+    
     # spin the node so the task can be begin
     # node will automatically destory itself on completion
     try:
