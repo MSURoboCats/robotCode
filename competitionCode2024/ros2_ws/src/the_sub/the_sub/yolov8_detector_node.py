@@ -29,6 +29,10 @@ class Yolov8Detector(Node):
     # convert ROS Image message <-> OpenCV image
     self.br = CvBridge()
 
+    # create full-size window
+    cv2.namedWindow('Full-Screen', cv2.WINDOW_KEEPRATIO)
+    cv2.resizeWindow('Full-Screen', 1920,1080)
+
     # create TensorRT model if needed
     trt_model_path = os.path.join(os.getcwd(), 'models', str(sys.argv[1]) + '.engine')
     if not os.path.exists(trt_model_path):
@@ -57,6 +61,8 @@ class Yolov8Detector(Node):
         if float(box.conf) > .4:
           detection = Yolov8Detection()
           detection.name = self.trt_model.names[int(box.cls)]
+          if detection.name == "person":
+            detection.name = "New RoboCat!!"
           if r.boxes.is_track:
             detection.tracking_id = int(box.id)
           detection.confidence = float(box.conf)
@@ -69,7 +75,7 @@ class Yolov8Detector(Node):
           # draw circle for object center and add tracking ID
           current_frame = cv2.circle(current_frame, (int(detection.center.x), int(detection.center.y)), color=(0,0,255), radius=5, thickness=-1)
           current_frame = cv2.putText(current_frame,
-                                      self.trt_model.names[int(box.cls)] + ': ' + str(detection.tracking_id) + '(' + str(detection.confidence) + ')',
+                                      detection.name + ': ' + str(detection.tracking_id) + '(' + str(round(detection.confidence, 2)) + ')',
                                       (int(detection.center.x), int(detection.center.y)),
                                       cv2.FONT_HERSHEY_SIMPLEX,
                                       1,
@@ -77,7 +83,8 @@ class Yolov8Detector(Node):
                                       2, 
                                       cv2.LINE_AA)
     # show annotated image
-    cv2.imshow("detections", current_frame)
+    resized = cv2.resize(current_frame, (1920,1080))
+    cv2.imshow("Full-Screen", resized)
     
     cv2.waitKey(1)
   
