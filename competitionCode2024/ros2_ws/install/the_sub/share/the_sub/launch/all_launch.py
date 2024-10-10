@@ -10,7 +10,7 @@ def generate_launch_description():
     '''
 
     FORWARD_RGB_CAM_PORT = '1'
-    FORWARD_RGB_DETECTION_MODEL = '8am_test_small_batch'
+    FORWARD_RGB_DETECTION_MODEL = '8am_530pm_test_medium_batch'
     DOWNWARD_RGB_CAM_PORT = '0'
     DOWNWARD_RGB_DETECTION_MODEL = 'dry_buoy'
 

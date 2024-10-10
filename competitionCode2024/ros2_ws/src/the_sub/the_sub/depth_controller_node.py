@@ -89,7 +89,7 @@ class DepthController(Node):
 
             # if it is a bad sensor reading, skip the iteration
             if abs(data.depth - self.cur_depth) > self.SENSOR_ERROR:
-                self.get_logger().warn('Unreasonable value | Current: %.2f | New: %.2f' % (self.cur_depth, data.depth))
+                self.get_logger().debug('Unreasonable value | Current: %.2f | New: %.2f' % (self.cur_depth, data.depth))
                 return
             
             # calculate error and derivative
@@ -105,7 +105,7 @@ class DepthController(Node):
             depth_twist = Twist()
             depth_twist.linear.y = power_out
             self.pub_twist.publish(depth_twist)
-            self.get_logger().info('Cur: %.2f | Goal: %.2f | Const: %.2f | Der: %.2f | Motors: %.2f' % (self.cur_depth,
+            self.get_logger().debug('Cur: %.2f | Goal: %.2f | Const: %.2f | Der: %.2f | Motors: %.2f' % (self.cur_depth,
                                                                                                         self.goal_depth,
                                                                                                         self.Kp*e,
                                                                                                         self.Kd*delta_depth / .0625,

@@ -83,6 +83,15 @@ class BuoyTask(Node):
             10,
         )
 
+        '''
+        # publisher for twists to control the sub
+        self.pub_manual_control = self.create_publisher(
+            Twist,
+            '/control_twist',
+            10,
+        )
+        '''
+
         # subscriper for depth goal status
         self.sub_depth_goal_status = self.create_subscription(
             String,
@@ -132,7 +141,7 @@ class BuoyTask(Node):
         )
 
         # flow control variable
-        self.seek_stage = 0     # Key: 
+        self.seek_stage = 1     # Key: 
                                     # 0: descendng to set depth
                                     # 1: depth reached; rotating to initialial search orientation 
                                     # 2: initial orientation reached; rotating the first 180deg CCW
@@ -142,13 +151,42 @@ class BuoyTask(Node):
                                     # 5: surfaced (if track is lost): end script
         
         self.creep = False          # only run CV once it is needed
-        self.initialized = False    # wait for control data to start publishing
+        self.initialized = True     # wait for control data to start publishing
         self.track_lost = False     # surface if the track is lost
+        self.success = False        # set as true if buoy is bumped
 
         self.DETECTION_NAME = 'buoy_red'
         self.ROT_POWER = .1     # max power for scannning rotation
         self.DRIVE_POWER = .2   # power for driving 
-        self.BUMP_POWER = .5     # power for bumping the buoy
+        self.BUMP_POWER = .4     # power for bumping the buoy
+        
+        '''
+        #-- DO A COUPLE SPINS TO START OUT WITH
+        time.sleep(2)
+        self.get_logger().info('Spinning for 10 seconds')
+        self.pub_heading_controller_deactivation.publish(Empty())
+        rot_twist = Twist()
+        rot_twist.angular.y = 0.5
+        self.pub_manual_control.publish(rot_twist)
+        time.sleep(10)
+        rot_twist.angular.y = 0.0
+        self.get_logger().info('Spinning complete')
+        self.pub_manual_control.publish(rot_twist)
+        self.pub_heading_controller_activation.publish(Empty())
+        '''
+        
+        #-- SKIP THE FIRST STAGE AND JUST CONTINUE AT THE SAME DEPTH AS BEFORE
+        # reorient to (1,0,0,0)
+        time.sleep(3)
+        heading = HeadingGoal()
+        heading.orientation.x = 0.0
+        heading.orientation.y = 0.0
+        heading.orientation.z = 0.0
+        heading.orientation.w = 1.0
+        heading.max_power = self.ROT_POWER
+        self.pub_heading_goal.publish(heading)
+        self.get_logger().info('Stage 1 started: initialize scan at y=%.2f' % heading.orientation.y)
+        
 
     def depth_goal_status_callback(self, data: String) -> None:
         # stage 0 complete:
@@ -258,7 +296,7 @@ class BuoyTask(Node):
             self.get_logger().info('Stage 5 started: surface')
 
         # stop creeping if we are close to the buoy
-        if self.creep and data.name == self.DETECTION_NAME and data.dimensions.x >= 150:
+        if self.creep and data.name == self.DETECTION_NAME and data.dimensions.x >= 200:
                 
             # cancel creep and tracking
             self.creep = False
@@ -269,7 +307,7 @@ class BuoyTask(Node):
             drive_twist.linear.z = self.BUMP_POWER
             self.pub_drive_twist.publish(drive_twist)
             self.get_logger().info('Stage 4 loop broken: buoy close, last push')
-            time.sleep(5)
+            time.sleep(3)
             self.get_logger().info('Stage 4 complete: buoy bumped; scoot out of the way and hold')
 
 
@@ -282,6 +320,7 @@ class BuoyTask(Node):
             drive_twist.linear.x = 0.0
             self.pub_drive_twist.publish(drive_twist)
             self.pub_heading_controller_activation.publish(Empty())
+            self.success = True
             raise SystemExit
             
     def control_callback(self, data: ControlData) -> None:

@@ -90,9 +90,13 @@ class Twist2Action(Node):
         # clamp power to [-1,1]
         power = max(-1.0, min(data.linear.z, 1.0))
 
-        # only updated motors that control forward motion
-        self.motor_powers.motor4 = -power
-        self.motor_powers.motor5 = -power
+        # only updated motors that control forward motion, accounting for power differences
+        if power > 0:
+            self.motor_powers.motor4 = -power
+            self.motor_powers.motor5 = -power*.85
+        else:
+            self.motor_powers.motor4 = -power*.85
+            self.motor_powers.motor5 = -power
 
         # publish motor values
         self.motor_powers_pub.publish(self.motor_powers)
