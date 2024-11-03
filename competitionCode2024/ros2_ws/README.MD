@@ -34,18 +34,16 @@ ros2-ws
 <summary>Node Documentation</summary>
 
 # Node Documentation
-Details of the following nodes are outlined below:
 - [template_documentation.py](#template_documentationpy)
 - [sub_status_observer_node.py](#sub_status_observer_nodepy)
-
+<br><br>
 
 # `template_documentation.py`
+[*Return to Node list*](#Node-Documentation)<br>
 **File name:** [`name.py`](./src/the_sub/the_sub/)<br>
 **Compiled name:** `name_from_setup.py`<br>
 **Arguments:** `arguments`<br>
 **Overview:** Quick description here of what the node does at a high level!
-<br>[Return to Node list](#Node-Documentation)
-
 
 ## Publishers
 ### `publisher_name`
@@ -64,19 +62,17 @@ Detailed look at how the node works
 ### Initialization
 Details of what happens in `__init__()` besides setting publishers and subscribers.
 ### Callback Functions
-#### `callback_function_name`: functionality explained here
+#### `callback_function_name`functionality explained here
 ### Other Functions
 #### `function_name`: functionality explained here
-<br>[Return to Node list](#Node-Documentation)
-
 
 
 # `sub_status_observer_node.py`
+[*Return to Node list*](#Node-Documentation)<br>
 **File name:** [`sub_status_observer_node.py`](./src/the_sub/the_sub/sub_status_observer_node.py)<br>
 **Compiled name:** `sub_status_observer_node`<br>
 **Arguments:** `None`<br>
 **Overview:** This node displays information about the subs systems, including system voltage, temperature, pressure, and humidity as well as motor powers and sensor readings for depth, orientation, rotational velocities, and linear accelerations.
-<br>[Return to Node list](#Node-Documentation)
 
 ## Subscribers
 ### `voltage`
@@ -101,11 +97,16 @@ On the terminal, an ASCII representation of the sub is displayed with systems va
 ### Initialization
 Publishers and Subscribers are created. In addition, all displayed values are initialized to `0.0`.
 ### Callback Functions
-#### `voltage_callback()`: When new voltage data is received, the corresponding internal variable is updated.
-#### `hull_callback()`: When new temperature, pressure, and humidity data are received, the corresponding internal variables are updated.
-#### `control_callback()`: When new IMU data are received, the corresponding internal variables are updated.
-#### `motor_callback()`: When new motor powers are received, the corresponding internal variables are updated.
-#### `refresh_callback()`: `print_sub()` is called at 20 Hz.
+#### `voltage_callback()`
+When new voltage data is received, the corresponding internal variable is updated.
+#### `hull_callback()`
+When new temperature, pressure, and humidity data are received, the corresponding internal variables are updated.
+#### `control_callback()`
+When new IMU data are received, the corresponding internal variables are updated.
+#### `motor_callback()`
+When new motor powers are received, the corresponding internal variables are updated.
+#### `refresh_callback()`
+`print_sub()` is called at 20 Hz.
 ### Other Functions
-#### `print_sub()`: The screen is first cleared, and then the ASCII representation of the sub is printed, with all values being written from the internal variables that are continously updated by the callback functions.
-<br>[Return to Node list](#Node-Documentation)
+#### `print_sub()`
+The screen is first cleared, and then the ASCII representation of the sub is printed, with all values being written from the internal variables that are continously updated by the callback functions.
