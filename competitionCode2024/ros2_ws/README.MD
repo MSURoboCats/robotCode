@@ -34,17 +34,18 @@ ros2-ws
 <summary>Node Documentation</summary>
 
 # Node Documentation
-Details of all nodes are outlined below:
+Details of the following nodes are outlined below:
+- [template_documentation.py](#template_documentationpy)
+- [sub_status_observer_node.py](#sub_status_observer_nodepy)
 
-<details>
-<summary>template_documentation.py</summary>
 
-[Return to Node list](#Node-Documentation)
-## General
-**File name:** `name.py`<br>
+# `template_documentation.py`
+**File name:** [`name.py`](./src/the_sub/the_sub/)<br>
 **Compiled name:** `name_from_setup.py`<br>
 **Arguments:** `arguments`<br>
 **Overview:** Quick description here of what the node does at a high level!
+<br>[Return to Node list](#Node-Documentation)
+
 
 ## Publishers
 ### `publisher_name`
@@ -66,17 +67,16 @@ Details of what happens in `__init__()` besides setting publishers and subscribe
 #### `callback_function_name`: functionality explained here
 ### Other Functions
 #### `function_name`: functionality explained here
-[Return to Node list](#Node-Documentation)
-</details>
+<br>[Return to Node list](#Node-Documentation)
 
-<details>
-<summary>sub_status_observer_node.py</summary>
 
-## General
-**File name:** `sub_status_observer_node.py`<br>
+
+# `sub_status_observer_node.py`
+**File name:** [`sub_status_observer_node.py`](./src/the_sub/the_sub/sub_status_observer_node.py)<br>
 **Compiled name:** `sub_status_observer_node`<br>
 **Arguments:** `None`<br>
 **Overview:** This node displays information about the subs systems, including system voltage, temperature, pressure, and humidity as well as motor powers and sensor readings for depth, orientation, rotational velocities, and linear accelerations.
+<br>[Return to Node list](#Node-Documentation)
 
 ## Subscribers
 ### `voltage`
@@ -108,4 +108,4 @@ Publishers and Subscribers are created. In addition, all displayed values are in
 #### `refresh_callback()`: `print_sub()` is called at 20 Hz.
 ### Other Functions
 #### `print_sub()`: The screen is first cleared, and then the ASCII representation of the sub is printed, with all values being written from the internal variables that are continously updated by the callback functions.
-</details>
+<br>[Return to Node list](#Node-Documentation)
