@@ -39,6 +39,7 @@ Details of all nodes are outlined below:
 <details>
 <summary>template_documentation.py</summary>
 
+[Return to Node list](#Node-Documentation)
 ## General
 **File name:** `name.py`<br>
 **Compiled name:** `name_from_setup.py`<br>
@@ -65,6 +66,7 @@ Details of what happens in `__init__()` besides setting publishers and subscribe
 #### `callback_function_name`: functionality explained here
 ### Other Functions
 #### `function_name`: functionality explained here
+[Return to Node list](#Node-Documentation)
 </details>
 
 <details>
