@@ -22,6 +22,8 @@ Detailed look at how the node works
 ### Initialization
 Details of what happens in `__init__()` besides setting publishers and subscribers.
 ### Callback Functions
-#### `callback_function_name`functionality explained here
+#### `callback_function_name
+Functionality explained here
 ### Other Functions
-#### `function_name`: functionality explained here
+#### `function_name`
+Functionality explained here
