@@ -510,7 +510,7 @@ class BuoyTask(Node):
         # initial scan heading reached at (1,0,0,0): stage 1 compete
         if self.seek_stage == 1:
             # reorient to (0,0,1,0): 180deg CCW
-            time.sleep(3)
+            time.sleep(2)
             self.seek_stage = 2
             heading = HeadingGoal()
             heading.orientation.x = 0.0
@@ -606,7 +606,7 @@ class BuoyTask(Node):
             # deactivate heading control, scoot sideways, reactivate heading conrol, and exit
             self.pub_heading_controller_deactivation.publish(Empty())
             drive_twist.linear.z = 0.0
-            drive_twist.linear.x = self.BUMP_POWER
+            drive_twist.linear.x = -self.BUMP_POWER
             self.pub_drive_twist.publish(drive_twist)
             time.sleep(8)
             drive_twist.linear.x = 0.0
@@ -835,6 +835,7 @@ class OctagonTask(Node):
             heading.orientation.w = 0.0
             heading.max_power = self.SCAN_POWER
             self.pub_heading_goal.publish(heading)
+            self.pub_activate_detections.publish(Empty())
             self.get_logger().info('Stage 1 complete: initial orientation reached')
             self.get_logger().info('Stage 2 started: rotate 180deg CCW to y=%.2f' % heading.orientation.y)
 
@@ -997,7 +998,7 @@ def main(args=None):
         if buoy_task.success == False:
             rclpy.shutdown()
             return
-
+    
 
 #-- OCTAGON task
     octagon_task = OctagonTask()
@@ -1017,7 +1018,7 @@ def main(args=None):
     drive_twist = Twist()
     drive_twist.linear.z = octagon_task.DRIVE_POWER
     octagon_task.pub_drive_twist.publish(drive_twist)
-    time.sleep(25)
+    time.sleep(10)
     drive_twist = Twist()
     drive_twist.linear.z = 0.0
     octagon_task.pub_drive_twist.publish(drive_twist)   
