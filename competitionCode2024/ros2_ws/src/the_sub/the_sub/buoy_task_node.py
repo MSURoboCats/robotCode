@@ -141,7 +141,7 @@ class BuoyTask(Node):
         )
 
         # flow control variable
-        self.seek_stage = 1     # Key: 
+        self.seek_stage = 0     # Key: 
                                     # 0: descendng to set depth
                                     # 1: depth reached; rotating to initialial search orientation 
                                     # 2: initial orientation reached; rotating the first 180deg CCW
@@ -151,7 +151,7 @@ class BuoyTask(Node):
                                     # 5: surfaced (if track is lost): end script
         
         self.creep = False          # only run CV once it is needed
-        self.initialized = True     # wait for control data to start publishing
+        self.initialized = False     # wait for control data to start publishing
         self.track_lost = False     # surface if the track is lost
         self.success = False        # set as true if buoy is bumped
 
