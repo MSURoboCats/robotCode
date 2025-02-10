@@ -55,17 +55,39 @@ class DepthController(Node):
             10,
         )
         
-        self.goal_depth = 0.0       # float
-        self.cur_depth = 0.0        # rolling average of most recent samples
-        self.prev_depth = 0.0       # rolling average one time step behind cur_depth
-
-        self.active = False         # disable it
-        self.initialized = False    # depth values not initialized
-        self.goal_reached = True    # send success messages when goal_reached=False and cur_depth=goal_depth
-
-        # PD controller values
+        # PID controller constant values
+        self.Ki = 0
         self.Kp = -6
         self.Kd = 4
+
+        # sampling time
+        self.T = 1/16
+
+        # high frequency noise rejection
+        self.TAU = .25*self.T
+
+        # clamp output
+        self.OUTMAX = 1.0
+        self.OUTMIN = -1.0
+
+        # number of samples to use in the rolling average of the sensor value
+        self.ROLLING_AVE = 5
+
+        # rolling average of most recent samples
+        self.cur_depth = 0.0
+
+        # int/der memeory
+        self.integrator = 0
+        self.differentiator = 0
+
+        # previous data
+        self.prev_depth = 0
+
+        # goal depth
+        self.set_pt = 0
+
+        # active/deactive status
+        self.status = False
 
         # the minimum difference between the sensor reading and the current depth for
         # the reading to be discarded and control loop skipped
@@ -77,9 +99,14 @@ class DepthController(Node):
         # the minimum difference between the sensor reading and the current depth for
         # the goal reached message to be published
         self.MIN_ERROR = .1
+
+        self.initialized = False    # depth values not initialized
+        self.goal_reached = True    # send success messages when goal_reached=False and cur_depth=goal_depth
+        
     
     def control_data_callback(self, data: ControlData) -> None:
         if self.active:
+            
             # if it is the first reading, intialize depth variables
             if not self.initialized:
                 self.cur_depth = 0.0
@@ -91,25 +118,59 @@ class DepthController(Node):
             if abs(data.depth - self.cur_depth) > self.SENSOR_ERROR:
                 self.get_logger().debug('Unreasonable value | Current: %.2f | New: %.2f' % (self.cur_depth, data.depth))
                 return
-            
-            # calculate error and derivative
-            self.prev_depth = self.cur_depth
-            self.cur_depth = (data.depth + (self.ROLLING_AVE-1)*self.cur_depth) / self.ROLLING_AVE
-            e = self.goal_depth - self.cur_depth
-            delta_depth = self.cur_depth - self.prev_depth
 
-            # PD controller with time step of .0625 / 16HZ (what control data is published at)
-            power_out = self.Kp*e + self.Kd*delta_depth / .0625
+            # rolling average to smooth out data
+            self.cur_depth = (data.depth + (self.ROLLING_AVE-1)*self.cur_depth) / self.ROLLING_AVE
+
+            error = self.set_pt - self.cur_depth
+
+            # proportional term
+            proportional = self.Kp*error
+
+            # integral term
+            self.integrator = self.integrator + self.Ki*self.T*error
+
+            # dynamic integrator clamping limits
+             if self.OUTMAX > proportional:
+               integrator_max = self.OUTMAX - proportional
+            else:
+                integrator_max = 0
+
+            if self.OUTMIN < proportional :
+                integrator_min = self.OUTMIN - proportional
+            else:
+                integrator_min = 0
+
+            # clamping integrator
+            if self.integrator > integrator_max :
+                self.integrator = integrator_max
+            elif self.integrator < integrator_min:
+                self.integrator = integrator_min
+
+            # derivative term
+            self.differentiator = (2 * self.Kd * (self.cur_depth - self.prev_depth) + (2 * self.TAU - self.T) * self.differentiator) / (2 * self.TAU + self.T)
+
+            # calculate and clamp output
+            power = proportional + self.integrator + self.differentiator
+
+            if power > self.OUTMAX:
+               power = self.OUTMAX
+            elif power < self.OUTMIN:
+               power = self.OUTMIN
+
+            # store current data point for next update
+            self.prev_depth = self.cur_depth
 
             # publish motor values
             depth_twist = Twist()
-            depth_twist.linear.y = power_out
+            depth_twist.linear.y = power
             self.pub_twist.publish(depth_twist)
-            self.get_logger().debug('Cur: %.2f | Goal: %.2f | Const: %.2f | Der: %.2f | Motors: %.2f' % (self.cur_depth,
-                                                                                                        self.goal_depth,
-                                                                                                        self.Kp*e,
-                                                                                                        self.Kd*delta_depth / .0625,
-                                                                                                        power_out))
+            self.get_logger().debug('Cur: %.2f | Goal: %.2f | Const: %.2f | Der: %.2f | Int: %.2f | Motors: %.2f' % (self.cur_depth,
+                                                                                                        self.set_pt,
+                                                                                                        proportional,
+                                                                                                        self.differentiator,
+                                                                                                        self.integrator,
+                                                                                                        power))
 
             # check for goal reached condition
             if not self.goal_reached and abs(self.cur_depth - self.goal_depth) < self.MIN_ERROR:
