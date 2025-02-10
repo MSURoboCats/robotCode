@@ -1,3 +1,8 @@
+'''
+COMMAND LINE ARGS: ros2 run the_sub buoy_task_node <Kp> <Ki> <Kd>
+'''
+
+
 import rclpy
 from rclpy.node import Node
 
@@ -5,6 +10,8 @@ from interfaces.msg import ControlData, DepthGoal
 
 from geometry_msgs.msg import Twist
 from std_msgs.msg import String, Empty
+
+import sys
 
 class DepthController(Node):
 
@@ -56,9 +63,9 @@ class DepthController(Node):
         )
         
         # PID controller constant values
-        self.Ki = 0
-        self.Kp = -6
-        self.Kd = 4
+        self.Kp = float(sys.argv[1])
+        self.Ki = float(sys.argv[2])
+        self.Kd = float(sys.argv[3])
 
         # sampling time
         self.T = 1/16
@@ -131,8 +138,8 @@ class DepthController(Node):
             self.integrator = self.integrator + self.Ki*self.T*error
 
             # dynamic integrator clamping limits
-             if self.OUTMAX > proportional:
-               integrator_max = self.OUTMAX - proportional
+            if self.OUTMAX > proportional:
+                integrator_max = self.OUTMAX - proportional
             else:
                 integrator_max = 0
 
