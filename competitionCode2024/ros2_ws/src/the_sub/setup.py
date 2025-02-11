@@ -37,7 +37,7 @@ setup(
             # control
             'twist2action_node = the_sub.twist2action_node:main',
             'depth_controller_node = the_sub.depth_controller_node:main',
-            'depth_controler_PID_node = the_sub.depth_controller_PID_node:main',
+            'depth_controller_PID_node = the_sub.depth_controller_PID_node:main',
             'heading_controller_node = the_sub.heading_controller_node:main',
             'keyboard_controller_node = the_sub.keyboard_controller_node:main',
             'gui_control_node = the_sub.gui_control_node:main',
