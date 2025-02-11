@@ -112,18 +112,18 @@ class DepthController(Node):
         
     
     def control_data_callback(self, data: ControlData) -> None:
-        if self.active:
+        if self.status:
             
             # if it is the first reading, intialize depth variables
             if not self.initialized:
                 self.cur_depth = 0.0
                 self.prev_depth = 0.0
                 self.initialized = True
-                self.get_logger().info('Initialized cur, prev depth to %.2fm | Goal is %.2f' % (0.0, self.goal_depth))
+                self.get_logger().info('Initialized cur, prev depth to %.2fm | Goal is %.2f' % (0.0, self.set_pt))
 
             # if it is a bad sensor reading, skip the iteration
             if abs(data.depth - self.cur_depth) > self.SENSOR_ERROR:
-                self.get_logger().debug('Unreasonable value | Current: %.2f | New: %.2f' % (self.cur_depth, data.depth))
+                self.get_logger().info('Unreasonable value | Current: %.2f | New: %.2f' % (self.cur_depth, data.depth))
                 return
 
             # rolling average to smooth out data
@@ -180,7 +180,7 @@ class DepthController(Node):
                                                                                                         power))
 
             # check for goal reached condition
-            if not self.goal_reached and abs(self.cur_depth - self.goal_depth) < self.MIN_ERROR:
+            if not self.goal_reached and abs(self.cur_depth - self.set_pt) < self.MIN_ERROR:
                 self.goal_reached = True
                 message = String()
                 message.data = "Goal depth reached: %.2f" % self.cur_depth
