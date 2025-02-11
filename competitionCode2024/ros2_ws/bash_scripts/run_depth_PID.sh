@@ -4,7 +4,7 @@
 
 gnome-terminal \
 	--tab --title="hardware" \
-		-- bash -c 'cd /home/robocats/Desktop/developmentEnvironment/robotCode/competitionCode2024/ros2_ws; source install/setup.bash; ros2 launch the_sub hardware_launch.py; '
+		-- bash -c 'cd /home/robocats/Desktop/developmentEnvironment/robotCode/competitionCode2024/ros2_ws; source install/setup.bash; ros2 launch the_sub hardware_launch.py; bash'
 
 gnome-terminal \
 	--tab --title="vision" \
@@ -16,7 +16,7 @@ gnome-terminal \
 
 gnome-terminal \
 	--tab --title="depth_controller" \
-		-- bash -c 'cd /home/robocats/Desktop/developmentEnvironment/robotCode/competitionCode2024/ros2_ws; source install/setup.bash; ros2 run the_sub depth_controller_PID_node 2 0 0; bash'
+		-- bash -c 'cd /home/robocats/Desktop/developmentEnvironment/robotCode/competitionCode2024/ros2_ws; source install/setup.bash; ros2 run the_sub depth_controller_PID_node -10 0 0; bash'
 
 gnome-terminal \
 	--tab --title="depth_commands" \
